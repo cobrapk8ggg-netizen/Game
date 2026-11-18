@@ -1,4 +1,6 @@
 import { ECONOMY, ECONOMY_COOLDOWNS } from "@config/constants";
+import { botCopy } from "@config/strings";
+import { durationIn } from "@core/language";
 import {
 	adjustWallet,
 	claimDailySlot,
@@ -22,7 +24,10 @@ interface DailyResult {
 
 const alreadyClaimed = (readyAt: number, now: number): DailyResult => ({
 	claimed: false,
-	message: `You have already claimed today. Come back in **${formatDuration(readyAt - now)}**.`,
+	message: botCopy(
+		`You have already claimed today. Come back in **${formatDuration(readyAt - now)}**.`,
+		`حصلت على مكافأتك اليومية بالفعل. يمكنك المطالبة بالمكافأة التالية بعد **${durationIn("ar", readyAt - now)}**.`,
+	),
 });
 
 export async function claimDaily(guildId: string, userId: string, now = Date.now()): Promise<DailyResult> {
@@ -48,7 +53,10 @@ export async function claimDaily(guildId: string, userId: string, now = Date.now
 		claimed: true,
 		reward,
 		streak,
-		message: `You collected **${formatNumber(reward)}** — day **${streak}** of your streak.`,
+		message: botCopy(
+			`You collected **${formatNumber(reward)}** — day **${streak}** of your streak.`,
+			`حصلت على **${formatNumber(reward)}**. عدد الأيام المتتالية التي حصلت فيها على المكافأة: **${streak}**.`,
+		),
 	};
 }
 

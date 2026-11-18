@@ -1,4 +1,5 @@
 import { ButtonStyle, type EmbedBuilder } from "discord.js";
+import { botCopy } from "@config/strings";
 import { botName } from "@core/brand";
 import { customId } from "@core/button";
 import { button, option, row, select } from "@lib/discord/components.util";
@@ -182,6 +183,9 @@ export function noticeHint(unread: number, command: string): EmbedBuilder {
 
 	return embed({
 		category: "info",
-		description: `📣 There ${what} from the people who run ${botName()}. Run \`${command}\` to read ${unread === 1 ? "it" : "them"}.`,
+		description: botCopy(
+			`📣 There ${what} from the people who run ${botName()}. Run \`${command}\` to read ${unread === 1 ? "it" : "them"}.`,
+			`📣 عدد الإشعارات الجديدة من إدارة ${botName()}: ${unread}. استخدم \`${command}\` للاطلاع عليها.`,
+		),
 	});
 }
