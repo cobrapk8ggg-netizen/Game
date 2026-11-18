@@ -1,3 +1,4 @@
+import { botCopy } from "@config/strings";
 import { type ProblemKind, type DownloadProblem } from "@lib/music/music.types";
 /** What a dying downloader said, sorted into the few answers that change what the player should do next. */
 
@@ -40,6 +41,20 @@ const PATTERNS: { kind: ProblemKind; pattern: RegExp; advice: string }[] = [
 /** The service answered about this one track, which is neither a fault on its side nor worth trying elsewhere. */
 export function aboutTheTrack(problem: DownloadProblem | null): boolean {
 	return problem?.kind === "unavailable" || problem?.kind === "drm";
+}
+
+const ARABIC_ADVICE: Record<ProblemKind, string> = {
+	"bot-check": "طلب يوتيوب التحقّق من أن الطلب صادر عن مستخدم حقيقي، فلم يُرسل الصوت.",
+	session: "رفض يوتيوب إرسال الصوت بسبب مشكلة في جلسة الاتصال من الخادم.",
+	drm: "تحمي إدارة الحقوق الرقمية هذا المقطع. جرّب نسخة أخرى من المقطع نفسه.",
+	unavailable: "هذا الفيديو غير متاح. قد يكون خاصًا أو محذوفًا أو محجوبًا في بلد الاستضافة.",
+	forbidden:
+		"رفض يوتيوب التنزيل. غالبًا ما يكون السبب إصدارًا قديمًا من yt-dlp. شغّل `npm run music:setup` على الخادم.",
+	disk: "تعذّر حفظ التنزيل. قد يكون مجلد الملفات المؤقتة ممتلئًا أو غير قابل للكتابة.",
+};
+
+export function problemAdvice(problem: DownloadProblem): string {
+	return botCopy(problem.advice, ARABIC_ADVICE[problem.kind]);
 }
 
 export function classifyProblem(message: string): DownloadProblem | null {

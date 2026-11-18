@@ -1,4 +1,5 @@
 import { ButtonStyle } from "discord.js";
+import { botCopy } from "@config/strings";
 import { customId } from "@core/button";
 import { type StoredReminder } from "@database/repositories/reminderRepository";
 import { button, navRow, row } from "@lib/discord/components.util";
@@ -29,15 +30,20 @@ export function canPingHere(reminder: Pick<StoredReminder, "guildId" | "channelI
 
 function whereLine(reminder: Pick<StoredReminder, "guildId" | "channelId" | "deliver">): string {
 	return reminder.deliver === "dm" || !canPingHere(reminder)
-		? "by direct message"
-		: `with a ping in <#${reminder.channelId ?? ""}>`;
+		? botCopy("by direct message", "برسالة خاصة")
+		: botCopy(`with a ping in <#${reminder.channelId ?? ""}>`, `بإشارة إليك في <#${reminder.channelId ?? ""}>`);
 }
 
 /** The private answer to `/remind me`, with a way to change where it arrives and to call it off. */
 export function reminderConfirm(reminder: StoredReminder, ownerId: string, note?: string): ContainerMessage {
 	const due = seconds(reminder.dueAt);
 	const parts: ContainerPart[] = [
-		text(`## ⏰ Reminder set\nI will remind you <t:${due}:R> (<t:${due}:f>), ${whereLine(reminder)}.`),
+		text(
+			botCopy(
+				`## ⏰ Reminder set\nI will remind you <t:${due}:R> (<t:${due}:f>), ${whereLine(reminder)}.`,
+				`## ⏰ ضُبط التذكير\nسأذكّرك <t:${due}:R> (<t:${due}:f>) ${whereLine(reminder)}.`,
+			),
+		),
 		text(quoted(reminder.text)),
 	];
 	if (note !== undefined) parts.push(text(`-# ${note}`));
@@ -45,7 +51,7 @@ export function reminderConfirm(reminder: StoredReminder, ownerId: string, note?
 	const controls = [
 		button({
 			id: customId(REMINDER_ID, "cancel", reminder.id, ownerId),
-			label: "Cancel it",
+			label: botCopy("Cancel it", "إلغاء التذكير"),
 			style: ButtonStyle.Danger,
 		}),
 	];
@@ -53,18 +59,34 @@ export function reminderConfirm(reminder: StoredReminder, ownerId: string, note?
 		controls.unshift(
 			button({
 				id: customId(REMINDER_ID, "deliver", reminder.id, ownerId),
-				label: reminder.deliver === "dm" ? "Ping me here instead" : "DM me instead",
+				label:
+					reminder.deliver === "dm"
+						? botCopy("Ping me here instead", "نبّهني في هذه القناة")
+						: botCopy("DM me instead", "أرسل لي رسالة خاصة"),
 			}),
 		);
 	}
 
-	parts.push(row(...controls), text("-# `/remind list` shows every reminder you have."));
+	parts.push(
+		row(...controls),
+		text(botCopy("-# `/remind list` shows every reminder you have.", "-# يعرض `/remind list` جميع تذكيراتك.")),
+	);
 	return containerMessage(container({ category: "community", parts }));
 }
 
 export function reminderCancelled(reminder: Pick<StoredReminder, "text">): ContainerMessage {
 	return containerMessage(
-		container({ category: "community", parts: [text(`## ⏰ Reminder cancelled\n${quoted(reminder.text)}`)] }),
+		container({
+			category: "community",
+			parts: [
+				text(
+					botCopy(
+						`## ⏰ Reminder cancelled\n${quoted(reminder.text)}`,
+						`## ⏰ أُلغي التذكير\n${quoted(reminder.text)}`,
+					),
+				),
+			],
+		}),
 	);
 }
 
@@ -83,10 +105,16 @@ export function reminderList(
 	const shown = Math.min(Math.max(0, page), pages - 1);
 	const parts: ContainerPart[] = [
 		text(
-			`## ⏰ Your reminders\n${
+			`## ⏰ ${botCopy("Your reminders", "تذكيراتك")}\n${
 				reminders.length === 0
-					? "None. Set one with `/remind me`, such as `/remind me in:2h about:check the oven`."
-					: `${String(reminders.length)} of ${String(REMINDER_LIMITS.maxActive)}, soonest first.`
+					? botCopy(
+							"None. Set one with `/remind me`, such as `/remind me in:2h about:check the oven`.",
+							"لا توجد تذكيرات. أضف تذكيرًا باستخدام `/remind me`، مثل `/remind me in:2h about:تفقد الفرن`.",
+						)
+					: botCopy(
+							`${String(reminders.length)} of ${String(REMINDER_LIMITS.maxActive)}, soonest first.`,
+							`العدد: ${String(reminders.length)} من ${String(REMINDER_LIMITS.maxActive)}. يظهر الأقرب موعدًا أولًا.`,
+						)
 			}`,
 		),
 	];
@@ -97,7 +125,7 @@ export function reminderList(
 		parts.push(
 			sectionWithButton(
 				`**<t:${seconds(reminder.dueAt)}:R>** · ${whereLine(reminder)}\n${shortened(reminder.text, 120)}`,
-				button({ id: customId(REMINDER_ID, "drop", reminder.id, shown, ownerId), label: "Cancel" }),
+				button({ id: customId(REMINDER_ID, "drop", reminder.id, shown, ownerId), label: botCopy("Cancel", "إلغاء") }),
 			),
 		);
 	}
@@ -112,13 +140,21 @@ export function deliveredText(reminder: StoredReminder, where: "channel" | "dm")
 	const set = `<t:${seconds(reminder.createdAt)}:R>`;
 	const lines = [
 		where === "channel"
-			? `⏰ <@${reminder.userId}>, you asked me to remind you ${set}:`
-			: `⏰ You asked me to remind you ${set}:`,
+			? botCopy(
+					`⏰ <@${reminder.userId}>, you asked me to remind you ${set}:`,
+					`⏰ <@${reminder.userId}>، هذا تذكير طلبته ${set}:`,
+				)
+			: botCopy(`⏰ You asked me to remind you ${set}:`, `⏰ هذا تذكير طلبته ${set}:`),
 		quoted(reminder.text),
 	];
 
 	if (where === "dm" && reminder.guildId !== null && reminder.channelId !== null) {
-		lines.push(`-# Set in https://discord.com/channels/${reminder.guildId}/${reminder.channelId}`);
+		lines.push(
+			botCopy(
+				`-# Set in https://discord.com/channels/${reminder.guildId}/${reminder.channelId}`,
+				`-# القناة التي ضُبط فيها التذكير: https://discord.com/channels/${reminder.guildId}/${reminder.channelId}`,
+			),
+		);
 	}
 
 	return lines.join("\n");

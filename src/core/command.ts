@@ -403,7 +403,9 @@ export function buildSlashCommand(
 
 	for (const option of command.options ?? []) {
 		const description = describe(option.description, command.name, undefined, option.name);
-		addOption(builder, option, description, localise(stringKey(command.name, undefined, option.name)));
+		addOption(builder, option, description, localise(stringKey(command.name, undefined, option.name)), (name, value) =>
+			describe(name, command.name, undefined, `${option.name}=${String(value)}`),
+		);
 	}
 
 	for (const sub of command.subcommands ?? []) {
@@ -415,7 +417,13 @@ export function buildSlashCommand(
 				.setDescriptionLocalizations(localise(key) ?? null);
 			for (const option of sub.options ?? []) {
 				const description = describe(option.description, command.name, sub.name, option.name);
-				addOption(subBuilder, option, description, localise(stringKey(command.name, sub.name, option.name)));
+				addOption(
+					subBuilder,
+					option,
+					description,
+					localise(stringKey(command.name, sub.name, option.name)),
+					(name, value) => describe(name, command.name, sub.name, `${option.name}=${String(value)}`),
+				);
 			}
 			return subBuilder;
 		});
@@ -440,6 +448,7 @@ function addOption(
 	option: CommandOption,
 	description: string,
 	translated: Record<string, string> | undefined,
+	choiceLabel: (name: string, value: string | number) => string,
 ): void {
 	const required = option.required ?? false;
 	const localised = translated ?? null;
@@ -455,7 +464,9 @@ function addOption(
 				if (option.maxLength !== undefined) builder.setMaxLength(option.maxLength);
 				if (option.autocomplete) builder.setAutocomplete(true);
 				else if (option.choices) {
-					builder.addChoices(...option.choices.map((c) => ({ name: c.name, value: String(c.value) })));
+					builder.addChoices(
+						...option.choices.map((c) => ({ name: choiceLabel(c.name, c.value), value: String(c.value) })),
+					);
 				}
 				return builder;
 			});
@@ -472,7 +483,9 @@ function addOption(
 				if (option.max !== undefined) builder.setMaxValue(option.max);
 				if (option.autocomplete) builder.setAutocomplete(true);
 				else if (option.choices) {
-					builder.addChoices(...option.choices.map((c) => ({ name: c.name, value: Number(c.value) })));
+					builder.addChoices(
+						...option.choices.map((c) => ({ name: choiceLabel(c.name, c.value), value: Number(c.value) })),
+					);
 				}
 				return builder;
 			});

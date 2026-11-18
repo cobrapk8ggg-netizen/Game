@@ -1,4 +1,5 @@
 import { type GuildMember, MessageFlags } from "discord.js";
+import { botCopy } from "@config/strings";
 import { type ComponentInteraction, defineButton } from "@core/button";
 import { checkMusicControl, refusalText } from "@core/checks";
 import { type TestifyClient } from "@core/client";
@@ -11,7 +12,8 @@ const QUERY_FIELD = "query";
 /** Re-checked on the submit as well, because a form can sit open while a role or a switch changes. */
 async function requireMusicAccess(interaction: ComponentInteraction, client: TestifyClient): Promise<GuildMember> {
 	const guild = interaction.guild;
-	if (guild === null) throw new UserFacingError("This only works inside a server.");
+	if (guild === null)
+		throw new UserFacingError(botCopy("This only works inside a server.", "لا يتاح هذا الإجراء إلا داخل الخادم."));
 
 	const member = interaction.member as GuildMember;
 	const refusal = await checkMusicControl(client, { userId: interaction.user.id, guildId: guild.id, member });
@@ -34,12 +36,15 @@ export default defineButton({
 				modalForm({
 					id: MUSIC_ADD_ID,
 					action: "submit",
-					title: "Add to the queue",
+					title: botCopy("Add to the queue", "إضافة إلى قائمة الانتظار"),
 					fields: [
 						{
 							id: QUERY_FIELD,
-							label: "A link, or what to search for",
-							placeholder: "Artist and title, or a YouTube or SoundCloud link",
+							label: botCopy("A link, or what to search for", "رابط المقطع أو عبارة البحث"),
+							placeholder: botCopy(
+								"Artist and title, or a YouTube or SoundCloud link",
+								"اسم الفنان والمقطع، أو رابط من يوتيوب أو ساوند كلاود",
+							),
 							maxLength: 500,
 						},
 					],

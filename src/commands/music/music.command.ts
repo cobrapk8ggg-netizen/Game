@@ -1,4 +1,5 @@
 import { PermissionFlagsBits } from "discord.js";
+import { botCopy } from "@config/strings";
 import { asMember, type CommandInput, defineCommand, inGuild } from "@core/command";
 import { UserFacingError } from "@core/errors";
 import { reply } from "@lib/discord";
@@ -56,17 +57,31 @@ export default recordsSettings(
 			const guildId = interaction.guildId;
 			const settings = guildId === null ? null : await readMusicSettings(guildId);
 
-			const state = settings === null ? "" : settings.enabled ? " (it is on)" : " (it is off)";
+			const state =
+				settings === null
+					? ""
+					: settings.enabled
+						? botCopy(" (it is on)", " (مفعّل الآن)")
+						: botCopy(" (it is off)", " (معطّل الآن)");
 			const chosen = settings === null ? 0 : settings.djRoleIds.length;
 
 			const offered = [
-				{ name: `Turn the music system on${state}`, value: SYSTEM_ACTIONS.enable },
-				{ name: `Turn the music system off${state}`, value: SYSTEM_ACTIONS.disable },
+				{
+					name: botCopy(`Turn the music system on${state}`, `تفعيل نظام الموسيقى${state}`),
+					value: SYSTEM_ACTIONS.enable,
+				},
+				{
+					name: botCopy(`Turn the music system off${state}`, `تعطيل نظام الموسيقى${state}`),
+					value: SYSTEM_ACTIONS.disable,
+				},
 				{
 					name:
 						chosen === 0
-							? "Choose who may use it (anybody can now)"
-							: `Choose who may use it (${String(chosen)} roles)`,
+							? botCopy("Choose who may use it (anybody can now)", "تحديد من يمكنه استخدام المشغّل (متاح للجميع الآن)")
+							: botCopy(
+									`Choose who may use it (${String(chosen)} roles)`,
+									`تحديد من يمكنه استخدام المشغّل (عدد الرتب: ${String(chosen)})`,
+								),
 					value: SYSTEM_ACTIONS.roles,
 				},
 			];
@@ -94,7 +109,7 @@ export default recordsSettings(
 				async run(interaction) {
 					const session = sessionOf(interaction);
 					const track = currentTrack(session.queue);
-					if (track === null) throw new UserFacingError("Nothing is playing.");
+					if (track === null) throw new UserFacingError(botCopy("Nothing is playing.", "لا يُشغَّل أي مقطع الآن."));
 
 					await showPanel(interaction, session);
 				},
@@ -171,10 +186,17 @@ export default recordsSettings(
 					const at = session.queue.index + offset;
 					const track = session.queue.tracks[at];
 
-					if (track === undefined) throw new UserFacingError("There is no track at that position.");
+					if (track === undefined)
+						throw new UserFacingError(
+							botCopy("There is no track at that position.", "لا يوجد مقطع في هذا الموضع من القائمة."),
+						);
 
 					session.queue = removeAt(session.queue, at);
-					await showPanel(interaction, session, `Removed **${track.title}**.`);
+					await showPanel(
+						interaction,
+						session,
+						botCopy(`Removed **${track.title}**.`, `أزلتُ **${track.title}** من القائمة.`),
+					);
 				},
 			},
 			{
@@ -185,7 +207,14 @@ export default recordsSettings(
 					const removed = upcomingPage(session.queue, 0, Number.MAX_SAFE_INTEGER).entries.length;
 
 					session.queue = clearUpcoming(session.queue);
-					await showPanel(interaction, session, `Cleared **${String(removed)}** queued tracks.`);
+					await showPanel(
+						interaction,
+						session,
+						botCopy(
+							`Cleared **${String(removed)}** queued tracks.`,
+							`أفرغتُ قائمة الانتظار. عدد المقاطع المحذوفة: **${String(removed)}**.`,
+						),
+					);
 				},
 			},
 			{
@@ -206,7 +235,11 @@ export default recordsSettings(
 					const wanted = interaction.options.getInteger("percent");
 
 					if (wanted === null) {
-						await showPanel(interaction, session, `Volume is **${String(session.volume)}%**.`);
+						await showPanel(
+							interaction,
+							session,
+							botCopy(`Volume is **${String(session.volume)}%**.`, `مستوى الصوت **${String(session.volume)}٪**.`),
+						);
 						return;
 					}
 
@@ -236,7 +269,12 @@ export default recordsSettings(
 					}
 
 					if (action !== SYSTEM_ACTIONS.enable && action !== SYSTEM_ACTIONS.disable) {
-						throw new UserFacingError("Pick one of the options the box offers — `enable`, `disable` or `roles`.");
+						throw new UserFacingError(
+							botCopy(
+								"Pick one of the options the box offers — `enable`, `disable` or `roles`.",
+								"اختر من القائمة: `enable` للتفعيل، أو `disable` للتعطيل، أو `roles` لتحديد الرتب.",
+							),
+						);
 					}
 
 					const enabled = action === SYSTEM_ACTIONS.enable;
@@ -244,7 +282,13 @@ export default recordsSettings(
 
 					await reply(
 						interaction,
-						musicSystemPanel(settings, interaction.user.id, enabled ? "Music is on." : "Music is off."),
+						musicSystemPanel(
+							settings,
+							interaction.user.id,
+							enabled
+								? botCopy("Music is on.", "نظام الموسيقى مفعّل.")
+								: botCopy("Music is off.", "نظام الموسيقى معطّل."),
+						),
 					);
 				},
 			},
@@ -256,7 +300,7 @@ export default recordsSettings(
 					const session = sessionOf(interaction);
 					session.destroy();
 
-					await reply(interaction, { content: "Left the voice channel." });
+					await reply(interaction, { content: botCopy("Left the voice channel.", "غادرتُ القناة الصوتية.") });
 				},
 			},
 			{

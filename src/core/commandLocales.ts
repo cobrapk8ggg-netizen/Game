@@ -1,4 +1,5 @@
 import { existsSync, readFileSync } from "node:fs";
+import arabicChoices from "../../assets/locales/commands/ar.choices.json";
 import arabic from "../../assets/locales/commands/ar.json";
 import { DISCORD_LOCALES, type TranslatedLanguage } from "@config/languages";
 import { type Command, type CommandOption, stringKey, subcommandsOf } from "@core/command";
@@ -32,9 +33,9 @@ export function menuStrings(menu: ContextMenu): CommandString[] {
 	return [{ key: menuKey(menu), text: menu.name }];
 }
 
-const arabicDescriptions: Readonly<Record<string, string>> = arabic;
+const arabicDescriptions: Readonly<Record<string, string>> = { ...arabic, ...arabicChoices };
 
-/** Arabic descriptions for the web catalogue and in-chat help, where Discord's locale restrictions do not apply. */
+/** Arabic copy for command help and registration on hosts configured to use Arabic. */
 export function arabicDescription(original: string, command: string, subcommand?: string, option?: string): string {
 	return arabicDescriptions[stringKey(command, subcommand, option)] ?? original;
 }

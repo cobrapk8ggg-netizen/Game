@@ -1,4 +1,5 @@
-import { type MusicSource, type ProblemKind, type QueueState } from "@lib/music/music.types";
+import { botCopy } from "@config/strings";
+import { type LoopMode, type MusicSource, type ProblemKind, type QueueState } from "@lib/music/music.types";
 
 /** The track's own level, and the only one that plays without passing through FFmpeg. */
 export const UNITY_VOLUME = 100;
@@ -41,6 +42,27 @@ export const MUSIC_SOURCE_NAMES: Record<MusicSource, string> = {
 	spotify: "Spotify",
 	other: "the web",
 };
+
+const ARABIC_SOURCE_NAMES: Record<MusicSource, string> = {
+	youtube: "يوتيوب",
+	soundcloud: "ساوند كلاود",
+	spotify: "سبوتيفاي",
+	other: "الويب",
+};
+
+export function musicSourceName(source: MusicSource): string {
+	return botCopy(MUSIC_SOURCE_NAMES[source], ARABIC_SOURCE_NAMES[source]);
+}
+
+const ARABIC_LOOP_MODES: Record<LoopMode, string> = {
+	off: "بلا تكرار",
+	track: "المقطع الحالي",
+	queue: "قائمة الانتظار",
+};
+
+export function loopModeName(mode: LoopMode): string {
+	return botCopy(mode, ARABIC_LOOP_MODES[mode]);
+}
 
 export const LOOP_MODES = ["off", "track", "queue"] as const;
 

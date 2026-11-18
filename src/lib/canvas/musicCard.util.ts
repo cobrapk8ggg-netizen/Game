@@ -1,9 +1,10 @@
 import { type Image, loadImage } from "@napi-rs/canvas";
+import { botCopy } from "@config/strings";
 import { createCanvas, fetchPicture, roundedRect, type SKRSContext2D } from "@lib/canvas/canvas.util";
 import { DISPLAY, drawText, measureText, type TextStyle, wrapLines } from "@lib/canvas/text.util";
 import { coverRect } from "@lib/canvas/welcomeCard.util";
 import { formatClock } from "@lib/format/format.util";
-import { MUSIC_SOURCE_NAMES } from "@lib/music/music.constants";
+import { MUSIC_SOURCE_NAMES, musicSourceName } from "@lib/music/music.constants";
 import { type Track } from "@lib/music/music.types";
 
 /** The now-playing card: the track's artwork, blurred behind itself, with its title and artist beside it. */
@@ -51,10 +52,10 @@ export function musicCardText(track: Track): MusicCardText {
 	const author = track.author?.trim() ?? "";
 
 	return {
-		eyebrow: `NOW PLAYING · ${source.toUpperCase()}`,
-		title: track.title.trim() === "" ? "Untitled" : track.title.trim(),
-		author: author === "" ? `From ${source}` : author,
-		length: track.durationMs === null ? "LIVE" : formatClock(track.durationMs),
+		eyebrow: botCopy(`NOW PLAYING · ${source.toUpperCase()}`, `قيد التشغيل · ${musicSourceName(track.source)}`),
+		title: track.title.trim() === "" ? botCopy("Untitled", "بلا عنوان") : track.title.trim(),
+		author: author === "" ? botCopy(`From ${source}`, `المصدر: ${musicSourceName(track.source)}`) : author,
+		length: track.durationMs === null ? botCopy("LIVE", "بث مباشر") : formatClock(track.durationMs),
 	};
 }
 

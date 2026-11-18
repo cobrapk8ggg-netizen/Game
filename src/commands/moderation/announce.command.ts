@@ -1,4 +1,5 @@
 import { PermissionFlagsBits } from "discord.js";
+import { botCopy } from "@config/strings";
 import { asMember, defineCommand, inGuild, textChannelOption } from "@core/command";
 import { UserFacingError } from "@core/errors";
 import { readerLanguage } from "@core/language";
@@ -26,12 +27,14 @@ export default defineCommand({
 		{ name: "ping-everyone", description: "Mention @everyone with the announcement.", type: "boolean" },
 	],
 
-	async run(interaction) {
+	async run(interaction, client) {
 		const channel = textChannelOption(interaction, "channel");
 		if (!channel?.isTextBased() || !channel.isSendable()) {
-			throw new UserFacingError("Pick a text channel I can send messages in.");
+			throw new UserFacingError(
+				botCopy("Pick a text channel I can send messages in.", "اختر قناة نصية يمكنني إرسال الرسائل إليها."),
+			);
 		}
-		requirePostable(channel, readerLanguage(interaction), [PermissionFlagsBits.EmbedLinks]);
+		requirePostable(channel, readerLanguage(interaction, client.env.BOT_LANGUAGE), [PermissionFlagsBits.EmbedLinks]);
 
 		const mentions = (interaction.options.getBoolean("ping-everyone") ?? false) ? "everyone" : "none";
 		const problem = mentionProblem(channel, inGuild(interaction), asMember(interaction), mentions);
@@ -41,7 +44,9 @@ export default defineCommand({
 			announcementMessage({
 				style: "embed",
 				title: interaction.options.getString("title") ?? undefined,
-				message: interaction.options.getString("description") ?? "*No description provided.*",
+				message:
+					interaction.options.getString("description") ??
+					botCopy("*No description provided.*", "*لم يُكتب وصف للإعلان.*"),
 				colour: resolveColour(interaction.options.getString("color")),
 				mentions,
 				by: { name: interaction.user.username, avatarUrl: interaction.user.displayAvatarURL() },
@@ -49,7 +54,7 @@ export default defineCommand({
 		);
 
 		await reply(interaction, {
-			embeds: [successEmbed(`Announcement posted in ${channel}.`)],
+			embeds: [successEmbed(botCopy(`Announcement posted in ${channel}.`, `نُشر الإعلان في ${channel}.`))],
 		});
 	},
 });

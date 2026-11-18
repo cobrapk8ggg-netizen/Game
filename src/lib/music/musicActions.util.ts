@@ -1,4 +1,5 @@
 import { type Guild, type GuildMember, type VoiceBasedChannel } from "discord.js";
+import { botCopy } from "@config/strings";
 import { type TestifyClient } from "@core/client";
 import { type CommandInput } from "@core/command";
 import { UserFacingError, toError } from "@core/errors";
@@ -27,7 +28,10 @@ export function musicBinaries(client: TestifyClient): MusicBinaries {
 /** The voice channel the person is in, or advice on what to do about not being in one. */
 export function voiceChannelOf(member: GuildMember): VoiceBasedChannel {
 	const channel = member.voice.channel;
-	if (channel === null) throw new UserFacingError("Join a voice channel first, then try again.");
+	if (channel === null)
+		throw new UserFacingError(
+			botCopy("Join a voice channel first, then try again.", "انضم إلى قناة صوتية أولًا، ثم أعد المحاولة."),
+		);
 
 	return channel;
 }
@@ -38,17 +42,31 @@ export function sameChannelAs(session: MusicSession, member: GuildMember): void 
 	if (listening === null) return;
 
 	if (member.voice.channelId !== listening) {
-		throw new UserFacingError("You need to be in the voice channel I am playing in.");
+		throw new UserFacingError(
+			botCopy(
+				"You need to be in the voice channel I am playing in.",
+				"انضم إلى القناة الصوتية التي يعمل فيها المشغّل.",
+			),
+		);
 	}
 }
 
 /** What somebody typed as a song, refused before anything slow happens so the refusal can be the first reply. */
 export function requestedQuery(raw: string): Query {
 	const query = resolveQuery(raw);
-	if (query === null) throw new UserFacingError("Say what to play — a link, or a few words to search for.");
+	if (query === null)
+		throw new UserFacingError(
+			botCopy(
+				"Say what to play — a link, or a few words to search for.",
+				"أرسل رابطًا أو اكتب كلمات للبحث عن المقطع الذي تودّ سماعه.",
+			),
+		);
 	if (query.source === "spotify") {
 		throw new UserFacingError(
-			"Spotify streams are DRM-protected, so nothing can play them. Search for the track by name instead.",
+			botCopy(
+				"Spotify streams are DRM-protected, so nothing can play them. Search for the track by name instead.",
+				"تحمي سبوتيفاي بثّها بنظام إدارة الحقوق الرقمية. ابحث عن المقطع باسمه لتشغيله من مصدر آخر.",
+			),
 		);
 	}
 
@@ -105,7 +123,13 @@ async function findTracks(
 
 		if (!fallsBackToSoundCloud(query, sources)) {
 			throw query.source === "youtube" && allowsSource(sources, "soundcloud")
-				? new MusicProblemError(error.problem, "Put `sc:` before your search to use SoundCloud.")
+				? new MusicProblemError(
+						error.problem,
+						botCopy(
+							"Put `sc:` before your search to use SoundCloud.",
+							"اكتب `sc:` قبل عبارة البحث لتستخدم ساوند كلاود.",
+						),
+					)
 				: error;
 		}
 	}
@@ -120,7 +144,8 @@ export async function queueRequest(request: TrackRequest): Promise<{ session: Mu
 	const session = openSession(request.guild, request.client);
 	const { found, fellBack } = await findTracks(request, query, sources);
 
-	if (found.length === 0) throw new UserFacingError("Nothing turned up for that.");
+	if (found.length === 0)
+		throw new UserFacingError(botCopy("Nothing turned up for that.", "لم أجد مقطعًا يطابق بحثك."));
 
 	const tracks = query.kind === "search" ? found.slice(0, 1) : found;
 	const added = addTracks(session.queue, tracks, { next: request.next, idle: !session.active });
@@ -134,12 +159,23 @@ export async function queueRequest(request: TrackRequest): Promise<{ session: Mu
 	const title = tracks[0]?.title ?? "a track";
 	const note =
 		tracks.length > 1
-			? `Added **${String(tracks.length)}** tracks.`
+			? botCopy(
+					`Added **${String(tracks.length)}** tracks.`,
+					`أضفتُ المقاطع إلى القائمة. العدد: **${String(tracks.length)}**.`,
+				)
 			: added.start === null
-				? `Added **${title}** to the queue.`
-				: `Playing **${title}**.`;
+				? botCopy(`Added **${title}** to the queue.`, `أضفتُ **${title}** إلى قائمة الانتظار.`)
+				: botCopy(`Playing **${title}**.`, `أشغّل الآن **${title}**.`);
 
-	return { session, note: fellBack ? `${note} YouTube would not answer, so it came from SoundCloud.` : note };
+	return {
+		session,
+		note: fellBack
+			? botCopy(
+					`${note} YouTube would not answer, so it came from SoundCloud.`,
+					`${note} لم يستجب يوتيوب، فاستعنتُ بساوند كلاود.`,
+				)
+			: note,
+	};
 }
 
 function openSession(guild: Guild, client: TestifyClient): MusicSession {
@@ -148,7 +184,13 @@ function openSession(guild: Guild, client: TestifyClient): MusicSession {
 
 export function requireSession(guild: Guild): MusicSession {
 	const session = findSession(guild.id);
-	if (session === null) throw new UserFacingError("Nothing is playing. Use `/play` to start something.");
+	if (session === null)
+		throw new UserFacingError(
+			botCopy(
+				"Nothing is playing. Use `/play` to start something.",
+				"لا يُشغَّل أي مقطع الآن. استخدم `/play` لتشغيل مقطع.",
+			),
+		);
 
 	return session;
 }
@@ -158,7 +200,10 @@ export function requireVolumeControl(session: MusicSession): void {
 	if (session.canSetVolume) return;
 
 	throw new UserFacingError(
-		"Changing the volume needs FFmpeg, which is not installed on this host. Run `npm run music:setup` to check.",
+		botCopy(
+			"Changing the volume needs FFmpeg, which is not installed on this host. Run `npm run music:setup` to check.",
+			"يتطلّب تغيير مستوى الصوت تثبيت FFmpeg. شغّل `npm run music:setup` على الخادم للتحقّق من التثبيت.",
+		),
 	);
 }
 

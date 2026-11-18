@@ -1,4 +1,5 @@
 import { MessageFlags, PermissionFlagsBits } from "discord.js";
+import { botCopy } from "@config/strings";
 import { defineButton } from "@core/button";
 import { UserFacingError } from "@core/errors";
 import { disableWelcome, getWelcome, saveWelcome } from "@database/repositories/welcomeRepository";
@@ -29,7 +30,12 @@ export default recordsSettings(
 			if (interaction.guild === null) return;
 
 			if (interaction.memberPermissions?.has(PermissionFlagsBits.ManageGuild) !== true) {
-				throw new UserFacingError("You need the Manage Server permission to change the welcome messages.");
+				throw new UserFacingError(
+					botCopy(
+						"You need the Manage Server permission to change the welcome messages.",
+						"تحتاج إلى صلاحية «إدارة الخادم» لتعديل رسائل الترحيب.",
+					),
+				);
 			}
 
 			const guild = interaction.guild;
@@ -53,7 +59,12 @@ export default recordsSettings(
 						...(config === null ? { message: DEFAULT_WELCOME_MESSAGE, style: "card" as const } : {}),
 					});
 
-					await show(normaliseWelcome(saved), config === null ? "Set up. Press Preview to see it." : undefined);
+					await show(
+						normaliseWelcome(saved),
+						config === null
+							? botCopy("Set up. Press Preview to see it.", "حُفظ الإعداد. اضغط «معاينة» لرؤية الرسالة.")
+							: undefined,
+					);
 					return;
 				}
 
@@ -70,18 +81,18 @@ export default recordsSettings(
 
 				case "edit": {
 					if (!interaction.isMessageComponent()) return;
-					if (config === null) throw new UserFacingError("Pick a channel first.");
+					if (config === null) throw new UserFacingError(botCopy("Pick a channel first.", "اختر قناة الترحيب أولًا."));
 
 					await interaction.showModal(
 						modalForm({
 							id: WELCOME_PANEL_ID,
 							action: "save-message",
 							args: [ownerId],
-							title: "The welcome message",
+							title: botCopy("The welcome message", "رسالة الترحيب"),
 							fields: [
 								{
 									id: "message",
-									label: "Use {user}, {server} and {count}",
+									label: botCopy("Use {user}, {server} and {count}", "يمكنك إدراج {user} و{server} و{count}"),
 									paragraph: true,
 									value: config.message,
 									maxLength: WELCOME_LIMITS.maxMessage,
@@ -97,10 +108,11 @@ export default recordsSettings(
 					if (config === null) return;
 
 					const message = interaction.fields.getTextInputValue("message").trim();
-					if (message.length === 0) throw new UserFacingError("The greeting cannot be empty.");
+					if (message.length === 0)
+						throw new UserFacingError(botCopy("The greeting cannot be empty.", "اكتب نص رسالة الترحيب."));
 
 					await saveWelcome(guild.id, { message });
-					await show({ ...config, message }, "Message updated.");
+					await show({ ...config, message }, botCopy("Message updated.", "حُدّث نص الرسالة."));
 					return;
 				}
 
@@ -109,7 +121,13 @@ export default recordsSettings(
 					if (interaction.member === null) return;
 
 					const member = await guild.members.fetch(ownerId).catch(() => null);
-					if (member === null) throw new UserFacingError("I could not read your member profile to build a preview.");
+					if (member === null)
+						throw new UserFacingError(
+							botCopy(
+								"I could not read your member profile to build a preview.",
+								"تعذّر قراءة بيانات عضويتك لإنشاء المعاينة.",
+							),
+						);
 
 					const greeting = await greetingFor(member, config, await getWelcome(guild.id));
 					await interaction.reply({ ...greeting, flags: MessageFlags.Ephemeral });
@@ -120,13 +138,19 @@ export default recordsSettings(
 					if (config === null) return;
 
 					await saveWelcome(guild.id, { background: null });
-					await show({ ...config, hasBackground: false }, "Background removed. The card uses the default again.");
+					await show(
+						{ ...config, hasBackground: false },
+						botCopy(
+							"Background removed. The card uses the default again.",
+							"أُزيلت الخلفية المخصصة. تستخدم البطاقة الخلفية الافتراضية الآن.",
+						),
+					);
 					return;
 				}
 
 				case "off": {
 					await disableWelcome(guild.id);
-					await show(null, "Nobody will be greeted from now on.");
+					await show(null, botCopy("Nobody will be greeted from now on.", "عُطّل إرسال رسائل الترحيب."));
 					return;
 				}
 

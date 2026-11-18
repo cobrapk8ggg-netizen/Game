@@ -1,5 +1,6 @@
 import { spawnSync } from "node:child_process";
 import { delimiter, join } from "node:path";
+import { botCopy } from "@config/strings";
 import { repoRoot } from "@core/paths";
 import { type MusicBinaries } from "@lib/music/music.types";
 
@@ -161,22 +162,42 @@ export function statusLines(found: MusicBinaries, now = Date.now()): string[] {
 	const age = version === null ? null : ageInDays(version, now);
 
 	if (found.ytDlp === null) {
-		lines.push("✗ **yt-dlp** — not found. Run `npm run music:setup` on the host.");
+		lines.push(
+			botCopy(
+				"✗ **yt-dlp** — not found. Run `npm run music:setup` on the host.",
+				"✗ لم يُعثر على **yt-dlp**. شغّل `npm run music:setup` على الخادم.",
+			),
+		);
 	} else {
-		const aged = version === null ? "" : ` ${version}${age === null ? "" : ` (${String(age)} days old)`}`;
+		const aged =
+			version === null
+				? ""
+				: ` ${version}${age === null ? "" : botCopy(` (${String(age)} days old)`, ` (الأيام منذ صدور النسخة: ${String(age)})`)}`;
 		lines.push(`✓ **yt-dlp**${aged} — \`${found.ytDlp}\``);
 	}
 
-	lines.push(found.ffmpeg === null ? "✗ **FFmpeg** — not found" : `✓ **FFmpeg** — \`${found.ffmpeg}\``);
+	lines.push(
+		found.ffmpeg === null
+			? botCopy("✗ **FFmpeg** — not found", "✗ لم يُعثر على **FFmpeg**")
+			: `✓ **FFmpeg** — \`${found.ffmpeg}\``,
+	);
 
 	if (age !== null && age > STALE_AFTER_DAYS) {
 		lines.push(
-			"-# ⚠️ YouTube changes often, and an extractor this old is the usual cause of `HTTP Error 403`. Run `npm run music:setup` on the host, then restart the bot.",
+			botCopy(
+				"-# ⚠️ YouTube changes often, and an extractor this old is the usual cause of `HTTP Error 403`. Run `npm run music:setup` on the host, then restart the bot.",
+				"-# ⚠️ يتغيّر يوتيوب باستمرار. وغالبًا ما يتسبّب هذا الإصدار القديم من أداة التنزيل في الخطأ `HTTP Error 403`. شغّل `npm run music:setup` على الخادم ثم أعد تشغيل البوت.",
+			),
 		);
 	}
 
 	if (found.ffmpeg === null) {
-		lines.push("-# Without FFmpeg, tracks not already in Opus cannot play and the volume cannot be changed.");
+		lines.push(
+			botCopy(
+				"-# Without FFmpeg, tracks not already in Opus cannot play and the volume cannot be changed.",
+				"-# عند غياب FFmpeg، لا تعمل إلا المقاطع المرمّزة بصيغة Opus، ويتعذّر تغيير مستوى الصوت.",
+			),
+		);
 	}
 
 	return lines;

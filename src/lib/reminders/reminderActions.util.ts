@@ -1,6 +1,8 @@
 import { DiscordAPIError, RESTJSONErrorCodes } from "discord.js";
+import { botCopy } from "@config/strings";
 import { type TestifyClient } from "@core/client";
 import { UserFacingError } from "@core/errors";
+import { durationIn } from "@core/language";
 import { countReminders, createReminder, type StoredReminder } from "@database/repositories/reminderRepository";
 import { parseDuration } from "@lib/format/duration.util";
 import { formatDurationLong } from "@lib/format/format.util";
@@ -12,12 +14,28 @@ import { sanitiseText } from "@testify/shared";
 export function reminderDelay(input: string): number {
 	const delay = parseDuration(input);
 
-	if (delay === null) throw new UserFacingError("Say when as a length of time, such as `10m`, `2h` or `3d`.");
+	if (delay === null)
+		throw new UserFacingError(
+			botCopy(
+				"Say when as a length of time, such as `10m`, `2h` or `3d`.",
+				"أدخل مدة مثل `10m` أو `2h` أو `3d` لتحديد موعد التذكير.",
+			),
+		);
 	if (delay < REMINDER_LIMITS.minMs) {
-		throw new UserFacingError(`A reminder has to be at least ${formatDurationLong(REMINDER_LIMITS.minMs)} away.`);
+		throw new UserFacingError(
+			botCopy(
+				`A reminder has to be at least ${formatDurationLong(REMINDER_LIMITS.minMs)} away.`,
+				`الحد الأدنى للمدة قبل التذكير: ${durationIn("ar", REMINDER_LIMITS.minMs)}.`,
+			),
+		);
 	}
 	if (delay > REMINDER_LIMITS.maxMs) {
-		throw new UserFacingError(`A reminder can be at most ${formatDurationLong(REMINDER_LIMITS.maxMs)} away.`);
+		throw new UserFacingError(
+			botCopy(
+				`A reminder can be at most ${formatDurationLong(REMINDER_LIMITS.maxMs)} away.`,
+				`الحد الأقصى للمدة قبل التذكير: ${durationIn("ar", REMINDER_LIMITS.maxMs)}.`,
+			),
+		);
 	}
 
 	return delay;
@@ -26,9 +44,14 @@ export function reminderDelay(input: string): number {
 export function reminderText(input: string): string {
 	const value = sanitiseText(input);
 
-	if (value === "") throw new UserFacingError("Say what to remind you of.");
+	if (value === "") throw new UserFacingError(botCopy("Say what to remind you of.", "اكتب نص التذكير."));
 	if (value.length > REMINDER_LIMITS.maxText) {
-		throw new UserFacingError(`Keep a reminder under ${String(REMINDER_LIMITS.maxText)} characters.`);
+		throw new UserFacingError(
+			botCopy(
+				`Keep a reminder under ${String(REMINDER_LIMITS.maxText)} characters.`,
+				`الحد الأقصى لطول نص التذكير ${String(REMINDER_LIMITS.maxText)} حرفًا.`,
+			),
+		);
 	}
 
 	return value;
@@ -47,7 +70,10 @@ export async function setReminder(request: {
 
 	if ((await countReminders(request.userId)) >= REMINDER_LIMITS.maxActive) {
 		throw new UserFacingError(
-			`You already have ${String(REMINDER_LIMITS.maxActive)} reminders. Cancel one with \`/remind list\` first.`,
+			botCopy(
+				`You already have ${String(REMINDER_LIMITS.maxActive)} reminders. Cancel one with \`/remind list\` first.`,
+				`لديك ${String(REMINDER_LIMITS.maxActive)} تذكيرًا بالفعل. ألغِ أحدها أولًا من \`/remind list\`.`,
+			),
 		);
 	}
 

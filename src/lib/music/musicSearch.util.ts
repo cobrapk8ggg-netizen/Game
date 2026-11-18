@@ -1,5 +1,6 @@
+import { botCopy } from "@config/strings";
 import { formatClock, truncate } from "@lib/format/format.util";
-import { CHOICE_MAX, MUSIC_SOURCE_NAMES } from "@lib/music/music.constants";
+import { CHOICE_MAX, musicSourceName } from "@lib/music/music.constants";
 import { type Track } from "@lib/music/music.types";
 
 /** Feeding `/play`'s autocomplete without spawning a process for every keystroke. */
@@ -24,9 +25,9 @@ export interface Choice {
 export function choiceFor(track: Track, labelled = false): Choice | null {
 	if (track.url.length > CHOICE_MAX) return null;
 
-	const length = track.durationMs === null ? "live" : formatClock(track.durationMs);
+	const length = track.durationMs === null ? botCopy("live", "مباشر") : formatClock(track.durationMs);
 	const author = track.author === null ? "" : ` · ${track.author}`;
-	const tag = labelled ? MUSIC_SOURCE_NAMES[track.source] : undefined;
+	const tag = labelled ? musicSourceName(track.source) : undefined;
 	const name = truncate(`${tag === undefined ? "" : `${tag} · `}${track.title}${author} (${length})`, CHOICE_MAX);
 
 	return { name, value: track.url };
@@ -48,7 +49,10 @@ export function interleave<T>(lists: T[][]): T[] {
 
 /** The row offered when there is nothing better: pressing enter searches for exactly what was typed. */
 export function literalChoice(query: string): Choice {
-	return { name: truncate(`Search for “${query}”`, CHOICE_MAX), value: truncate(query, CHOICE_MAX) };
+	return {
+		name: truncate(botCopy(`Search for “${query}”`, `ابحث عن «${query}»`), CHOICE_MAX),
+		value: truncate(query, CHOICE_MAX),
+	};
 }
 
 export function shouldSearch(query: string): boolean {

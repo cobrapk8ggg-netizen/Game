@@ -1,4 +1,5 @@
 import { type GuildMember, PermissionFlagsBits } from "discord.js";
+import { botCopy } from "@config/strings";
 import { type ComponentInteraction, defineButton } from "@core/button";
 import { UserFacingError } from "@core/errors";
 import {
@@ -28,7 +29,12 @@ const SYSTEM_ACTIONS = new Set(["system-on", "system-off", "djroles"]);
 function requireManager(member: GuildMember): void {
 	if (member.permissions.has(PermissionFlagsBits.ManageGuild)) return;
 
-	throw new UserFacingError("You need the Manage Server permission to change the music system.");
+	throw new UserFacingError(
+		botCopy(
+			"You need the Manage Server permission to change the music system.",
+			"تحتاج إلى صلاحية إدارة الخادم لتغيير إعدادات الموسيقى.",
+		),
+	);
 }
 
 async function runSystemAction(interaction: ComponentInteraction, action: string): Promise<void> {
@@ -44,11 +50,14 @@ async function runSystemAction(interaction: ComponentInteraction, action: string
 
 		const djRoleIds = interaction.values.slice(0, MUSIC_LIMITS.maxDjRoles);
 		await applyMusicSettings(guild.id, { djRoleIds }, interaction.user.id);
-		note = djRoleIds.length === 0 ? "Opened the player up to everybody." : "Updated the DJ roles.";
+		note =
+			djRoleIds.length === 0
+				? botCopy("Opened the player up to everybody.", "المشغّل متاح الآن لجميع الأعضاء.")
+				: botCopy("Updated the DJ roles.", "حدّثتُ رتب التحكّم بالمشغّل.");
 	} else {
 		const enabled = action === "system-on";
 		await applyMusicSettings(guild.id, { enabled }, interaction.user.id);
-		note = enabled ? "Music is on." : "Music is off.";
+		note = enabled ? botCopy("Music is on.", "نظام الموسيقى مفعّل.") : botCopy("Music is off.", "نظام الموسيقى معطّل.");
 	}
 
 	await interaction.update(musicSystemPanel(await readMusicSettings(guild.id), interaction.user.id, note));
@@ -86,9 +95,13 @@ export default recordsSettings(
 					note = resumePlayer(session);
 					break;
 				case "previous": {
-					if (session.queue.tracks.length === 0) throw new UserFacingError("Nothing has been played yet.");
+					if (session.queue.tracks.length === 0)
+						throw new UserFacingError(botCopy("Nothing has been played yet.", "لم يُشغَّل أي مقطع بعد."));
 					session.previous();
-					note = session.queue.index === 0 ? "Started this one again." : "Back a track.";
+					note =
+						session.queue.index === 0
+							? botCopy("Started this one again.", "أعدتُ تشغيل المقطع من بدايته.")
+							: botCopy("Back a track.", "عدتُ إلى المقطع السابق.");
 					break;
 				}
 				case "skip":

@@ -1,3 +1,4 @@
+import { botCopy } from "@config/strings";
 import { defineButton } from "@core/button";
 import { UserFacingError } from "@core/errors";
 import {
@@ -7,6 +8,12 @@ import {
 	setReminderDelivery,
 } from "@database/repositories/reminderRepository";
 import { canPingHere, REMINDER_ID, reminderCancelled, reminderConfirm, reminderList } from "@lib/reminders";
+
+function expiredReminder(): UserFacingError {
+	return new UserFacingError(
+		botCopy("That reminder has already gone off or been cancelled.", "أُرسل هذا التذكير أو أُلغي بالفعل."),
+	);
+}
 
 export default defineButton({
 	id: REMINDER_ID,
@@ -21,11 +28,11 @@ export default defineButton({
 		switch (context.action) {
 			case "deliver": {
 				const reminder = await findReminder(ownerId, reminderId);
-				if (reminder === null) throw new UserFacingError("That reminder has already gone off or been cancelled.");
+				if (reminder === null) throw expiredReminder();
 				if (!canPingHere(reminder)) return;
 
 				const changed = await setReminderDelivery(ownerId, reminderId, reminder.deliver === "dm" ? "channel" : "dm");
-				if (changed === null) throw new UserFacingError("That reminder has already gone off or been cancelled.");
+				if (changed === null) throw expiredReminder();
 
 				await interaction.update(reminderConfirm(changed, ownerId));
 				return;
@@ -34,7 +41,7 @@ export default defineButton({
 			case "cancel": {
 				const reminder = await findReminder(ownerId, reminderId);
 				if (reminder === null || !(await cancelReminder(ownerId, reminderId))) {
-					throw new UserFacingError("That reminder has already gone off or been cancelled.");
+					throw expiredReminder();
 				}
 
 				await interaction.update(reminderCancelled(reminder));
@@ -43,7 +50,9 @@ export default defineButton({
 
 			case "drop": {
 				const cancelled = await cancelReminder(ownerId, reminderId);
-				const note = cancelled ? "Cancelled." : "That one had already gone off.";
+				const note = cancelled
+					? botCopy("Cancelled.", "أُلغي التذكير.")
+					: botCopy("That one had already gone off.", "سبق إرسال ذلك التذكير.");
 
 				await interaction.update(reminderList(await listReminders(ownerId), Number(page), ownerId, note));
 				return;

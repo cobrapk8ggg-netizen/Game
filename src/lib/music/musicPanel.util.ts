@@ -1,5 +1,7 @@
 import { ButtonStyle } from "discord.js";
+import { botCopy } from "@config/strings";
 import { customId } from "@core/button";
+import { durationIn } from "@core/language";
 import { button, row } from "@lib/discord/components.util";
 import {
 	container,
@@ -13,10 +15,12 @@ import { type ContainerMessage, type ContainerPart } from "@lib/discord/discord.
 import { formatClock, formatDuration, truncate } from "@lib/format/format.util";
 import {
 	MAX_VOLUME,
+	loopModeName,
 	MIN_VOLUME,
 	MUSIC_ADD_ID,
 	MUSIC_ID,
 	MUSIC_SOURCE_NAMES,
+	musicSourceName,
 	UNITY_VOLUME,
 	VOLUME_STEP,
 } from "@lib/music/music.constants";
@@ -65,7 +69,7 @@ export function link(label: string, url: string): string {
 }
 
 export function trackLine(track: Track): string {
-	const length = track.durationMs === null ? "live" : formatClock(track.durationMs);
+	const length = track.durationMs === null ? botCopy("live", "مباشر") : formatClock(track.durationMs);
 	const author = track.author === null ? "" : ` — ${truncate(track.author, 30)}`;
 
 	return `**${truncate(track.title, TITLE_MAX)}**${author} \`${length}\``;
@@ -88,13 +92,19 @@ export function musicBar(playedMs: number, durationMs: number, cells = BAR_CELLS
 
 /** The elapsed/total line, or nothing for a stream with no end; a paused track says so rather than counting down. */
 export function progressLine(track: Track, playedMs: number, now = Date.now(), paused = false): string {
-	if (track.durationMs === null) return paused ? "`🔴 live`\n-# ⏸️ Paused" : "`🔴 live`";
+	if (track.durationMs === null)
+		return paused
+			? botCopy("`🔴 live`\n-# ⏸️ Paused", "🔴 **بث مباشر**\n-# ⏸️ متوقف مؤقتًا")
+			: botCopy("`🔴 live`", "🔴 **بث مباشر**");
 
 	const played = Math.min(playedMs, track.durationMs);
 	const endsAt = Math.round((now + track.durationMs - played) / 1_000);
 	const when = paused
-		? `-# ⏸️ Paused · ${formatClock(track.durationMs - played)} left`
-		: `-# Ends <t:${String(endsAt)}:R>`;
+		? botCopy(
+				`-# ⏸️ Paused · ${formatClock(track.durationMs - played)} left`,
+				`-# ⏸️ متوقف مؤقتًا · الوقت المتبقي ${formatClock(track.durationMs - played)}`,
+			)
+		: botCopy(`-# Ends <t:${String(endsAt)}:R>`, `-# ينتهي <t:${String(endsAt)}:R>`);
 
 	return [
 		`\`${formatClock(played)} ${musicBar(played, track.durationMs)} ${formatClock(track.durationMs)}\``,
@@ -102,14 +112,12 @@ export function progressLine(track: Track, playedMs: number, now = Date.now(), p
 	].join("\n");
 }
 
-const LOOP_WORDS = { off: "off", track: "track", queue: "queue" } as const;
-
 /** Level, repeat and who asked for it, on one line so the bar above it stays uncluttered. */
 export function statusLine(state: PanelState, track: Track): string {
 	const volume = clampVolume(state.volume ?? UNITY_VOLUME);
 	const parts = [
-		state.canSetVolume === true ? `🔊 ${String(volume)}%` : "🔊 track level",
-		`🔁 ${LOOP_WORDS[state.queue.loop]}`,
+		state.canSetVolume === true ? `🔊 ${String(volume)}%` : botCopy("🔊 track level", "🔊 مستوى الصوت الأصلي"),
+		`🔁 ${loopModeName(state.queue.loop)}`,
 		`👤 <@${track.requestedBy}>`,
 	];
 
@@ -118,12 +126,19 @@ export function statusLine(state: PanelState, track: Track): string {
 
 function queueSummary(state: QueueState): string {
 	const upcoming = state.tracks.slice(state.index + 1);
-	if (upcoming.length === 0) return "-# Nothing queued after this.";
+	if (upcoming.length === 0)
+		return botCopy("-# Nothing queued after this.", "-# لا مقاطع في قائمة الانتظار بعد هذا المقطع.");
 
 	const total = totalDurationMs(upcoming);
-	const length = total === null ? "some of it live" : formatDuration(total);
+	const length =
+		total === null
+			? botCopy("some of it live", "تتضمّن القائمة بثًا مباشرًا")
+			: botCopy(formatDuration(total), durationIn("ar", total));
 
-	return `**Up next** · ${String(upcoming.length)} queued · ${length}`;
+	return botCopy(
+		`**Up next** · ${String(upcoming.length)} queued · ${length}`,
+		`**قائمة الانتظار** · عدد المقاطع: ${String(upcoming.length)} · ${length}`,
+	);
 }
 
 const LOOP_LABELS = { off: "Loop: off", track: "Loop: track", queue: "Loop: queue" } as const;
@@ -132,7 +147,7 @@ const LOOP_LABELS = { off: "Loop: off", track: "Loop: track", queue: "Loop: queu
 function addButton(): ReturnType<typeof button> {
 	return button({
 		id: customId(MUSIC_ADD_ID, "open"),
-		label: "Add to queue",
+		label: botCopy("Add to queue", "إضافة إلى قائمة الانتظار"),
 		emoji: "➕",
 		style: ButtonStyle.Primary,
 	});
@@ -144,27 +159,32 @@ function transport(state: PanelState, userId: string): ContainerPart {
 	return row(
 		button({
 			id: customId(MUSIC_ID, "previous", userId),
-			label: "Previous",
+			label: botCopy("Previous", "السابق"),
 			emoji: "⏮️",
 			disabled: state.queue.tracks.length === 0,
 		}),
 		button({
 			id: customId(MUSIC_ID, state.paused ? "resume" : "pause", userId),
-			label: state.paused ? "Resume" : "Pause",
+			label: state.paused ? botCopy("Resume", "استئناف") : botCopy("Pause", "إيقاف مؤقت"),
 			emoji: state.paused ? "▶️" : "⏸️",
 			style: state.paused ? ButtonStyle.Success : ButtonStyle.Secondary,
 			disabled: !playing,
 		}),
-		button({ id: customId(MUSIC_ID, "skip", userId), label: "Skip", emoji: "⏭️", disabled: !playing }),
+		button({
+			id: customId(MUSIC_ID, "skip", userId),
+			label: botCopy("Skip", "تخطٍّ"),
+			emoji: "⏭️",
+			disabled: !playing,
+		}),
 		button({
 			id: customId(MUSIC_ID, "loop", userId),
-			label: LOOP_LABELS[state.queue.loop],
+			label: botCopy(LOOP_LABELS[state.queue.loop], `التكرار: ${loopModeName(state.queue.loop)}`),
 			emoji: "🔁",
 			style: state.queue.loop === "off" ? ButtonStyle.Secondary : ButtonStyle.Primary,
 		}),
 		button({
 			id: customId(MUSIC_ID, "stop", userId),
-			label: "Stop",
+			label: botCopy("Stop", "إيقاف"),
 			emoji: "⏹️",
 			style: ButtonStyle.Danger,
 			disabled: !playing,
@@ -185,7 +205,7 @@ function extras(state: PanelState, userId: string): ContainerPart {
 		addButton(),
 		button({
 			id: customId(MUSIC_ID, "shuffle", userId),
-			label: "Shuffle",
+			label: botCopy("Shuffle", "ترتيب عشوائي"),
 			emoji: "🔀",
 			disabled: state.queue.tracks.length - state.queue.index < 3,
 		}),
@@ -201,7 +221,7 @@ function extras(state: PanelState, userId: string): ContainerPart {
 			emoji: "🔊",
 			disabled: !adjustable || volume >= MAX_VOLUME,
 		}),
-		button({ id: customId(MUSIC_ID, "refresh", userId), label: "Refresh", emoji: "🔄" }),
+		button({ id: customId(MUSIC_ID, "refresh", userId), label: botCopy("Refresh", "تحديث"), emoji: "🔄" }),
 	);
 }
 
@@ -212,18 +232,21 @@ function paging(state: PanelState, pageCount: number, userId: string): Container
 		row(
 			button({
 				id: customId(MUSIC_ID, "page", String(state.page - 1), userId),
-				label: "Previous page",
+				label: botCopy("Previous page", "الصفحة السابقة"),
 				disabled: state.page <= 0,
 			}),
 			// Its own page number, because two buttons in one message may not share a custom ID.
 			button({
 				id: customId(MUSIC_ID, "page", String(state.page), userId),
-				label: `Page ${String(state.page + 1)}/${String(pageCount)}`,
+				label: botCopy(
+					`Page ${String(state.page + 1)}/${String(pageCount)}`,
+					`الصفحة ${String(state.page + 1)} من ${String(pageCount)}`,
+				),
 				disabled: true,
 			}),
 			button({
 				id: customId(MUSIC_ID, "page", String(state.page + 1), userId),
-				label: "Next page",
+				label: botCopy("Next page", "الصفحة التالية"),
 				disabled: state.page >= pageCount - 1,
 			}),
 		),
@@ -232,7 +255,11 @@ function paging(state: PanelState, pageCount: number, userId: string): Container
 
 export function musicPanel(state: PanelState, userId: string): ContainerMessage {
 	const track = currentTrack(state.queue);
-	const parts: ContainerPart[] = [text(state.paused ? "## ⏸️ Paused" : "## 🎵 Now playing")];
+	const parts: ContainerPart[] = [
+		text(
+			state.paused ? botCopy("## ⏸️ Paused", "## ⏸️ متوقف مؤقتًا") : botCopy("## 🎵 Now playing", "## 🎵 قيد التشغيل"),
+		),
+	];
 
 	if (state.note !== undefined) parts.push(text(`-# ${state.note}`));
 
@@ -241,8 +268,14 @@ export function musicPanel(state: PanelState, userId: string): ContainerMessage 
 		parts.push(
 			text(
 				finished
-					? "The queue has finished. Add a song to keep going."
-					: "Nothing is playing. Add a song, or use `/play`.",
+					? botCopy(
+							"The queue has finished. Add a song to keep going.",
+							"انتهت قائمة الانتظار. أضف مقطعًا لمواصلة الاستماع.",
+						)
+					: botCopy(
+							"Nothing is playing. Add a song, or use `/play`.",
+							"لا يُشغَّل أي مقطع الآن. أضف مقطعًا أو استخدم `/play`.",
+						),
 			),
 			row(
 				addButton(),
@@ -250,7 +283,7 @@ export function musicPanel(state: PanelState, userId: string): ContainerMessage 
 					? [
 							button({
 								id: customId(MUSIC_ID, "previous", userId),
-								label: "Play the last one again",
+								label: botCopy("Play the last one again", "إعادة تشغيل آخر مقطع"),
 								emoji: "⏮️",
 							}),
 						]
@@ -267,11 +300,11 @@ export function musicPanel(state: PanelState, userId: string): ContainerMessage 
 		parts.push(track.thumbnail === null ? text(headline) : sectionWithThumbnail(headline, track.thumbnail));
 	} else {
 		// The card carries the title and artist, so the text under it keeps only the live parts and the way out.
-		const author = track.author === null ? "" : ` by ${track.author}`;
+		const author = track.author === null ? "" : botCopy(` by ${track.author}`, ` من أداء ${track.author}`);
 		parts.push(
-			gallery(state.card, `Now playing: ${track.title}${author}`),
+			gallery(state.card, botCopy(`Now playing: ${track.title}${author}`, `قيد التشغيل: ${track.title}${author}`)),
 			text(
-				`${progress}\n-# ${SOURCE_EMOJI[track.source]} ${link(`Open on ${MUSIC_SOURCE_NAMES[track.source]}`, track.url)}`,
+				`${progress}\n-# ${SOURCE_EMOJI[track.source]} ${link(botCopy(`Open on ${MUSIC_SOURCE_NAMES[track.source]}`, `فتح على ${musicSourceName(track.source)}`), track.url)}`,
 			),
 		);
 	}

@@ -1,9 +1,10 @@
 import { type AttachmentBuilder, type EmbedBuilder, type GuildMember } from "discord.js";
+import { botCopy } from "@config/strings";
 import { type WelcomeSettings } from "@database/models/welcome.schema";
 import { renderWelcomeCard } from "@lib/canvas/welcomeCard.util";
 import { embed } from "@lib/discord/embeds.util";
 import { type WelcomeConfig } from "@lib/welcome/welcome.types";
-import { fillTemplate } from "@lib/welcome/welcome.util";
+import { fillTemplate, welcomeMessage } from "@lib/welcome/welcome.util";
 
 /** The greeting, built once for the join event, the Preview button and `/welcome test`. */
 
@@ -19,7 +20,7 @@ export async function greetingFor(
 	config: Pick<WelcomeConfig, "message" | "style">,
 	settings: Pick<WelcomeSettings, "background"> | null,
 ): Promise<Greeting> {
-	const message = fillTemplate(config.message, {
+	const message = fillTemplate(welcomeMessage(config.message), {
 		mention: `<@${member.id}>`,
 		username: member.user.username,
 		serverName: member.guild.name,
@@ -36,7 +37,7 @@ export async function greetingFor(
 			embeds: [
 				embed({
 					category: "community",
-					title: `Welcome to ${member.guild.name}`,
+					title: botCopy(`Welcome to ${member.guild.name}`, `مرحبًا بك في ${member.guild.name}`),
 					description: message,
 					thumbnail: member.user.displayAvatarURL({ size: 256 }),
 				}),

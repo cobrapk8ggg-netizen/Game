@@ -1,5 +1,6 @@
 import { ButtonStyle } from "discord.js";
 import { type Category } from "@config/categories";
+import { botCopy } from "@config/strings";
 import { customId } from "@core/button";
 import { button, row } from "@lib/discord/components.util";
 import { container, containerMessage, divider, sectionWithButton, text } from "@lib/discord/containers.util";
@@ -22,7 +23,7 @@ export interface ScreenAction {
 export function switchAction(enabled: boolean, ready?: boolean): ScreenAction {
 	return {
 		action: "toggle",
-		label: enabled ? "Turn off" : "Turn on",
+		label: enabled ? botCopy("Turn off", "تعطيل") : botCopy("Turn on", "تفعيل"),
 		style: enabled ? ButtonStyle.Danger : ButtonStyle.Success,
 		...(ready === undefined ? {} : { disabled: !enabled && !ready }),
 	};
@@ -119,15 +120,15 @@ export function settingsScreen(options: SettingsScreenOptions): ContainerMessage
 
 /** `🟢 On` / `🔴 Off`, so status reads at a glance rather than as a word. */
 export function statusDot(enabled: boolean): string {
-	return enabled ? "🟢 On" : "🔴 Off";
+	return enabled ? botCopy("🟢 On", "🟢 مفعّل") : botCopy("🔴 Off", "🔴 معطّل");
 }
 
 /** A channel mention, or a plain "not set" — never an empty cell. */
 export function channelValue(channelId: string | null | undefined): string {
-	return channelId === null || channelId === undefined ? "_Not set_" : `<#${channelId}>`;
+	return channelId === null || channelId === undefined ? botCopy("_Not set_", "_لم يُحدّد بعد_") : `<#${channelId}>`;
 }
 
 /** A role mention list, or a plain "none". */
 export function roleValue(roleIds: readonly string[]): string {
-	return roleIds.length === 0 ? "_None_" : roleIds.map((id) => `<@&${id}>`).join(" ");
+	return roleIds.length === 0 ? botCopy("_None_", "_لا يوجد_") : roleIds.map((id) => `<@&${id}>`).join(" ");
 }

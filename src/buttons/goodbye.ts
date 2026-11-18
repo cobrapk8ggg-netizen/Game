@@ -1,4 +1,5 @@
 import { MessageFlags, PermissionFlagsBits } from "discord.js";
+import { botCopy } from "@config/strings";
 import { defineButton } from "@core/button";
 import { UserFacingError } from "@core/errors";
 import { modalForm, pickedChannelId } from "@lib/discord";
@@ -20,7 +21,12 @@ export default recordsSettings(
 			if (guild === null) return;
 
 			if (interaction.memberPermissions?.has(PermissionFlagsBits.ManageGuild) !== true) {
-				throw new UserFacingError("You need the Manage Server permission to change the goodbye message.");
+				throw new UserFacingError(
+					botCopy(
+						"You need the Manage Server permission to change the goodbye message.",
+						"تحتاج إلى صلاحية «إدارة الخادم» لتعديل رسالة الوداع.",
+					),
+				);
 			}
 
 			const ownerId = interaction.user.id;
@@ -32,11 +38,11 @@ export default recordsSettings(
 						id: GOODBYE_PANEL_ID,
 						action: "save-message",
 						args: [ownerId],
-						title: "Goodbye message",
+						title: botCopy("Goodbye message", "رسالة الوداع"),
 						fields: [
 							{
 								id: "message",
-								label: "The message",
+								label: botCopy("The message", "نص الرسالة"),
 								value: current.message,
 								paragraph: true,
 								maxLength: WELCOME_LIMITS.maxMessage,
@@ -49,7 +55,8 @@ export default recordsSettings(
 
 			if (interaction.isButton() && context.action === "preview") {
 				const member = await guild.members.fetch(interaction.user.id).catch(() => null);
-				if (member === null) throw new UserFacingError("I could not read your member profile.");
+				if (member === null)
+					throw new UserFacingError(botCopy("I could not read your member profile.", "تعذّرت قراءة بيانات عضويتك."));
 
 				await interaction.reply({ ...farewellFor(member, current), flags: MessageFlags.Ephemeral });
 				return;
@@ -60,14 +67,15 @@ export default recordsSettings(
 
 			if (interaction.isModalSubmit() && context.action === "save-message") {
 				const message = sanitiseText(interaction.fields.getTextInputValue("message"));
-				if (message === "") throw new UserFacingError("Write something for the goodbye to say.");
+				if (message === "")
+					throw new UserFacingError(botCopy("Write something for the goodbye to say.", "اكتب نص رسالة الوداع."));
 				settings = await applyGoodbye(guild, { message }, ownerId);
 				note = "The goodbye message is saved.";
 			} else if (interaction.isChannelSelectMenu() && context.action === "channel") {
 				const channelId = await pickedChannelId(interaction, guild);
 				if (channelId === null) return;
 				settings = await applyGoodbye(guild, { channelId }, ownerId);
-				note = `Goodbyes will be posted in <#${channelId}>.`;
+				note = botCopy(`Goodbyes will be posted in <#${channelId}>.`, `ستُرسل رسائل الوداع في <#${channelId}>.`);
 			} else if (interaction.isButton() && context.action === "style") {
 				const style = context.args[0];
 				if (!isStyle(style)) return;
@@ -75,7 +83,9 @@ export default recordsSettings(
 				note = style === "embed" ? "The goodbye is sent as an embed." : "The goodbye is sent as a plain message.";
 			} else if (interaction.isButton() && context.action === "toggle") {
 				settings = await applyGoodbye(guild, { enabled: !current.enabled }, ownerId);
-				note = settings.enabled ? "Goodbye messages are on." : "Goodbye messages are off.";
+				note = settings.enabled
+					? botCopy("Goodbye messages are on.", "فُعّلت رسائل الوداع.")
+					: botCopy("Goodbye messages are off.", "عُطّلت رسائل الوداع.");
 			} else {
 				return;
 			}

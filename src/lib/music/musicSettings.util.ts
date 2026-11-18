@@ -1,3 +1,4 @@
+import { botCopy } from "@config/strings";
 import {
 	getMusicSettings,
 	saveMusicSettings,
@@ -31,12 +32,18 @@ export function musicRefusal(
 	member: { roleIds: readonly string[]; manager: boolean },
 ): string | null {
 	if (!settings.enabled) {
-		return "The music system is switched off in this server. Anybody with Manage Server can turn it back on with `/music system`.";
+		return botCopy(
+			"The music system is switched off in this server. Anybody with Manage Server can turn it back on with `/music system`.",
+			"نظام الموسيقى معطّل في هذا الخادم. يمكن لمن لديه صلاحية إدارة الخادم تفعيله بالأمر `/music system`.",
+		);
 	}
 
 	if (member.manager || isDj(settings, member.roleIds)) return null;
 
-	return "You need a DJ role to use the music commands here. Ask somebody with Manage Server which role that is.";
+	return botCopy(
+		"You need a DJ role to use the music commands here. Ask somebody with Manage Server which role that is.",
+		"تحتاج إلى رتبة تخوّلك استخدام أوامر الموسيقى هنا. اسأل أحد الحاصلين على صلاحية إدارة الخادم عن الرتبة المطلوبة.",
+	);
 }
 
 export async function readMusicSettings(guildId: string): Promise<MusicSettings> {

@@ -11,6 +11,7 @@ import {
 	VoiceConnectionStatus,
 } from "@discordjs/voice";
 import { AttachmentBuilder, type Guild, type VoiceBasedChannel } from "discord.js";
+import { botCopy } from "@config/strings";
 import { toError } from "@core/errors";
 import { type Logger } from "@core/logger";
 import { fetchArtwork, MUSIC_CARD_NAME, renderMusicCard } from "@lib/canvas/musicCard.util";
@@ -33,7 +34,7 @@ import {
 } from "@lib/music/music.types";
 import { clampVolume, planStream } from "@lib/music/musicFormat.util";
 import { musicPanel, type PanelState } from "@lib/music/musicPanel.util";
-import { aboutTheTrack, classifyProblem } from "@lib/music/musicProblem.util";
+import { aboutTheTrack, classifyProblem, problemAdvice } from "@lib/music/musicProblem.util";
 import { currentTrack, decideOnIdle, endedEarly, finished } from "@lib/music/musicQueue.util";
 import { describeTrack, forgetDescription, openStream } from "@lib/music/musicSource.util";
 
@@ -280,7 +281,7 @@ export class MusicSession {
 		}
 
 		if (failure !== null) {
-			this.#notify(`Skipped **${track.title}** — ${failure}`);
+			this.#notify(botCopy(`Skipped **${track.title}** — ${failure}`, `تخطّيتُ **${track.title}**. ${failure}`));
 			this.#emit({ kind: "failed", track, reason: failure });
 			await this.#advancePast();
 			return;
@@ -328,7 +329,9 @@ export class MusicSession {
 		// Given up on: the panel is the only place anybody in the channel would find out why.
 		if (brokeEarly && track !== null) {
 			this.#warnGaveUp(track, problem);
-			this.#notify(`Skipped **${track.title}** — ${problem?.advice ?? "the stream kept breaking."}`);
+			const reason =
+				problem === null ? botCopy("the stream kept breaking.", "تكرّر انقطاع البث.") : problemAdvice(problem);
+			this.#notify(botCopy(`Skipped **${track.title}** — ${reason}`, `تخطّيتُ **${track.title}**. ${reason}`));
 			this.#emit({ kind: "failed", track, reason: problem?.advice ?? "the stream kept breaking" });
 		}
 
@@ -374,14 +377,14 @@ export class MusicSession {
 
 		if (known !== null && aboutTheTrack(known)) {
 			this.#logger.debug({ guildId: this.guildId, track: track.url }, `[MUSIC] Skipped a track: ${known.kind}.`);
-			return known.advice;
+			return problemAdvice(known);
 		}
 
 		this.#logger.warn(
 			{ err: toError(error), guildId: this.guildId },
 			"[MUSIC] A track could not be opened. Moving on.",
 		);
-		return "it could not be opened.";
+		return botCopy("it could not be opened.", "تعذّر فتح المقطع.");
 	}
 
 	#notify(text: string, now = Date.now()): void {

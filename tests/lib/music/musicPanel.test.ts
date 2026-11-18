@@ -1,3 +1,4 @@
+import { setBotCopyLanguage } from "@config/strings";
 import { parseCustomId } from "@core/button";
 import { MAX_VOLUME, MIN_VOLUME, MUSIC_ADD_ID, MUSIC_ID } from "@lib/music/music.constants";
 import { type QueueState, type Track } from "@lib/music/music.types";
@@ -65,6 +66,23 @@ function componentCount(panel: ReturnType<typeof musicPanel>): number {
 }
 
 describe("musicPanel", () => {
+	it("uses Arabic for playback text and controls while preserving track names", () => {
+		const playing = state();
+		playing.queue = { ...playing.queue, tracks: [track("A Track", { durationMs: null }), track("Another Track")] };
+		setBotCopyLanguage("ar");
+		try {
+			const panel = musicPanel(playing, OWNER);
+			const copy = textOf(panel);
+			expect(copy).toContain("قيد التشغيل");
+			expect(copy).toContain("بث مباشر");
+			expect(copy).toContain("A Track");
+			expect(copy).not.toMatch(/playing|live|queued|level|Up next/i);
+			expect(labels(panel).filter((label) => /[A-Za-z]/.test(label))).toEqual([]);
+		} finally {
+			setBotCopyLanguage("en");
+		}
+	});
+
 	/** A finished queue used to keep its last song on show as though it were still playing. */
 	it("says the queue has finished, and offers the last song again", () => {
 		const done = musicPanel(state({ queue: { tracks: [track("a")], index: 1, loop: "off" } }), OWNER);

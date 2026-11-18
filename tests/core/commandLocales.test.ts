@@ -129,6 +129,34 @@ describe("the command menus in other languages", () => {
 		);
 	});
 
+	it("registers Arabic labels for every built-in choice and keeps its original value", () => {
+		const labels = JSON.parse(readFileSync(assetPath("locales", "commands", "ar.choices.json"), "utf8")) as Record<
+			string,
+			string
+		>;
+		const expected = new Set<string>();
+
+		for (const command of client.commands.values()) {
+			if (command.ownerOnly === true) continue;
+			const built = buildSlashCommand(command, undefined, arabicDescription).toJSON();
+			for (const option of built.options ?? []) {
+				const nested = "options" in option ? (option.options ?? []) : [option];
+				const path = "options" in option ? `${command.name} ${option.name}` : command.name;
+				for (const entry of nested) {
+					if (!("choices" in entry)) continue;
+					for (const choice of entry.choices ?? []) {
+						const key = `${path} --${entry.name}=${String(choice.value)}`;
+						expected.add(key);
+						expect({ key, label: choice.name }).toEqual({ key, label: labels[key] });
+						expect(choice.name).toMatch(/\p{Script=Arabic}/u);
+					}
+				}
+			}
+		}
+
+		expect([...expected].sort()).toEqual(Object.keys(labels).sort());
+	});
+
 	it("registers English alone when nothing is translated", () => {
 		expect(buildSlashCommand(client.commands.get("warn")!).toJSON().description_localizations).toBeNull();
 	});

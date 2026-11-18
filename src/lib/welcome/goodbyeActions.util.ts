@@ -1,4 +1,5 @@
 import { type Guild, type GuildMember, type MessageCreateOptions, type PartialGuildMember } from "discord.js";
+import { botCopy } from "@config/strings";
 import { type TestifyClient } from "@core/client";
 import { toError, UserFacingError } from "@core/errors";
 import { getGoodbyeSettings, saveGoodbyeSettings } from "@database/repositories/goodbyeRepository";
@@ -8,6 +9,12 @@ import { DEFAULT_GOODBYE_MESSAGE, fillTemplate, type GoodbyePatch, type GoodbyeS
 
 /** Saying goodbye when somebody leaves: the settings, and the one message the event, the preview and the dashboard share. */
 
+function goodbyeMessage(message: string): string {
+	return message === DEFAULT_GOODBYE_MESSAGE
+		? botCopy(message, "غادر **{username}** خادم **{server}**. عدد الأعضاء الآن: **{count}**.")
+		: message;
+}
+
 export async function readGoodbye(guild: Guild): Promise<GoodbyeSettings> {
 	const stored = await getGoodbyeSettings(guild.id);
 	const channelId = stored?.channelId ?? null;
@@ -15,7 +22,7 @@ export async function readGoodbye(guild: Guild): Promise<GoodbyeSettings> {
 	return {
 		enabled: stored?.enabled ?? false,
 		channelId,
-		message: stored?.message ?? DEFAULT_GOODBYE_MESSAGE,
+		message: goodbyeMessage(stored?.message ?? DEFAULT_GOODBYE_MESSAGE),
 		style: stored?.style ?? "text",
 		canSend: channelId !== null && canPostIn(guild, channelId),
 	};
@@ -31,10 +38,17 @@ export async function applyGoodbye(
 	const channelId = patch.channelId === undefined ? current.channelId : patch.channelId;
 
 	if (patch.enabled === true && channelId === null) {
-		throw new UserFacingError("Pick a channel for the goodbye before turning it on.");
+		throw new UserFacingError(
+			botCopy("Pick a channel for the goodbye before turning it on.", "اختر قناة الوداع قبل تفعيل الرسائل."),
+		);
 	}
 	if (patch.channelId !== undefined && patch.channelId !== null && !canPostIn(guild, patch.channelId)) {
-		throw new UserFacingError("I cannot post in that channel. Pick one I can send messages to.");
+		throw new UserFacingError(
+			botCopy(
+				"I cannot post in that channel. Pick one I can send messages to.",
+				"لا يمكنني النشر في تلك القناة. اختر قناة يمكنني إرسال الرسائل إليها.",
+			),
+		);
 	}
 
 	await saveGoodbyeSettings(
@@ -55,7 +69,7 @@ export function farewellFor(
 	member: Pick<GuildMember | PartialGuildMember, "id" | "user" | "guild">,
 	settings: Pick<GoodbyeSettings, "message" | "style">,
 ): MessageCreateOptions {
-	const message = fillTemplate(settings.message, {
+	const message = fillTemplate(goodbyeMessage(settings.message), {
 		mention: `<@${member.id}>`,
 		username: member.user.username,
 		serverName: member.guild.name,
@@ -69,7 +83,7 @@ export function farewellFor(
 		embeds: [
 			embed({
 				category: "community",
-				title: `Goodbye from ${member.guild.name}`,
+				title: botCopy(`Goodbye from ${member.guild.name}`, `وداعًا من ${member.guild.name}`),
 				description: message,
 				thumbnail: member.user.displayAvatarURL({ size: 256 }),
 			}),

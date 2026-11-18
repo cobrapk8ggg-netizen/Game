@@ -1,3 +1,4 @@
+import { botCopy } from "@config/strings";
 import { UserFacingError } from "@core/errors";
 import { getBotSettings, saveBotSettings, type StoredBotSettings } from "@database/repositories/botSettingsRepository";
 import { type MusicSource, type Query } from "@lib/music/music.types";
@@ -43,6 +44,12 @@ export function allowsSource(sources: MusicSourceChoice, source: MusicSource): b
 	return true;
 }
 
+const ARABIC_SOURCE_LINES: Record<MusicSourceChoice, string> = {
+	both: "🎵 **المصادر** — يوتيوب وساوند كلاود. يعرض `/play` اقتراحات من كليهما، ويبحث في ساوند كلاود إذا رفض يوتيوب الطلب.",
+	youtube: "🎵 **المصادر** — يوتيوب فقط. عطّل مالك البوت ساوند كلاود.",
+	soundcloud: "🎵 **المصادر** — ساوند كلاود فقط. عطّل مالك البوت يوتيوب.",
+};
+
 const SOURCE_LINES: Record<MusicSourceChoice, string> = {
 	both: "🎵 **Sources** — YouTube and SoundCloud. `/play` suggests from both, and falls back to SoundCloud when YouTube refuses.",
 	youtube: "🎵 **Sources** — YouTube only. The bot's owner has switched SoundCloud off.",
@@ -51,7 +58,7 @@ const SOURCE_LINES: Record<MusicSourceChoice, string> = {
 
 /** What `/music status` says about the owner's choice. */
 export function sourcesLine(sources: MusicSourceChoice): string {
-	return SOURCE_LINES[sources];
+	return botCopy(SOURCE_LINES[sources], ARABIC_SOURCE_LINES[sources]);
 }
 
 /** Where a search that names no service goes. */
@@ -64,18 +71,24 @@ export function fallsBackToSoundCloud(query: Query, sources: MusicSourceChoice):
 	return sources === "both" && query.kind === "search" && query.named !== true && query.source === "youtube";
 }
 
-const OFF: Record<"youtube" | "soundcloud", string> = {
-	youtube: "The bot's owner has switched YouTube off, so music comes from SoundCloud only. Search by name instead.",
-	soundcloud:
-		"The bot's owner has switched SoundCloud off, so music comes from YouTube only. Search by name with `/play`.",
-};
+function sourceOff(source: "youtube" | "soundcloud"): string {
+	return source === "youtube"
+		? botCopy(
+				"The bot's owner has switched YouTube off, so music comes from SoundCloud only. Search by name instead.",
+				"عطّل مالك البوت يوتيوب. ابحث عن اسم المقطع لتشغيله من ساوند كلاود.",
+			)
+		: botCopy(
+				"The bot's owner has switched SoundCloud off, so music comes from YouTube only. Search by name with `/play`.",
+				"عطّل مالك البوت ساوند كلاود. ابحث عن اسم المقطع باستخدام `/play` لتشغيله من يوتيوب.",
+			);
+}
 
 /** The query as the owner's choice allows it: an unnamed search goes where they point, and a service they turned off is refused. */
 export function withinSources(query: Query, sources: MusicSourceChoice): Query {
 	if (query.kind === "search" && query.named !== true) return { ...query, source: searchSourceFor(sources) };
 
 	if (query.source === "youtube" || query.source === "soundcloud") {
-		if (!allowsSource(sources, query.source)) throw new UserFacingError(OFF[query.source]);
+		if (!allowsSource(sources, query.source)) throw new UserFacingError(sourceOff(query.source));
 	}
 
 	return query;

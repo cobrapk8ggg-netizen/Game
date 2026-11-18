@@ -1,5 +1,6 @@
 import { loadImage } from "@napi-rs/canvas";
 import { type AttachmentBuilder } from "discord.js";
+import { botCopy } from "@config/strings";
 import { createCanvas, drawAvatarOrInitial, roundedRect, toAttachment } from "@lib/canvas/canvas.util";
 import { DISPLAY, drawText } from "@lib/canvas/text.util";
 import { formatNumber } from "@lib/format/format.util";
@@ -34,9 +35,9 @@ interface WelcomeCardText {
 
 function welcomeCardText(data: WelcomeCardData): WelcomeCardText {
 	return {
-		heading: `WELCOME TO ${data.serverName.toUpperCase()}`,
+		heading: botCopy(`WELCOME TO ${data.serverName.toUpperCase()}`, `مرحبًا بك في ${data.serverName}`),
 		name: data.displayName,
-		position: `Member #${formatNumber(data.memberCount)}`,
+		position: botCopy(`Member #${formatNumber(data.memberCount)}`, `العضو رقم ${formatNumber(data.memberCount)}`),
 	};
 }
 

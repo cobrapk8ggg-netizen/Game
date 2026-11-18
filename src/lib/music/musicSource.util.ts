@@ -4,6 +4,7 @@ import { readdir, rm, stat } from "node:fs/promises";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
 import { PassThrough, type Readable } from "node:stream";
+import { botCopy } from "@config/strings";
 import { toError, UserFacingError } from "@core/errors";
 import { observe } from "@lib/infra/serviceHealth.util";
 import { MUSIC_SOURCE_NAMES, SEARCH_RESULTS, UNITY_VOLUME } from "@lib/music/music.constants";
@@ -18,7 +19,7 @@ import {
 	type Track,
 } from "@lib/music/music.types";
 import { clampVolume } from "@lib/music/musicFormat.util";
-import { aboutTheTrack, classifyProblem } from "@lib/music/musicProblem.util";
+import { aboutTheTrack, classifyProblem, problemAdvice } from "@lib/music/musicProblem.util";
 import { sourceOfHost } from "@lib/music/musicQuery.util";
 
 /** Everything that shells out to yt-dlp, with the parsing kept pure beside it. */
@@ -89,8 +90,9 @@ export class MusicProblemError extends UserFacingError {
 	constructor(
 		readonly problem: DownloadProblem,
 		hint?: string,
+		advice = problemAdvice(problem),
 	) {
-		super(hint === undefined ? problem.advice : `${problem.advice} ${hint}`);
+		super(hint === undefined ? advice : `${advice} ${hint}`);
 	}
 }
 
@@ -193,7 +195,12 @@ export async function resolveTracks(
 	options: { flat?: boolean; results?: number } = {},
 ): Promise<Track[]> {
 	if (binaries.ytDlp === null) {
-		throw new UserFacingError("Music needs `yt-dlp`, which is not installed. Run `npm run music:setup` on the host.");
+		throw new UserFacingError(
+			botCopy(
+				"Music needs `yt-dlp`, which is not installed. Run `npm run music:setup` on the host.",
+				"يتطلّب تشغيل الموسيقى تثبيت `yt-dlp`. شغّل `npm run music:setup` على الخادم.",
+			),
+		);
 	}
 
 	const flat = options.flat === true;
@@ -222,7 +229,15 @@ export async function resolveTracks(
 	}
 	const documents = parseJsonLines(stdout);
 	const usable = skipping ? documents.filter(isPlayable) : documents;
-	if (usable.length === 0 && documents.length > 0) throw new MusicProblemError(NOTHING_PLAYABLE);
+	if (usable.length === 0 && documents.length > 0)
+		throw new MusicProblemError(
+			NOTHING_PLAYABLE,
+			undefined,
+			botCopy(
+				NOTHING_PLAYABLE.advice,
+				"جميع نتائج ساوند كلاود محميّة بنظام إدارة الحقوق الرقمية. جرّب عبارة بحث أخرى.",
+			),
+		);
 
 	return usable.flatMap((info) => tracksFromInfo(info, requestedBy, query.source));
 }
@@ -413,7 +428,10 @@ export function openStream(
 	binaries: MusicBinaries,
 	options: StreamOptions = {},
 ): OpenStream {
-	if (binaries.ytDlp === null) throw new UserFacingError("Music needs `yt-dlp`, which is not installed.");
+	if (binaries.ytDlp === null)
+		throw new UserFacingError(
+			botCopy("Music needs `yt-dlp`, which is not installed.", "يتطلّب تشغيل الموسيقى تثبيت `yt-dlp`."),
+		);
 
 	const scratch = scratchFolder();
 	const source = spawn(binaries.ytDlp, ytDlpStreamArgs(plan.formatId, url), {
@@ -447,7 +465,10 @@ export function openStream(
 		};
 	}
 
-	if (binaries.ffmpeg === null) throw new UserFacingError("That track needs FFmpeg to play, and it is not installed.");
+	if (binaries.ffmpeg === null)
+		throw new UserFacingError(
+			botCopy("That track needs FFmpeg to play, and it is not installed.", "يتطلّب تشغيل هذا المقطع تثبيت FFmpeg."),
+		);
 
 	const transcoder = spawn(binaries.ffmpeg, ffmpegArgs(options), {
 		stdio: ["pipe", "pipe", "ignore"],
