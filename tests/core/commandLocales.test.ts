@@ -2,7 +2,13 @@ import { readFileSync } from "node:fs";
 import { PermissionsBitField, type PermissionsString } from "discord.js";
 import { DISCORD_LOCALES, type TranslatedLanguage } from "@config/languages";
 import { buildSlashCommand, subcommandsOf } from "@core/command";
-import { commandStrings, localiserFor, menuStrings, readCommandTranslations } from "@core/commandLocales";
+import {
+	arabicDescription,
+	commandStrings,
+	localiserFor,
+	menuStrings,
+	readCommandTranslations,
+} from "@core/commandLocales";
 import { buildContextMenu } from "@core/contextMenu";
 import { permissionName } from "@core/language";
 import { loadEverything } from "@core/loader";
@@ -108,6 +114,19 @@ describe("the command menus in other languages", () => {
 
 		const menu = buildContextMenu(client.contextMenus.get("Warn")!, localise).toJSON();
 		expect(menu.name_localizations?.ja).toBe(translations.ja?.["menu: Warn"]);
+	});
+
+	it("can register Arabic as the base description without sending an unsupported locale", () => {
+		const command = client.commands.get("warn")!;
+		const built = buildSlashCommand(command, localiserFor(translations), arabicDescription).toJSON();
+		const create = built.options?.find((option) => option.name === "create");
+		expect(built.name).toBe("warn");
+		expect(built.description).toBe(translations.ar?.warn);
+		expect(built.description_localizations).not.toHaveProperty("ar");
+		expect(create?.description).toBe(translations.ar?.["warn create"]);
+		expect(create && "options" in create ? create.options?.[0]?.description : undefined).toBe(
+			translations.ar?.["warn create --user"],
+		);
 	});
 
 	it("registers English alone when nothing is translated", () => {

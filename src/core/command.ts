@@ -355,14 +355,17 @@ export function stringKey(command: string, sub?: string, option?: string): strin
 }
 
 const untranslated: Localise = () => undefined;
+type Describe = (original: string, command: string, subcommand?: string, option?: string) => string;
+const originalDescription: Describe = (original) => original;
 
 export function buildSlashCommand(
 	command: Command,
 	localise: Localise = untranslated,
+	describe: Describe = originalDescription,
 ): SlashCommandBuilder | SlashCommandOptionsOnlyBuilder | SlashCommandSubcommandsOnlyBuilder {
 	const builder = new SlashCommandBuilder()
 		.setName(command.name)
-		.setDescription(command.description)
+		.setDescription(describe(command.description, command.name))
 		.setDescriptionLocalizations(localise(command.name) ?? null);
 
 	builder.setContexts(
@@ -378,18 +381,22 @@ export function buildSlashCommand(
 		builder.setDefaultMemberPermissions(new PermissionsBitField(command.permissions).bitfield);
 	}
 
-	for (const option of command.options ?? [])
-		addOption(builder, option, localise(stringKey(command.name, undefined, option.name)));
+	for (const option of command.options ?? []) {
+		const description = describe(option.description, command.name, undefined, option.name);
+		addOption(builder, option, description, localise(stringKey(command.name, undefined, option.name)));
+	}
 
 	for (const sub of command.subcommands ?? []) {
 		const key = stringKey(command.name, sub.name);
 		builder.addSubcommand((subBuilder) => {
 			subBuilder
 				.setName(sub.name)
-				.setDescription(sub.description)
+				.setDescription(describe(sub.description, command.name, sub.name))
 				.setDescriptionLocalizations(localise(key) ?? null);
-			for (const option of sub.options ?? [])
-				addOption(subBuilder, option, localise(stringKey(command.name, sub.name, option.name)));
+			for (const option of sub.options ?? []) {
+				const description = describe(option.description, command.name, sub.name, option.name);
+				addOption(subBuilder, option, description, localise(stringKey(command.name, sub.name, option.name)));
+			}
 			return subBuilder;
 		});
 	}
@@ -408,7 +415,12 @@ interface OptionHost {
 	addAttachmentOption(build: (option: SlashCommandAttachmentOption) => SlashCommandAttachmentOption): unknown;
 }
 
-function addOption(host: OptionHost, option: CommandOption, translated: Record<string, string> | undefined): void {
+function addOption(
+	host: OptionHost,
+	option: CommandOption,
+	description: string,
+	translated: Record<string, string> | undefined,
+): void {
 	const required = option.required ?? false;
 	const localised = translated ?? null;
 
@@ -417,7 +429,7 @@ function addOption(host: OptionHost, option: CommandOption, translated: Record<s
 			host.addStringOption((builder) => {
 				builder
 					.setName(option.name)
-					.setDescription(option.description)
+					.setDescription(description)
 					.setDescriptionLocalizations(localised)
 					.setRequired(required);
 				if (option.maxLength !== undefined) builder.setMaxLength(option.maxLength);
@@ -433,7 +445,7 @@ function addOption(host: OptionHost, option: CommandOption, translated: Record<s
 			host.addIntegerOption((builder) => {
 				builder
 					.setName(option.name)
-					.setDescription(option.description)
+					.setDescription(description)
 					.setDescriptionLocalizations(localised)
 					.setRequired(required);
 				if (option.min !== undefined) builder.setMinValue(option.min);
@@ -450,7 +462,7 @@ function addOption(host: OptionHost, option: CommandOption, translated: Record<s
 			host.addNumberOption((builder) => {
 				builder
 					.setName(option.name)
-					.setDescription(option.description)
+					.setDescription(description)
 					.setDescriptionLocalizations(localised)
 					.setRequired(required);
 				if (option.min !== undefined) builder.setMinValue(option.min);
@@ -461,51 +473,31 @@ function addOption(host: OptionHost, option: CommandOption, translated: Record<s
 
 		case "boolean":
 			host.addBooleanOption((b) =>
-				b
-					.setName(option.name)
-					.setDescription(option.description)
-					.setDescriptionLocalizations(localised)
-					.setRequired(required),
+				b.setName(option.name).setDescription(description).setDescriptionLocalizations(localised).setRequired(required),
 			);
 			return;
 
 		case "user":
 			host.addUserOption((b) =>
-				b
-					.setName(option.name)
-					.setDescription(option.description)
-					.setDescriptionLocalizations(localised)
-					.setRequired(required),
+				b.setName(option.name).setDescription(description).setDescriptionLocalizations(localised).setRequired(required),
 			);
 			return;
 
 		case "channel":
 			host.addChannelOption((b) =>
-				b
-					.setName(option.name)
-					.setDescription(option.description)
-					.setDescriptionLocalizations(localised)
-					.setRequired(required),
+				b.setName(option.name).setDescription(description).setDescriptionLocalizations(localised).setRequired(required),
 			);
 			return;
 
 		case "role":
 			host.addRoleOption((b) =>
-				b
-					.setName(option.name)
-					.setDescription(option.description)
-					.setDescriptionLocalizations(localised)
-					.setRequired(required),
+				b.setName(option.name).setDescription(description).setDescriptionLocalizations(localised).setRequired(required),
 			);
 			return;
 
 		case "attachment":
 			host.addAttachmentOption((b) =>
-				b
-					.setName(option.name)
-					.setDescription(option.description)
-					.setDescriptionLocalizations(localised)
-					.setRequired(required),
+				b.setName(option.name).setDescription(description).setDescriptionLocalizations(localised).setRequired(required),
 			);
 			return;
 	}
