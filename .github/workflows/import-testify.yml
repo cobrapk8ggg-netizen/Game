@@ -19,11 +19,12 @@ jobs:
         run: |
           set -eu
           gh auth setup-git
-          git clone https://github.com/cobrapk8ggg-netizen/Game.git .
+          git clone --no-tags https://github.com/cobrapk8ggg-netizen/Game.git .
           git remote add upstream https://github.com/Kkkermit/Testify.git
           git fetch --no-tags upstream main
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
           git switch --detach 3597d62c5d8faf93e557f504bcd610864499b92b
+          git diff --exit-code HEAD origin/upstream-workflows -- .github/workflows/ci.yml .github/workflows/nightly.yml .github/workflows/release.yml .github/workflows/wiki.yml
           git merge --allow-unrelated-histories --strategy=ours --no-edit origin/main
           git push origin HEAD:main
