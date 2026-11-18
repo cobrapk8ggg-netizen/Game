@@ -1,4 +1,5 @@
 import { type Guild } from "discord.js";
+import { botCopy } from "@config/strings";
 import { defineButton } from "@core/button";
 import { UserFacingError } from "@core/errors";
 import { type EconomyAccount } from "@database/models/economy.schema";
@@ -41,11 +42,15 @@ async function purchase(state: ShopState, guild: Guild, userId: string, account:
 	switch (state.section) {
 		case "houses": {
 			const house = findHouse(id);
-			if (!house) throw new UserFacingError("That house is no longer for sale.");
-			if (account.house !== null) throw new UserFacingError("You already own a house. Sell it first.");
+			if (!house)
+				throw new UserFacingError(botCopy("That house is no longer for sale.", "ذلك المنزل لم يعد معروضًا للبيع."));
+			if (account.house !== null)
+				throw new UserFacingError(
+					botCopy("You already own a house. Sell it first.", "تملك منزلًا بالفعل. بِعه أولًا."),
+				);
 
 			if (!(await debitWallet(guildId, userId, house.price))) {
-				throw new UserFacingError("You cannot afford that any more.");
+				throw new UserFacingError(botCopy("You cannot afford that any more.", "لم يعد رصيدك يكفي للشراء."));
 			}
 
 			await setFields(guildId, userId, {
@@ -63,13 +68,16 @@ async function purchase(state: ShopState, guild: Guild, userId: string, account:
 
 		case "businesses": {
 			const business = findBusiness(id);
-			if (!business) throw new UserFacingError("That business is no longer for sale.");
+			if (!business)
+				throw new UserFacingError(
+					botCopy("That business is no longer for sale.", "ذاك المشروع التجاري لم يعد معروضًا للبيع."),
+				);
 			if (account.businesses.some((owned) => owned.businessId === business.id)) {
-				throw new UserFacingError("You already own that business.");
+				throw new UserFacingError(botCopy("You already own that business.", "تملك هذا المشروع التجاري بالفعل."));
 			}
 
 			if (!(await debitWallet(guildId, userId, business.price))) {
-				throw new UserFacingError("You cannot afford that any more.");
+				throw new UserFacingError(botCopy("You cannot afford that any more.", "لم يعد رصيدك يكفي للشراء."));
 			}
 
 			await setFields(guildId, userId, {
@@ -92,7 +100,7 @@ async function purchase(state: ShopState, guild: Guild, userId: string, account:
 
 		case "jobs": {
 			const job = findJob(id);
-			if (!job) throw new UserFacingError("That job is no longer going.");
+			if (!job) throw new UserFacingError(botCopy("That job is no longer going.", "تلك الوظيفة لم تعد متاحة."));
 
 			const owned = account.inventory.filter((entry) => entry.quantity > 0).map((entry) => entry.itemId);
 			const missing = job.requirements.filter((required) => !owned.includes(required));
@@ -104,11 +112,17 @@ async function purchase(state: ShopState, guild: Guild, userId: string, account:
 
 		case "pets": {
 			const pet = findPet(id);
-			if (!pet) throw new UserFacingError("That pet is no longer available.");
-			if (account.pet !== null) throw new UserFacingError("You already have a pet. Rehome it first.");
+			if (!pet)
+				throw new UserFacingError(
+					botCopy("That pet is no longer available.", "ذلك الحيوان الأليف لم يعد متاحًا للتبنّي."),
+				);
+			if (account.pet !== null)
+				throw new UserFacingError(
+					botCopy("You already have a pet. Rehome it first.", "لديك حيوان أليف بالفعل. ابحث له عن منزل جديد أولًا."),
+				);
 
 			if (!(await debitWallet(guildId, userId, pet.price))) {
-				throw new UserFacingError("You cannot afford that any more.");
+				throw new UserFacingError(botCopy("You cannot afford that any more.", "لم يعد رصيدك يكفي للشراء."));
 			}
 
 			await setFields(guildId, userId, {
@@ -130,10 +144,11 @@ async function purchase(state: ShopState, guild: Guild, userId: string, account:
 
 		case "items": {
 			const item = findShopItem(id);
-			if (!item) throw new UserFacingError("That item is no longer for sale.");
+			if (!item)
+				throw new UserFacingError(botCopy("That item is no longer for sale.", "ذلك الغرض لم يعد معروضًا للبيع."));
 
 			if (!(await debitWallet(guildId, userId, item.price))) {
-				throw new UserFacingError("You cannot afford that any more.");
+				throw new UserFacingError(botCopy("You cannot afford that any more.", "لم يعد رصيدك يكفي للشراء."));
 			}
 
 			await addInventoryItem(guildId, userId, {
@@ -148,7 +163,8 @@ async function purchase(state: ShopState, guild: Guild, userId: string, account:
 
 		case "roles": {
 			const member = await guild.members.fetch(userId).catch(() => null);
-			if (member === null) throw new UserFacingError("You are no longer in this server.");
+			if (member === null)
+				throw new UserFacingError(botCopy("You are no longer in this server.", "لم تعد عضوًا في هذا الخادم."));
 			return buyShopRole(guild, member, id);
 		}
 	}
@@ -190,11 +206,11 @@ export default defineButton({
 
 		if (context.action === "sell") {
 			const account = await requireAccount(guildId, userId);
-			if (account.house === null) throw new UserFacingError("You do not own a house.");
+			if (account.house === null) throw new UserFacingError(botCopy("You do not own a house.", "لا تملك منزلًا."));
 
 			const balances = await balancesFor(guild, userId, account);
 			const entry = findEntry({ section: "houses" }, balances, state.selectedId ?? "");
-			if (!entry) throw new UserFacingError("That is not something you own.");
+			if (!entry) throw new UserFacingError(botCopy("That is not something you own.", "هذا الغرض ليس من ممتلكاتك."));
 
 			await interaction.update(sellConfirmScreen(entry, balances, userId, state));
 			return;
@@ -213,7 +229,7 @@ export default defineButton({
 
 		if (context.action === "sell-yes") {
 			const account = await requireAccount(guildId, userId);
-			if (account.house === null) throw new UserFacingError("You do not own a house.");
+			if (account.house === null) throw new UserFacingError(botCopy("You do not own a house.", "لا تملك منزلًا."));
 
 			const refund = Math.floor(account.house.value / 2);
 			const name = account.house.name;

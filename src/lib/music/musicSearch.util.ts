@@ -1,7 +1,8 @@
 import { botCopy } from "@config/strings";
 import { formatClock, truncate } from "@lib/format/format.util";
-import { CHOICE_MAX, musicSourceName } from "@lib/music/music.constants";
+import { CHOICE_MAX } from "@lib/music/music.constants";
 import { type Track } from "@lib/music/music.types";
+import { musicSourceName } from "@lib/music/musicFormat.util";
 
 /** Feeding `/play`'s autocomplete without spawning a process for every keystroke. */
 

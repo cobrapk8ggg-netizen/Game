@@ -1,5 +1,5 @@
 import { PermissionFlagsBits } from "discord.js";
-import { strings } from "@config/strings";
+import { botCopy, strings } from "@config/strings";
 import { defineCommand, inTextChannel, textChannelOption } from "@core/command";
 import { UserFacingError } from "@core/errors";
 import { readerLanguage } from "@core/language";
@@ -26,7 +26,9 @@ export default defineCommand({
 
 		const target = textChannelOption(interaction, "channel") ?? inTextChannel(interaction);
 		if (!target.isTextBased() || !target.isSendable()) {
-			throw new UserFacingError("I cannot send messages in that channel.");
+			throw new UserFacingError(
+				botCopy("I cannot send messages in that channel.", "لا أستطيع إرسال الرسائل إلى تلك القناة."),
+			);
 		}
 
 		const asEmbed = interaction.options.getBoolean("as-embed") ?? false;

@@ -1,4 +1,5 @@
 import { PermissionFlagsBits } from "discord.js";
+import { botCopy } from "@config/strings";
 import { type ComponentInteraction, defineButton } from "@core/button";
 import { UserFacingError } from "@core/errors";
 import {
@@ -42,7 +43,8 @@ function responderForm(action: string, args: string[], responder?: AutoResponder
 }
 
 function typed(interaction: ComponentInteraction): { trigger: string; reply: string } {
-	if (!interaction.isModalSubmit()) throw new UserFacingError("Open the form again and fill it in.");
+	if (!interaction.isModalSubmit())
+		throw new UserFacingError(botCopy("Open the form again and fill it in.", "أعد فتح النموذج واملأ الحقول المطلوبة."));
 	return {
 		trigger: interaction.fields.getTextInputValue("trigger"),
 		reply: interaction.fields.getTextInputValue("reply"),
@@ -58,7 +60,12 @@ export default defineButton({
 		if (guild === null) return;
 
 		if (interaction.memberPermissions?.has(PermissionFlagsBits.ManageGuild) !== true) {
-			throw new UserFacingError("You need the Manage Server permission to change auto-responders.");
+			throw new UserFacingError(
+				botCopy(
+					"You need the Manage Server permission to change auto-responders.",
+					"تحتاج إلى صلاحية إدارة الخادم لتعديل الردود التلقائية.",
+				),
+			);
 		}
 
 		const ownerId = interaction.user.id;

@@ -1,4 +1,5 @@
 import { PermissionFlagsBits } from "discord.js";
+import { botCopy } from "@config/strings";
 import { theme } from "@config/theme";
 import { defineCommand, inGuild } from "@core/command";
 import { UserFacingError } from "@core/errors";
@@ -39,7 +40,12 @@ export default defineCommand({
 
 				const durationMs = parseDuration(interaction.options.getString("duration", true));
 				if (durationMs === null || durationMs <= 0) {
-					throw new UserFacingError("That duration is not valid. Try something like `12h` or `7d`.");
+					throw new UserFacingError(
+						botCopy(
+							"That duration is not valid. Try something like `12h` or `7d`.",
+							"صيغة المدة غير صالحة. جرّب صيغة مثل `12h` أو `7d`.",
+						),
+					);
 				}
 
 				const member = await guild.members.fetch(target.id).catch(() => null);
@@ -103,7 +109,9 @@ export default defineCommand({
 				const userId = interaction.options.getString("user-id", true).replace(/\D/g, "");
 
 				if (!(await revokeSoftban(guild, userId, moderatorOf(interaction.user)))) {
-					throw new UserFacingError("There is no active softban for that user.");
+					throw new UserFacingError(
+						botCopy("There is no active softban for that user.", "لا يوجد حظر مؤقت سارٍ على ذلك المستخدم."),
+					);
 				}
 
 				await reply(interaction, { embeds: [successEmbed("The softban has been lifted.")] });

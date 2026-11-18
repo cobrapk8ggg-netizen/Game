@@ -1,4 +1,5 @@
 import { ButtonStyle } from "discord.js";
+import { botCopy } from "@config/strings";
 import { customId } from "@core/button";
 import { type StoredConversation } from "@database/repositories/modmailRepository";
 import { button, channelSelect, option, roleSelect, row, select } from "@lib/discord/components.util";
@@ -30,13 +31,27 @@ export function openingPost(
 ): ContainerMessage {
 	const ping = pingRoleId === null ? "" : `<@&${pingRoleId}> `;
 	const parts: ContainerPart[] = [
-		text(`## 📬 Mod mail\n${ping}<@${conversation.userId}> (${conversation.username}) · ${conversation.userId}`),
+		text(
+			botCopy(
+				`## 📬 Mod mail\n${ping}<@${conversation.userId}> (${conversation.username}) · ${conversation.userId}`,
+				`## 📬 مراسلات الإشراف\n${ping}<@${conversation.userId}> (${conversation.username}) · ${conversation.userId}`,
+			),
+		),
 		text(quoted(firstMessage)),
 		divider(),
 		text(
-			`-# Everything you write in this thread is sent to them, except a message starting with \`${MODMAIL_NOTE_PREFIX}\`, which stays here. Opened <t:${seconds(conversation.createdAt)}:R>.`,
+			botCopy(
+				`-# Everything you write in this thread is sent to them, except a message starting with \`${MODMAIL_NOTE_PREFIX}\`, which stays here. Opened <t:${seconds(conversation.createdAt)}:R>.`,
+				`-# تُرسل رسائل هذه المحادثة إلى العضو. لكتابة ملاحظة داخلية، ابدأ الرسالة بـ \`${MODMAIL_NOTE_PREFIX}\`. فُتحت المحادثة <t:${seconds(conversation.createdAt)}:R>.`,
+			),
 		),
-		row(button({ id: customId(MODMAIL_ID, "close", conversation.id), label: "Close", style: ButtonStyle.Danger })),
+		row(
+			button({
+				id: customId(MODMAIL_ID, "close", conversation.id),
+				label: botCopy("Close", "إغلاق"),
+				style: ButtonStyle.Danger,
+			}),
+		),
 	];
 
 	return containerMessage(container({ category: "moderation", parts }));
@@ -49,9 +64,18 @@ export function writePanel(guildName: string, guildId: string, userId: string): 
 			category: "moderation",
 			parts: [
 				text(
-					`## 📬 Write to the staff of ${guildName}\nOnly they read it. Their replies come to you in a direct message, and anything you send me there goes back to them until one of you closes it.`,
+					botCopy(
+						`## 📬 Write to the staff of ${guildName}\nOnly they read it. Their replies come to you in a direct message, and anything you send me there goes back to them until one of you closes it.`,
+						`## 📬 مراسلة فريق الإشراف في ${guildName}\nيقرأ فريق الإشراف رسالتك، وتصل ردوده إلى رسائلك الخاصة. أنقل إليهم كل ما ترسله إليّ هناك إلى أن تُغلق المحادثة.`,
+					),
 				),
-				row(button({ id: customId(MODMAIL_ID, "write", guildId, userId), label: "Write to the staff", emoji: "✏️" })),
+				row(
+					button({
+						id: customId(MODMAIL_ID, "write", guildId, userId),
+						label: botCopy("Write to the staff", "مراسلة فريق الإشراف"),
+						emoji: "✏️",
+					}),
+				),
 			],
 		}),
 	);
@@ -64,12 +88,15 @@ export function offerPanel(servers: readonly { id: string; name: string }[], use
 			category: "moderation",
 			parts: [
 				text(
-					"## 📬 Write to a server's staff?\nPick the server and write your message. Its staff get it in a private thread, and their replies come back here.",
+					botCopy(
+						"## 📬 Write to a server's staff?\nPick the server and write your message. Its staff get it in a private thread, and their replies come back here.",
+						"## 📬 أتريد مراسلة فريق الإشراف؟\nاختر الخادم واكتب رسالتك. يتلقّاها فريق الإشراف في محادثة مخصّصة له، وتصلك الردود هنا.",
+					),
 				),
 				row(
 					select({
 						id: customId(MODMAIL_ID, "pick", userId),
-						placeholder: "Choose a server…",
+						placeholder: botCopy("Choose a server…", "اختر خادمًا…"),
 						options: servers.map((server) => option({ label: server.name.slice(0, 100), value: server.id })),
 					}),
 				),
@@ -85,12 +112,15 @@ export function openedNotice(guildName: string, conversationId: string, userId: 
 			category: "moderation",
 			parts: [
 				text(
-					`## 📬 Sent to the staff of ${guildName}\nEverything you send me here now goes to them, and their replies come back here, until one of you closes it.`,
+					botCopy(
+						`## 📬 Sent to the staff of ${guildName}\nEverything you send me here now goes to them, and their replies come back here, until one of you closes it.`,
+						`## 📬 أُرسلت الرسالة إلى فريق الإشراف في ${guildName}\nما ترسله هنا يصل إلى الفريق، وتصلك ردوده في هذه المحادثة إلى أن يغلقها أحدكما.`,
+					),
 				),
 				row(
 					button({
 						id: customId(MODMAIL_ID, "close-own", conversationId, userId),
-						label: "Close",
+						label: botCopy("Close", "إغلاق"),
 						style: ButtonStyle.Secondary,
 					}),
 				),
@@ -104,80 +134,115 @@ export function closedNotice(): ContainerMessage {
 	return containerMessage(
 		container({
 			category: "moderation",
-			parts: [text("📬 Closed. Write to me again whenever you want to start a new one.")],
+			parts: [
+				text(
+					botCopy(
+						"📬 Closed. Write to me again whenever you want to start a new one.",
+						"📬 أُغلقت المحادثة. أرسل إليّ رسالة متى أردت بدء محادثة جديدة.",
+					),
+				),
+			],
 		}),
 	);
 }
 
 /** How a staff reply is signed in the member's direct messages. */
 export function staffSignature(guildName: string, staffName: string, anonymous: boolean): string {
-	return anonymous ? `**Staff of ${guildName}**` : `**${staffName}** · staff of ${guildName}`;
+	return anonymous
+		? botCopy(`**Staff of ${guildName}**`, `**فريق الإشراف في ${guildName}**`)
+		: botCopy(`**${staffName}** · staff of ${guildName}`, `**${staffName}** · من فريق الإشراف في ${guildName}`);
 }
 
 /** `/modmail settings`: the switch, the channel threads are made in, who is pinged and how replies are signed. */
 export function modmailSettingsPanel(settings: ModmailSettings, ownerId: string, note?: string): ContainerMessage {
 	const status = settings.enabled
-		? `${statusDot(true)} — members can write to staff, in threads in <#${settings.channelId ?? ""}>.`
+		? botCopy(
+				`${statusDot(true)} — members can write to staff, in threads in <#${settings.channelId ?? ""}>.`,
+				`${statusDot(true)} — يستطيع الأعضاء مراسلة فريق الإشراف. تُنشأ المحادثات في <#${settings.channelId ?? ""}>.`,
+			)
 		: settings.channelId === null
-			? `${statusDot(false)} — pick a channel below, then turn it on.`
-			: `${statusDot(false)} — members cannot write to staff yet.`;
+			? botCopy(
+					`${statusDot(false)} — pick a channel below, then turn it on.`,
+					`${statusDot(false)} — اختر قناةً أدناه، ثم فعّل الميزة.`,
+				)
+			: botCopy(
+					`${statusDot(false)} — members cannot write to staff yet.`,
+					`${statusDot(false)} — مراسلات الإشراف معطّلة.`,
+				);
 
 	return settingsScreen({
 		id: MODMAIL_SETTINGS_ID,
 		ownerId,
 		category: "moderation",
-		title: "📬 Mod mail",
+		title: botCopy("📬 Mod mail", "📬 مراسلات الإشراف"),
 		status,
 		...(note !== undefined ? { note } : {}),
 		rows: [
-			{ label: "Open conversations", value: String(settings.open) },
+			{ label: botCopy("Open conversations", "المحادثات المفتوحة"), value: String(settings.open) },
 			...(settings.channelId !== null && !settings.canUse
 				? [
 						{
-							label: "⚠️ I cannot work there",
-							value: "Let me send messages, create public threads and manage threads in that channel.",
+							label: botCopy("⚠️ I cannot work there", "⚠️ الصلاحيات غير كافية"),
+							value: botCopy(
+								"Let me send messages, create public threads and manage threads in that channel.",
+								"امنحني في هذه القناة صلاحيات إرسال الرسائل وإنشاء المحادثات العامة وإدارتها.",
+							),
 						},
 					]
 				: []),
 		],
 		pickers: [
 			{
-				label: "Threads go in",
-				hint: "Each conversation gets a thread here. Keep the channel to staff.",
+				label: botCopy("Threads go in", "قناة المحادثات"),
+				hint: botCopy(
+					"Each conversation gets a thread here. Keep the channel to staff.",
+					"تُفتح محادثة فرعية لكل مراسلة في هذه القناة. احصر الوصول إليها بفريق الإشراف.",
+				),
 				control: row(
 					channelSelect({
 						id: customId(MODMAIL_SETTINGS_ID, "channel", ownerId),
-						placeholder: "Channel for mod mail…",
+						placeholder: botCopy("Channel for mod mail…", "اختر قناةً لمراسلات الإشراف…"),
 						...(settings.channelId === null ? {} : { defaultChannelIds: [settings.channelId] }),
 					}),
 				),
 			},
 			{
-				label: "Ping when one opens",
-				hint: "Leave it empty to ping nobody.",
+				label: botCopy("Ping when one opens", "الرتبة التي تُشعَر عند فتح محادثة"),
+				hint: botCopy("Leave it empty to ping nobody.", "اترك الحقل فارغًا لفتح المحادثات من دون إشعار أي رتبة."),
 				control: row(
 					roleSelect({
 						id: customId(MODMAIL_SETTINGS_ID, "ping", ownerId),
-						placeholder: "Nobody",
+						placeholder: botCopy("Nobody", "بلا إشعار"),
 						minValues: 0,
 						...(settings.pingRoleId === null ? {} : { defaultRoleIds: [settings.pingRoleId] }),
 					}),
 				),
 			},
 			{
-				label: "Replies are signed",
+				label: botCopy("Replies are signed", "توقيع الردود"),
 				control: row(
 					select({
 						id: customId(MODMAIL_SETTINGS_ID, "signed", ownerId),
 						options: [
-							option({ label: "With the staff member's name", value: "named", selected: !settings.anonymous }),
-							option({ label: "As the server's staff", value: "anonymous", selected: settings.anonymous }),
+							option({
+								label: botCopy("With the staff member's name", "باسم المشرف الذي ردّ"),
+								value: "named",
+								selected: !settings.anonymous,
+							}),
+							option({
+								label: botCopy("As the server's staff", "باسم فريق الإشراف"),
+								value: "anonymous",
+								selected: settings.anonymous,
+							}),
 						],
 					}),
 				),
 			},
 		],
 		actions: [switchAction(settings.enabled, settings.channelId !== null)],
-		footer: `Members start with /modmail open, or by messaging me directly. Staff need Manage Messages to close one.`,
+		footer: botCopy(
+			"Members start with /modmail open, or by messaging me directly. Staff need Manage Messages to close one.",
+			"يبدأ العضو المحادثة بالأمر `/modmail open` أو بمراسلتي مباشرةً. يحتاج المشرف إلى صلاحية إدارة الرسائل لإغلاقها.",
+		),
 	});
 }

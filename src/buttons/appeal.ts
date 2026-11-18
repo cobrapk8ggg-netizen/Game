@@ -1,4 +1,5 @@
 import { PermissionFlagsBits } from "discord.js";
+import { botCopy } from "@config/strings";
 import { defineButton } from "@core/button";
 import { checkOpenControl, refusalText } from "@core/checks";
 import { UserFacingError } from "@core/errors";
@@ -28,7 +29,12 @@ export default defineButton({
 
 		// Checked on the press and again on the form, since a role can change while the form is open.
 		if (interaction.memberPermissions?.has(PermissionFlagsBits.BanMembers) !== true) {
-			throw new UserFacingError("Only staff with the Ban Members permission can decide on appeals.");
+			throw new UserFacingError(
+				botCopy(
+					"Only staff with the Ban Members permission can decide on appeals.",
+					"البتّ في طلبات الاستئناف متاح لأعضاء فريق الإشراف الذين لديهم صلاحية حظر الأعضاء.",
+				),
+			);
 		}
 
 		if (interaction.isButton()) {
@@ -58,7 +64,10 @@ export default defineButton({
 			status: DECISIONS[action],
 			reason: interaction.fields.getTextInputValue("reason"),
 		});
-		if (!parsed.success) throw new UserFacingError("Give a reason under 500 characters, without HTML.");
+		if (!parsed.success)
+			throw new UserFacingError(
+				botCopy("Give a reason under 500 characters, without HTML.", "أدخل سببًا يقلّ عن ٥٠٠ حرف، من دون وسوم HTML."),
+			);
 
 		await interaction.deferUpdate();
 		await decideOnAppeal(context.client, guild, appealId, parsed.data, interaction.user);

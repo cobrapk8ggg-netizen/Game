@@ -1,4 +1,5 @@
 import { PermissionFlagsBits } from "discord.js";
+import { botCopy } from "@config/strings";
 import { channelOption, defineCommand, inTextChannel } from "@core/command";
 import { UserFacingError } from "@core/errors";
 import { reply, successEmbed } from "@lib/discord";
@@ -27,11 +28,19 @@ export default defineCommand({
 
 		const raw = interaction.options.getString("duration", true);
 		const durationMs = raw === "0" ? 0 : parseDuration(raw);
-		if (durationMs === null) throw new UserFacingError("That duration is not valid. Try `10s`, `5m` or `0`.");
+		if (durationMs === null)
+			throw new UserFacingError(
+				botCopy(
+					"That duration is not valid. Try `10s`, `5m` or `0`.",
+					"صيغة المدة غير صالحة. جرّب `10s` أو `5m` أو `0`.",
+				),
+			);
 
 		const seconds = Math.floor(durationMs / 1_000);
 		if (seconds > CHANNEL_TOOL_LIMITS.maxSlowmodeSeconds)
-			throw new UserFacingError("Slowmode cannot be longer than six hours.");
+			throw new UserFacingError(
+				botCopy("Slowmode cannot be longer than six hours.", "الحدّ الأقصى للوضع البطيء ست ساعات."),
+			);
 
 		await setSlowmode(channel, seconds, `Set by ${interaction.user.username}`);
 

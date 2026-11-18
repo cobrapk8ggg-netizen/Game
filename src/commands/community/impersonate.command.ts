@@ -1,5 +1,5 @@
 import { PermissionFlagsBits } from "discord.js";
-import { strings } from "@config/strings";
+import { botCopy, strings } from "@config/strings";
 import { defineCommand, inTextChannel } from "@core/command";
 import { UserFacingError } from "@core/errors";
 import { reply, successEmbed } from "@lib/discord";
@@ -21,7 +21,10 @@ export default defineCommand({
 
 	async run(interaction) {
 		const channel = inTextChannel(interaction);
-		if (!("createWebhook" in channel)) throw new UserFacingError("I cannot create a webhook in this channel.");
+		if (!("createWebhook" in channel))
+			throw new UserFacingError(
+				botCopy("I cannot create a webhook in this channel.", "لا أستطيع إنشاء خطّاف ويب في هذه القناة."),
+			);
 
 		const content = interaction.options.getString("message", true);
 		if (containsProfanity(content)) throw new UserFacingError(strings.generic.profanity);

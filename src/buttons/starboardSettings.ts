@@ -1,4 +1,5 @@
 import { PermissionFlagsBits } from "discord.js";
+import { botCopy } from "@config/strings";
 import { defineButton } from "@core/button";
 import { UserFacingError } from "@core/errors";
 import { modalForm, pickedChannelId } from "@lib/discord";
@@ -23,7 +24,12 @@ export default recordsSettings(
 			if (guild === null) return;
 
 			if (interaction.memberPermissions?.has(PermissionFlagsBits.ManageGuild) !== true) {
-				throw new UserFacingError("You need the Manage Server permission to change the starboard.");
+				throw new UserFacingError(
+					botCopy(
+						"You need the Manage Server permission to change the starboard.",
+						"تحتاج إلى صلاحية إدارة الخادم لتعديل لوحة الرسائل المميّزة.",
+					),
+				);
 			}
 
 			const ownerId = interaction.user.id;

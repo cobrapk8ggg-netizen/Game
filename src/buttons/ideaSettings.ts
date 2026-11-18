@@ -1,4 +1,5 @@
 import { PermissionFlagsBits } from "discord.js";
+import { botCopy } from "@config/strings";
 import { defineButton } from "@core/button";
 import { UserFacingError } from "@core/errors";
 import { pickedChannelId } from "@lib/discord";
@@ -16,7 +17,12 @@ export default recordsSettings(
 			if (guild === null || !interaction.isMessageComponent()) return;
 
 			if (interaction.memberPermissions?.has(PermissionFlagsBits.ManageGuild) !== true) {
-				throw new UserFacingError("You need the Manage Server permission to change the idea board.");
+				throw new UserFacingError(
+					botCopy(
+						"You need the Manage Server permission to change the idea board.",
+						"تحتاج إلى صلاحية إدارة الخادم لتعديل لوحة المقترحات.",
+					),
+				);
 			}
 
 			const ownerId = interaction.user.id;

@@ -1,4 +1,5 @@
 import { PermissionFlagsBits } from "discord.js";
+import { botCopy } from "@config/strings";
 import { defineButton } from "@core/button";
 import { checkOpenControl, refusalText } from "@core/checks";
 import { UserFacingError } from "@core/errors";
@@ -42,7 +43,12 @@ export default defineButton({
 
 		// Checked on the press and again on the form, since a role can change while the form is open.
 		if (interaction.memberPermissions?.has(PermissionFlagsBits.ManageGuild) !== true) {
-			throw new UserFacingError("Only staff with the Manage Server permission can decide on ideas.");
+			throw new UserFacingError(
+				botCopy(
+					"Only staff with the Manage Server permission can decide on ideas.",
+					"البتّ في المقترحات متاح لأعضاء فريق الإشراف الذين لديهم صلاحية إدارة الخادم.",
+				),
+			);
 		}
 
 		if (status !== "open" && interaction.isButton()) {
@@ -68,7 +74,10 @@ export default defineButton({
 
 		const reasonInput = interaction.isModalSubmit() ? interaction.fields.getTextInputValue("reason") : "";
 		const parsed = ideaDecision.safeParse({ status, reason: reasonInput });
-		if (!parsed.success) throw new UserFacingError("Keep the reason under 500 characters, without HTML.");
+		if (!parsed.success)
+			throw new UserFacingError(
+				botCopy("Keep the reason under 500 characters, without HTML.", "أدخل سببًا يقلّ عن ٥٠٠ حرف، من دون وسوم HTML."),
+			);
 
 		if (interaction.isModalSubmit() && !interaction.isFromMessage()) return;
 		await interaction.deferUpdate();

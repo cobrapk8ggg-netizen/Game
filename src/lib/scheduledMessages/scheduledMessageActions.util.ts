@@ -1,4 +1,5 @@
 import { DiscordAPIError, type Guild, RESTJSONErrorCodes } from "discord.js";
+import { botCopy } from "@config/strings";
 import { type TestifyClient } from "@core/client";
 import { UserFacingError } from "@core/errors";
 import {
@@ -46,7 +47,7 @@ export async function readSchedules(guild: Guild): Promise<ScheduledMessageList>
 
 export async function readSchedule(guild: Guild, id: string): Promise<ScheduledMessage> {
 	const stored = await findSchedule(guild.id, id);
-	if (stored === null) throw new UserFacingError(GONE);
+	if (stored === null) throw new UserFacingError(botCopy(GONE, "حُذفت تلك الرسالة المجدولة أو نُشرت بالفعل."));
 	return publicSchedule(guild, stored);
 }
 
@@ -67,10 +68,20 @@ function checkedContent<Fields extends Pick<ScheduleFields, "channelId" | "messa
 	const blocked = scheduleContentBlocked(clean);
 	if (blocked !== null) throw new UserFacingError(problemText(blocked));
 	if (clean.message.length > SCHEDULE_LIMITS.maxMessage) {
-		throw new UserFacingError(`Keep the message to ${String(SCHEDULE_LIMITS.maxMessage)} characters.`);
+		throw new UserFacingError(
+			botCopy(
+				`Keep the message to ${String(SCHEDULE_LIMITS.maxMessage)} characters.`,
+				`الحدّ الأقصى لطول الرسالة ${String(SCHEDULE_LIMITS.maxMessage)} حرفًا.`,
+			),
+		);
 	}
 	if (!canPostIn(guild, clean.channelId)) {
-		throw new UserFacingError(`I cannot post in <#${clean.channelId}>. Give me Send Messages there, or pick another.`);
+		throw new UserFacingError(
+			botCopy(
+				`I cannot post in <#${clean.channelId}>. Give me Send Messages there, or pick another.`,
+				`لا أستطيع النشر في <#${clean.channelId}>. امنحني صلاحية إرسال الرسائل فيها أو اختر قناةً أخرى.`,
+			),
+		);
 	}
 
 	return clean;
@@ -90,7 +101,10 @@ export async function addSchedule(
 ): Promise<ScheduledMessage> {
 	if ((await countSchedules(guild.id)) >= SCHEDULE_LIMITS.maxPerGuild) {
 		throw new UserFacingError(
-			`A server can keep ${String(SCHEDULE_LIMITS.maxPerGuild)} scheduled messages. Delete one to add another.`,
+			botCopy(
+				`A server can keep ${String(SCHEDULE_LIMITS.maxPerGuild)} scheduled messages. Delete one to add another.`,
+				`الحدّ الأقصى للرسائل المجدولة في الخادم ${String(SCHEDULE_LIMITS.maxPerGuild)}. احذف رسالة قبل إضافة أخرى.`,
+			),
 		);
 	}
 
@@ -107,7 +121,7 @@ export async function changeSchedule(
 	now: Date = new Date(),
 ): Promise<ScheduledMessage> {
 	const current = await findSchedule(guild.id, id);
-	if (current === null) throw new UserFacingError(GONE);
+	if (current === null) throw new UserFacingError(botCopy(GONE, "حُذفت تلك الرسالة المجدولة أو نُشرت بالفعل."));
 
 	const content = checkedContent(guild, {
 		channelId: changes.channelId ?? current.channelId,
@@ -125,12 +139,13 @@ export async function changeSchedule(
 		},
 		updatedBy,
 	);
-	if (saved === null) throw new UserFacingError(GONE);
+	if (saved === null) throw new UserFacingError(botCopy(GONE, "حُذفت تلك الرسالة المجدولة أو نُشرت بالفعل."));
 	return publicSchedule(guild, saved);
 }
 
 export async function removeSchedule(guild: Guild, id: string): Promise<void> {
-	if (!(await deleteSchedule(guild.id, id))) throw new UserFacingError(GONE);
+	if (!(await deleteSchedule(guild.id, id)))
+		throw new UserFacingError(botCopy(GONE, "حُذفت تلك الرسالة المجدولة أو نُشرت بالفعل."));
 }
 
 /** Discord's answers that mean the channel will never take this post, as opposed to failing for now. */

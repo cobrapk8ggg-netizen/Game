@@ -1,4 +1,5 @@
 import { PermissionFlagsBits } from "discord.js";
+import { botCopy } from "@config/strings";
 import { type ComponentInteraction, defineButton } from "@core/button";
 import { UserFacingError } from "@core/errors";
 import { modalForm, pickedChannelId, redrawPanel } from "@lib/discord";
@@ -16,7 +17,8 @@ import {
 import { SCHEDULE_LIMITS } from "@testify/shared";
 
 function typed(interaction: ComponentInteraction, field: string): string {
-	if (!interaction.isModalSubmit()) throw new UserFacingError("Open the form again and fill it in.");
+	if (!interaction.isModalSubmit())
+		throw new UserFacingError(botCopy("Open the form again and fill it in.", "أعد فتح النموذج واملأ الحقول المطلوبة."));
 	return interaction.fields.getTextInputValue(field);
 }
 
@@ -29,7 +31,12 @@ export default defineButton({
 		if (guild === null) return;
 
 		if (interaction.memberPermissions?.has(PermissionFlagsBits.ManageGuild) !== true) {
-			throw new UserFacingError("You need the Manage Server permission to change scheduled messages.");
+			throw new UserFacingError(
+				botCopy(
+					"You need the Manage Server permission to change scheduled messages.",
+					"تحتاج إلى صلاحية إدارة الخادم لتعديل الرسائل المجدولة.",
+				),
+			);
 		}
 
 		const ownerId = interaction.user.id;
@@ -62,8 +69,14 @@ export default defineButton({
 							id: SCHEDULE_PANEL_ID,
 							action: "save-time",
 							args: [id, ownerId],
-							title: "When to post it",
-							fields: [{ id: "in", label: "How long from now", placeholder: "30m, 2h or 3d" }],
+							title: botCopy("When to post it", "موعد النشر"),
+							fields: [
+								{
+									id: "in",
+									label: botCopy("How long from now", "المدة المتبقّية حتى النشر"),
+									placeholder: botCopy("30m, 2h or 3d", "مثل 30m أو 2h أو 3d"),
+								},
+							],
 						}),
 					);
 				}
@@ -71,7 +84,7 @@ export default defineButton({
 
 			case "save-time":
 				await changeSchedule(guild, id, { nextAt: postIn(typed(interaction, "in")) }, ownerId);
-				await editor("Moved.");
+				await editor(botCopy("Moved.", "عُدّل موعد النشر."));
 				return;
 
 			case "edit":
@@ -81,11 +94,11 @@ export default defineButton({
 							id: SCHEDULE_PANEL_ID,
 							action: "save-message",
 							args: [id, ownerId],
-							title: "Scheduled message",
+							title: botCopy("Scheduled message", "رسالة مجدولة"),
 							fields: [
 								{
 									id: "message",
-									label: "What to post",
+									label: botCopy("What to post", "نص الرسالة"),
 									paragraph: true,
 									maxLength: SCHEDULE_LIMITS.maxMessage,
 									value: (await readSchedule(guild, id)).message,
@@ -98,7 +111,7 @@ export default defineButton({
 
 			case "save-message":
 				await changeSchedule(guild, id, { message: typed(interaction, "message") }, ownerId);
-				await editor("Saved.");
+				await editor(botCopy("Saved.", "حُفظت الرسالة."));
 				return;
 
 			case "repeat": {
@@ -112,7 +125,7 @@ export default defineButton({
 				const channelId = await pickedChannelId(interaction, guild);
 				if (channelId === null) return;
 				await changeSchedule(guild, id, { channelId }, ownerId);
-				await editor(`It will post in <#${channelId}>.`);
+				await editor(botCopy(`It will post in <#${channelId}>.`, `ستُنشر الرسالة في <#${channelId}>.`));
 				return;
 			}
 
@@ -125,7 +138,11 @@ export default defineButton({
 				await removeSchedule(guild, id);
 				await redrawPanel(
 					interaction,
-					scheduleHub((await readSchedules(guild)).messages, ownerId, "Deleted. It will not be posted."),
+					scheduleHub(
+						(await readSchedules(guild)).messages,
+						ownerId,
+						botCopy("Deleted. It will not be posted.", "حُذفت الرسالة من جدول النشر."),
+					),
 				);
 				return;
 

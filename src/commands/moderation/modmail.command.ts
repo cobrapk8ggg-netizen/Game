@@ -1,4 +1,5 @@
 import { PermissionFlagsBits } from "discord.js";
+import { botCopy } from "@config/strings";
 import { defineCommand, inGuild } from "@core/command";
 import { UserFacingError } from "@core/errors";
 import { conversationByThread } from "@database/repositories/modmailRepository";
@@ -18,7 +19,10 @@ export default defineCommand({
 			async run(interaction) {
 				const guild = inGuild(interaction);
 				const settings = await readModmailSettings(guild);
-				if (!settings.enabled) throw new UserFacingError("This server does not take mod mail.");
+				if (!settings.enabled)
+					throw new UserFacingError(
+						botCopy("This server does not take mod mail.", "هذا الخادم لا يستقبل مراسلات الإشراف."),
+					);
 
 				await reply(interaction, writePanel(guild.name, guild.id, interaction.user.id));
 			},
@@ -32,7 +36,9 @@ export default defineCommand({
 				const conversation =
 					interaction.channel?.isThread() === true ? await conversationByThread(interaction.channel.id) : null;
 				if (conversation?.guildId !== guild.id) {
-					throw new UserFacingError("Run this inside an open mod mail thread.");
+					throw new UserFacingError(
+						botCopy("Run this inside an open mod mail thread.", "استخدم هذا الأمر داخل محادثة إشراف مفتوحة."),
+					);
 				}
 
 				await closeModmail(
@@ -42,7 +48,9 @@ export default defineCommand({
 					{ id: interaction.user.id, name: interaction.user.username },
 					"staff",
 				);
-				await reply(interaction, { embeds: [successEmbed("🔒 Closed. They have been told.")] });
+				await reply(interaction, {
+					embeds: [successEmbed(botCopy("🔒 Closed. They have been told.", "🔒 أُغلقت المحادثة وأُبلغ العضو."))],
+				});
 			},
 		},
 		{

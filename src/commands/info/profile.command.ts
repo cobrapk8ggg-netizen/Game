@@ -1,4 +1,4 @@
-import { strings } from "@config/strings";
+import { botCopy, strings } from "@config/strings";
 import { defineCommand } from "@core/command";
 import { UserFacingError } from "@core/errors";
 import { deleteProfile, getProfile } from "@database/repositories/profileRepository";
@@ -85,7 +85,13 @@ export default defineCommand({
 					hobbies: interaction.options.getString("hobbies"),
 					birthday: interaction.options.getString("birthday"),
 				});
-				if (!parsed.success) throw new UserFacingError("Write a bio and a favourite song, each within its limit.");
+				if (!parsed.success)
+					throw new UserFacingError(
+						botCopy(
+							"Write a bio and a favourite song, each within its limit.",
+							"اكتب نبذة عنك واسم أغنيتك المفضّلة، مع مراعاة الحدّ الأقصى لكل حقل.",
+						),
+					);
 
 				const problem = profileProblem(parsed.data);
 				if (problem !== null) throw new UserFacingError(PROBLEM_TEXT[problem]);
@@ -102,7 +108,8 @@ export default defineCommand({
 			description: "Delete your profile.",
 			async run(interaction) {
 				const removed = await deleteProfile(interaction.user.id);
-				if (!removed) throw new UserFacingError("You do not have a profile to delete.");
+				if (!removed)
+					throw new UserFacingError(botCopy("You do not have a profile to delete.", "ليس لديك ملف شخصي لحذفه."));
 
 				await reply(interaction, {
 					embeds: [successEmbed("Your profile has been deleted.")],

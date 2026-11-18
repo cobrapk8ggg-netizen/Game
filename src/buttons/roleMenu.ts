@@ -1,4 +1,5 @@
 import { MessageFlags } from "discord.js";
+import { botCopy } from "@config/strings";
 import { defineButton } from "@core/button";
 import { checkOpenControl, refusalText } from "@core/checks";
 import { UserFacingError } from "@core/errors";
@@ -21,10 +22,19 @@ export default defineButton({
 
 		const [menuId = ""] = context.args;
 		const menu = await findRoleMenu(guild.id, menuId);
-		if (menu === null) throw new UserFacingError("This role menu has been deleted. Ask a manager for a new one.");
+		if (menu === null)
+			throw new UserFacingError(
+				botCopy(
+					"This role menu has been deleted. Ask a manager for a new one.",
+					"حُذفت قائمة الرتب هذه. اطلب قائمة جديدة من أحد المشرفين.",
+				),
+			);
 
 		const member = await guild.members.fetch(interaction.user.id).catch(() => null);
-		if (member === null) throw new UserFacingError("I could not find you in this server.");
+		if (member === null)
+			throw new UserFacingError(
+				botCopy("I could not find you in this server.", "تعذّر العثور على عضويتك في هذا الخادم."),
+			);
 
 		if (context.action === "open" && interaction.isButton()) {
 			await interaction.reply({

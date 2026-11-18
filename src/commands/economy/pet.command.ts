@@ -1,5 +1,5 @@
 import { MessageFlags } from "discord.js";
-import { strings } from "@config/strings";
+import { botCopy, strings } from "@config/strings";
 import { defineCommand, inGuild } from "@core/command";
 import { UserFacingError } from "@core/errors";
 import { adjustWallet, debitWallet, requireAccount, setFields } from "@database/repositories/economyRepository";
@@ -51,10 +51,16 @@ export default defineCommand({
 				const guild = inGuild(interaction);
 				const account = await requireAccount(guild.id, interaction.user.id);
 				const pet = account.pet;
-				if (!pet?.petId) throw new UserFacingError("You do not have a pet yet. Adopt one from `/shop`.");
+				if (!pet?.petId)
+					throw new UserFacingError(
+						botCopy(
+							"You do not have a pet yet. Adopt one from `/shop`.",
+							"ليس لديك حيوان أليف بعد. تبنَّ واحدًا من المتجر باستخدام `/shop`.",
+						),
+					);
 
 				const name = interaction.options.getString("name", true).trim();
-				if (name.length === 0) throw new UserFacingError("Give it an actual name.");
+				if (name.length === 0) throw new UserFacingError(botCopy("Give it an actual name.", "أدخل اسمًا غير فارغ."));
 
 				await setFields(guild.id, interaction.user.id, { pet: { ...pet, name } });
 				await reply(interaction, { embeds: [successEmbed(`${pet.emoji ?? ""} is now called **${name}**.`)] });
@@ -69,7 +75,10 @@ export default defineCommand({
 				const guild = inGuild(interaction);
 				const account = await requireAccount(guild.id, interaction.user.id);
 				const pet = account.pet;
-				if (!pet?.petId) throw new UserFacingError("You do not have a pet to rehome.");
+				if (!pet?.petId)
+					throw new UserFacingError(
+						botCopy("You do not have a pet to rehome.", "ليس لديك حيوان أليف لتبحث له عن منزل جديد."),
+					);
 
 				const species = findPet(pet.petId);
 				const refund = Math.floor((species?.price ?? 0) / 2);
@@ -93,7 +102,13 @@ export default defineCommand({
 				const guild = inGuild(interaction);
 				const account = await requireAccount(guild.id, interaction.user.id);
 				const pet = account.pet;
-				if (!pet?.petId) throw new UserFacingError("You do not have a pet yet. Try `/pet shop`.");
+				if (!pet?.petId)
+					throw new UserFacingError(
+						botCopy(
+							"You do not have a pet yet. Try `/pet shop`.",
+							"ليس لديك حيوان أليف بعد. افتح متجر الحيوانات بالأمر `/pet shop`.",
+						),
+					);
 
 				const happiness = decayValue(pet.happiness, pet.lastWalked);
 				const hunger = decayValue(pet.hunger, pet.lastFed);
@@ -131,7 +146,7 @@ export default defineCommand({
 				const guild = inGuild(interaction);
 				const account = await requireAccount(guild.id, interaction.user.id);
 				const pet = account.pet;
-				if (!pet?.petId) throw new UserFacingError("You do not have a pet yet.");
+				if (!pet?.petId) throw new UserFacingError(botCopy("You do not have a pet yet.", "ليس لديك حيوان أليف بعد."));
 
 				const species = findPet(pet.petId);
 				const cost = species?.feedCost ?? 50;
@@ -158,7 +173,7 @@ export default defineCommand({
 				const guild = inGuild(interaction);
 				const account = await requireAccount(guild.id, interaction.user.id);
 				const pet = account.pet;
-				if (!pet?.petId) throw new UserFacingError("You do not have a pet yet.");
+				if (!pet?.petId) throw new UserFacingError(botCopy("You do not have a pet yet.", "ليس لديك حيوان أليف بعد."));
 
 				const species = findPet(pet.petId);
 				const happiness = Math.min(

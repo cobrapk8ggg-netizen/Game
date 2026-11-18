@@ -1,4 +1,5 @@
 import { PermissionFlagsBits } from "discord.js";
+import { botCopy } from "@config/strings";
 import { defineButton } from "@core/button";
 import { UserFacingError } from "@core/errors";
 import { disableAntiLink, getAntiLink, setAntiLink } from "@database/repositories/antiLinkRepository";
@@ -34,7 +35,12 @@ export default recordsSettings(
 			if (!interaction.isMessageComponent()) return;
 
 			if (interaction.memberPermissions?.has(PermissionFlagsBits.ManageGuild) !== true) {
-				throw new UserFacingError("You need the Manage Server permission to change link removal.");
+				throw new UserFacingError(
+					botCopy(
+						"You need the Manage Server permission to change link removal.",
+						"تحتاج إلى صلاحية إدارة الخادم لتعديل إعدادات حذف الروابط.",
+					),
+				);
 			}
 
 			const guildId = interaction.guild.id;

@@ -1,3 +1,4 @@
+import { botCopy } from "@config/strings";
 import { defineButton } from "@core/button";
 import { UserFacingError } from "@core/errors";
 import { resetGuild } from "@database/repositories/economyRepository";
@@ -13,7 +14,8 @@ export default defineButton({
 		if (!interaction.isButton()) return;
 
 		const guildId = interaction.guildId;
-		if (guildId === null) throw new UserFacingError("This only works inside a server.");
+		if (guildId === null)
+			throw new UserFacingError(botCopy("This only works inside a server.", "هذا الإجراء متاح داخل الخوادم فقط."));
 
 		if (context.action.endsWith("-no")) {
 			await interaction.update({ embeds: [successEmbed("Cancelled. Nothing was deleted.")], components: [] });

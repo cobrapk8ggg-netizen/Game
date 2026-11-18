@@ -1,4 +1,5 @@
 import { MessageFlags, PermissionFlagsBits } from "discord.js";
+import { botCopy } from "@config/strings";
 import { defineButton } from "@core/button";
 import { UserFacingError } from "@core/errors";
 import {
@@ -21,7 +22,12 @@ export default defineButton({
 		if (guildId === null) return;
 
 		if (interaction.memberPermissions?.has(PermissionFlagsBits.ManageGuild) !== true) {
-			throw new UserFacingError("You need the Manage Server permission to change the casino.");
+			throw new UserFacingError(
+				botCopy(
+					"You need the Manage Server permission to change the casino.",
+					"تحتاج إلى صلاحية إدارة الخادم لتعديل إعدادات ألعاب الحظ.",
+				),
+			);
 		}
 
 		const current = await readCasinoSettings(guildId);

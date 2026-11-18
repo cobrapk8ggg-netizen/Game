@@ -1,4 +1,5 @@
 import { PermissionFlagsBits } from "discord.js";
+import { botCopy } from "@config/strings";
 import { defineCommand, inGuild, textChannelOption } from "@core/command";
 import { UserFacingError } from "@core/errors";
 import { readerLanguage } from "@core/language";
@@ -45,7 +46,9 @@ export default defineCommand({
 				const guild = inGuild(interaction);
 				const channel = textChannelOption(interaction, "channel");
 				if (!channel?.isTextBased() || !channel.isSendable()) {
-					throw new UserFacingError("Pick a text channel I can send messages in.");
+					throw new UserFacingError(
+						botCopy("Pick a text channel I can send messages in.", "اختر قناة نصية أستطيع إرسال الرسائل إليها."),
+					);
 				}
 				requirePostable(channel, readerLanguage(interaction), [PermissionFlagsBits.EmbedLinks]);
 
@@ -69,10 +72,13 @@ export default defineCommand({
 			async run(interaction) {
 				const guild = inGuild(interaction);
 				const channel = textChannelOption(interaction, "channel");
-				if (!channel) throw new UserFacingError("I could not find that channel.");
+				if (!channel) throw new UserFacingError(botCopy("I could not find that channel.", "لم أجد تلك القناة."));
 
 				const removed = await removeSticky(guild.id, channel.id);
-				if (!removed) throw new UserFacingError("There is no sticky message in that channel.");
+				if (!removed)
+					throw new UserFacingError(
+						botCopy("There is no sticky message in that channel.", "لا توجد رسالة متكرّرة في تلك القناة."),
+					);
 
 				await reply(interaction, { embeds: [successEmbed(`Sticky message removed from ${channel}.`)] });
 			},

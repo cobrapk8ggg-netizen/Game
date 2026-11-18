@@ -1,4 +1,5 @@
 import { DAY_MS, WEEK_MS } from "@config/constants";
+import { botCopy } from "@config/strings";
 import { SCHEDULE_REPEATS, type ScheduleRepeat } from "@testify/shared";
 
 /** When a scheduled message posts next, in plain arithmetic so every case is a test rather than a wait. */
@@ -8,6 +9,16 @@ export const REPEAT_LABELS: Record<ScheduleRepeat, string> = {
 	daily: "Every day",
 	weekly: "Every week",
 };
+
+const REPEAT_LABELS_AR: Record<ScheduleRepeat, string> = {
+	once: "مرة واحدة",
+	daily: "كل يوم",
+	weekly: "كل أسبوع",
+};
+
+export function repeatLabel(repeat: ScheduleRepeat): string {
+	return botCopy(REPEAT_LABELS[repeat], REPEAT_LABELS_AR[repeat]);
+}
 
 const EVERY: Record<Exclude<ScheduleRepeat, "once">, number> = { daily: DAY_MS, weekly: WEEK_MS };
 

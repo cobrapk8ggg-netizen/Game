@@ -1,4 +1,5 @@
 import { PermissionFlagsBits } from "discord.js";
+import { botCopy } from "@config/strings";
 import { asMember, defineCommand, inGuild, inTextChannel, type CommandInput, type CommandOption } from "@core/command";
 import { UserFacingError } from "@core/errors";
 import { attachHandMessage } from "@database/repositories/casinoRepository";
@@ -86,7 +87,10 @@ export default defineCommand({
 				};
 
 				const round = await openRound({ guildId: player.guildId, channelId: channel.id, messageId: null }, host, chip);
-				if (round === null) throw new UserFacingError("Could not open a roulette table. Try again.");
+				if (round === null)
+					throw new UserFacingError(
+						botCopy("Could not open a roulette table. Try again.", "تعذّر فتح طاولة الروليت. أعد المحاولة."),
+					);
 
 				await reply(interaction, roundBettingMessage(await tableView(round)));
 				await rememberRoundMessage(String(round._id), (await interaction.fetchReply()).id);
@@ -183,7 +187,12 @@ export default defineCommand({
 			async run(interaction, client) {
 				const bet = interaction.options.getString("bet", true).toLowerCase();
 				if (bet !== "under" && bet !== "seven" && bet !== "over") {
-					throw new UserFacingError("Bet `under`, `seven` or `over`.");
+					throw new UserFacingError(
+						botCopy(
+							"Bet `under`, `seven` or `over`.",
+							"اختر `under` لأقل من سبعة، أو `seven` لسبعة بالضبط، أو `over` لأكثر من سبعة.",
+						),
+					);
 				}
 				await playInstant(
 					interaction,

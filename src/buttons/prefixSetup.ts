@@ -1,5 +1,6 @@
 import { PermissionFlagsBits } from "discord.js";
 import { DEFAULT_PREFIX } from "@config/constants";
+import { botCopy } from "@config/strings";
 import { defineButton } from "@core/button";
 import { UserFacingError } from "@core/errors";
 import { getPrefixConfig, setPrefix, setPrefixEnabled } from "@database/repositories/prefixRepository";
@@ -27,7 +28,12 @@ export default recordsSettings(
 			if (interaction.guild === null) return;
 
 			if (interaction.memberPermissions?.has(PermissionFlagsBits.ManageGuild) !== true) {
-				throw new UserFacingError("You need the Manage Server permission to change the prefix.");
+				throw new UserFacingError(
+					botCopy(
+						"You need the Manage Server permission to change the prefix.",
+						"تحتاج إلى صلاحية إدارة الخادم لتعديل بادئة الأوامر.",
+					),
+				);
 			}
 
 			const guildId = interaction.guild.id;

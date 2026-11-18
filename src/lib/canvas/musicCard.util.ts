@@ -4,8 +4,9 @@ import { createCanvas, fetchPicture, roundedRect, type SKRSContext2D } from "@li
 import { DISPLAY, drawText, measureText, type TextStyle, wrapLines } from "@lib/canvas/text.util";
 import { coverRect } from "@lib/canvas/welcomeCard.util";
 import { formatClock } from "@lib/format/format.util";
-import { MUSIC_SOURCE_NAMES, musicSourceName } from "@lib/music/music.constants";
+import { MUSIC_SOURCE_NAMES } from "@lib/music/music.constants";
 import { type Track } from "@lib/music/music.types";
+import { musicSourceName } from "@lib/music/musicFormat.util";
 
 /** The now-playing card: the track's artwork, blurred behind itself, with its title and artist beside it. */
 

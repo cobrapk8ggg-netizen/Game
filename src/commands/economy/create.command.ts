@@ -1,4 +1,5 @@
 import { PermissionFlagsBits } from "discord.js";
+import { botCopy } from "@config/strings";
 import { asMember, defineCommand, inGuild } from "@core/command";
 import { UserFacingError } from "@core/errors";
 import { createAccount, deleteAccount, findAccount } from "@database/repositories/economyRepository";
@@ -21,7 +22,8 @@ export default defineCommand({
 			async run(interaction) {
 				const guild = inGuild(interaction);
 				const account = await createAccount(guild.id, interaction.user.id);
-				if (!account) throw new UserFacingError("You already have an account here.");
+				if (!account)
+					throw new UserFacingError(botCopy("You already have an account here.", "لديك حساب في هذا الخادم بالفعل."));
 
 				await reply(interaction, {
 					embeds: [
@@ -38,7 +40,8 @@ export default defineCommand({
 			async run(interaction) {
 				const guild = inGuild(interaction);
 				const deleted = await deleteAccount(guild.id, interaction.user.id);
-				if (!deleted) throw new UserFacingError("You do not have an account here.");
+				if (!deleted)
+					throw new UserFacingError(botCopy("You do not have an account here.", "ليس لديك حساب في هذا الخادم."));
 
 				await reply(interaction, { embeds: [successEmbed("Your economy account has been deleted.")] });
 			},

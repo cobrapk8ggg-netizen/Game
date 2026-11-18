@@ -1,5 +1,6 @@
 import { DAY_MS } from "@config/constants";
-import { MONTHS } from "@testify/shared";
+import { botCopy } from "@config/strings";
+import { DEFAULT_BIRTHDAY_MESSAGE, MONTHS } from "@testify/shared";
 
 /** Which birthdays fall today and which come next, in UTC, as arithmetic every case of which is a test. */
 
@@ -16,8 +17,27 @@ export function birthdaysOn(now: Date): { day: number; month: number }[] {
 	return dates;
 }
 
+const MONTHS_AR = [
+	"يناير",
+	"فبراير",
+	"مارس",
+	"أبريل",
+	"مايو",
+	"يونيو",
+	"يوليو",
+	"أغسطس",
+	"سبتمبر",
+	"أكتوبر",
+	"نوفمبر",
+	"ديسمبر",
+];
+
+export function birthdayMessage(message: string): string {
+	return message === DEFAULT_BIRTHDAY_MESSAGE ? botCopy(message, "كلّ عام وأنت بخير، {user}! 🎂") : message;
+}
+
 export function dayMonth(day: number, month: number): string {
-	return `${String(day)} ${MONTHS[month - 1] ?? ""}`;
+	return `${String(day)} ${botCopy(MONTHS[month - 1] ?? "", MONTHS_AR[month - 1] ?? "")}`;
 }
 
 /** Whole days until the birthday next comes round, counting today as 0. */

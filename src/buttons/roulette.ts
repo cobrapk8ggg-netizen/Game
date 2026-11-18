@@ -1,4 +1,5 @@
 import { MessageFlags } from "discord.js";
+import { botCopy } from "@config/strings";
 import { type ComponentInteraction, defineButton } from "@core/button";
 import { checkCasinoPlay, refusalText } from "@core/checks";
 import { type TestifyClient } from "@core/client";
@@ -79,7 +80,13 @@ export default defineButton({
 			case "numset": {
 				if (!interaction.isModalSubmit() || !interaction.isFromMessage()) return;
 				const numbers = parseNumbers(interaction.fields.getTextInputValue("numbers"));
-				if (numbers === null) throw new UserFacingError("Give numbers from 0 to 36, like `17` or `7 17 32`.");
+				if (numbers === null)
+					throw new UserFacingError(
+						botCopy(
+							"Give numbers from 0 to 36, like `17` or `7 17 32`.",
+							"أدخل أرقامًا من ٠ إلى ٣٦، مثل `17` أو `7 17 32`.",
+						),
+					);
 
 				await admit(context.client, seat);
 				const round = await placeBets(
@@ -142,7 +149,12 @@ export default defineButton({
 				if (!Number.isSafeInteger(chip) || chip <= 0) return;
 				const isPrivate = access === "private";
 				if (isPrivate && hostId !== seat.userId) {
-					throw new UserFacingError("That was a private table. Open your own with `/casino roulette`.");
+					throw new UserFacingError(
+						botCopy(
+							"That was a private table. Open your own with `/casino roulette`.",
+							"كانت تلك طاولة خاصة. افتح طاولتك باستخدام `/casino roulette`.",
+						),
+					);
 				}
 
 				await admit(context.client, seat);
@@ -151,7 +163,10 @@ export default defineButton({
 					{ userId: seat.userId, name: seat.name, private: isPrivate },
 					chip,
 				);
-				if (round === null) throw new UserFacingError("A new round is already starting here.");
+				if (round === null)
+					throw new UserFacingError(
+						botCopy("A new round is already starting here.", "بدأت هنا بالفعل إجراءات الجولة التالية."),
+					);
 				await interaction.update(roundBettingMessage(await tableView(round)));
 				return;
 			}

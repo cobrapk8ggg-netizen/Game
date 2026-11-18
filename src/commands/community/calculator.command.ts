@@ -1,4 +1,5 @@
 import { evaluate, format, isFunctionNode, isSymbolNode, type MathNode, parse } from "mathjs";
+import { botCopy } from "@config/strings";
 import { defineCommand } from "@core/command";
 import { UserFacingError } from "@core/errors";
 import { embed, reply } from "@lib/discord";
@@ -82,14 +83,20 @@ export default defineCommand({
 	async run(interaction) {
 		const expression = interaction.options.getString("expression", true).trim();
 
-		if (expression.length > 200) throw new UserFacingError("That expression is too long.");
+		if (expression.length > 200)
+			throw new UserFacingError(botCopy("That expression is too long.", "التعبير أطول من الحدّ المسموح."));
 
 		// Parsing builds a tree without running anything, so the check happens before any of it is evaluated.
 		let tree: MathNode;
 		try {
 			tree = parse(expression);
 		} catch {
-			throw new UserFacingError("I could not work that out. Check the syntax and try again.");
+			throw new UserFacingError(
+				botCopy(
+					"I could not work that out. Check the syntax and try again.",
+					"تعذّر حساب نتيجة التعبير. تحقّق من طريقة كتابته وأعد المحاولة.",
+				),
+			);
 		}
 
 		const unsupported = unsupportedPart(tree);
@@ -101,11 +108,16 @@ export default defineCommand({
 		try {
 			result = evaluate(expression);
 		} catch {
-			throw new UserFacingError("I could not work that out. Check the syntax and try again.");
+			throw new UserFacingError(
+				botCopy(
+					"I could not work that out. Check the syntax and try again.",
+					"تعذّر حساب نتيجة التعبير. تحقّق من طريقة كتابته وأعد المحاولة.",
+				),
+			);
 		}
 
 		if (typeof result === "function" || result === undefined) {
-			throw new UserFacingError("That expression did not produce a value.");
+			throw new UserFacingError(botCopy("That expression did not produce a value.", "لم يُنتج التعبير قيمة."));
 		}
 
 		// mathjs returns objects for matrices, units and complex numbers, so its own formatter is used.

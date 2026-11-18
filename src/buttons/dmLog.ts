@@ -1,4 +1,5 @@
 import { DiscordAPIError, MessageFlags, RESTJSONErrorCodes } from "discord.js";
+import { botCopy } from "@config/strings";
 import { defineButton } from "@core/button";
 import { UserFacingError } from "@core/errors";
 import { findDirectMessage } from "@database/repositories/profileRepository";
@@ -13,12 +14,17 @@ export default defineButton({
 	async run(interaction, context) {
 		const { client } = context;
 		// Reply speaks as the bot, so only the people who own it may use any of these.
-		if (!client.isOwner(interaction.user.id)) throw new UserFacingError("Only the bot's owners can use these.");
+		if (!client.isOwner(interaction.user.id))
+			throw new UserFacingError(
+				botCopy("Only the bot's owners can use these.", "يقتصر استخدام هذه الأدوات على مالكي البوت."),
+			);
 
 		const [authorId] = context.args;
-		if (authorId === undefined) throw new UserFacingError("That button is no longer valid.");
+		if (authorId === undefined)
+			throw new UserFacingError(botCopy("That button is no longer valid.", "انتهت صلاحية هذا الزر."));
 		const author = await client.users.fetch(authorId).catch(() => null);
-		if (author === null) throw new UserFacingError("I could not find that user any more.");
+		if (author === null)
+			throw new UserFacingError(botCopy("I could not find that user any more.", "تعذّر العثور على ذلك المستخدم."));
 
 		switch (context.action) {
 			case "info":
@@ -29,7 +35,10 @@ export default defineButton({
 			case "back": {
 				if (!interaction.isButton()) return;
 				const dm = await findDirectMessage(interaction.message.id);
-				if (dm === null) throw new UserFacingError("I no longer have that message on record.");
+				if (dm === null)
+					throw new UserFacingError(
+						botCopy("I no longer have that message on record.", "تلك الرسالة لم تعد محفوظة في سجلي."),
+					);
 				await interaction.update(
 					dmLogMessage(loggedUser(author), {
 						content: dm.content,
@@ -56,7 +65,7 @@ export default defineButton({
 			case "send": {
 				if (!interaction.isModalSubmit()) return;
 				const text = interaction.fields.getTextInputValue("text").trim();
-				if (text === "") throw new UserFacingError("There was nothing to send.");
+				if (text === "") throw new UserFacingError(botCopy("There was nothing to send.", "لا يوجد شيء لإرساله."));
 
 				try {
 					await author.send({ content: text, allowedMentions: { parse: [] } });

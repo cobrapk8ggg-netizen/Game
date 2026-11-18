@@ -1,4 +1,5 @@
 import { PermissionFlagsBits } from "discord.js";
+import { botCopy } from "@config/strings";
 import { defineCommand, inGuild } from "@core/command";
 import { UserFacingError } from "@core/errors";
 import { embed, reply } from "@lib/discord";
@@ -33,7 +34,10 @@ export default defineCommand({
 
 				if (!url.startsWith("https://")) {
 					throw new UserFacingError(
-						"Provide a custom emoji or an `https://` image URL. Default emoji cannot be added.",
+						botCopy(
+							"Provide a custom emoji or an `https://` image URL. Default emoji cannot be added.",
+							"أدخل رمزًا تعبيريًا مخصّصًا أو رابط صورة يبدأ بـ `https://`. لا يمكن إضافة الرموز التعبيرية المدمجة.",
+						),
 					);
 				}
 
@@ -66,7 +70,8 @@ export default defineCommand({
 			async run(interaction) {
 				const guild = inGuild(interaction);
 				const url = interaction.options.getAttachment("sticker")?.url;
-				if (url === undefined) throw new UserFacingError("Attach an image to use as the sticker.");
+				if (url === undefined)
+					throw new UserFacingError(botCopy("Attach an image to use as the sticker.", "أرفق صورة لاستخدامها ملصقًا."));
 
 				const created = await guild.stickers.create({
 					file: url,

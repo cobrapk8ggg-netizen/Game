@@ -1,4 +1,5 @@
 import { z } from "zod";
+import { botCopy } from "@config/strings";
 import { botName } from "@core/brand";
 import { defineCommand } from "@core/command";
 import { UserFacingError } from "@core/errors";
@@ -58,7 +59,13 @@ export default defineCommand({
 			.filter((post) => /\.(png|jpe?g|gif|webp)$/i.test(post.url));
 
 		const post = posts[Math.floor(Math.random() * posts.length)];
-		if (!post) throw new UserFacingError("I could not find a suitable meme just now. Try again.");
+		if (!post)
+			throw new UserFacingError(
+				botCopy(
+					"I could not find a suitable meme just now. Try again.",
+					"لم أجد صورة ساخرة مناسبة هذه المرّة. أعد المحاولة.",
+				),
+			);
 
 		await reply(interaction, {
 			embeds: [

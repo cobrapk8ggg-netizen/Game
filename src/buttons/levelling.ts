@@ -1,4 +1,5 @@
 import { PermissionFlagsBits } from "discord.js";
+import { botCopy } from "@config/strings";
 import { defineButton } from "@core/button";
 import { UserFacingError } from "@core/errors";
 import { deleteLevelSettings, getLevelSettings, saveLevelSettings } from "@database/repositories/levelRepository";
@@ -46,7 +47,12 @@ export default recordsSettings(
 			if (interaction.guild === null) return;
 
 			if (interaction.memberPermissions?.has(PermissionFlagsBits.ManageGuild) !== true) {
-				throw new UserFacingError("You need the Manage Server permission to change the levelling settings.");
+				throw new UserFacingError(
+					botCopy(
+						"You need the Manage Server permission to change the levelling settings.",
+						"تحتاج إلى صلاحية إدارة الخادم لتعديل إعدادات نظام المستويات.",
+					),
+				);
 			}
 
 			const guildId = interaction.guild.id;
@@ -117,7 +123,13 @@ export default recordsSettings(
 					if (roleId === undefined) return;
 
 					const boost = config.boosts.find((entry) => entry.roleId === roleId);
-					if (boost === undefined) throw new UserFacingError("That role is not boosting any more. Reopen the panel.");
+					if (boost === undefined)
+						throw new UserFacingError(
+							botCopy(
+								"That role is not boosting any more. Reopen the panel.",
+								"لم تعد تلك الرتبة تمنح مضاعفًا للخبرة. أعد فتح اللوحة.",
+							),
+						);
 
 					await save({ ...config, boosts: withBoost(config.boosts, roleId, nextMultiplier(boost.multiplier)) });
 					return;

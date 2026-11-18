@@ -1,4 +1,5 @@
 import { PermissionFlagsBits } from "discord.js";
+import { botCopy } from "@config/strings";
 import { defineCommand, inGuild } from "@core/command";
 import { UserFacingError } from "@core/errors";
 import { embed, reply, successEmbed } from "@lib/discord";
@@ -76,7 +77,10 @@ export default defineCommand({
 				await interaction.deferReply();
 
 				const word = interaction.options.getString("word", true).trim();
-				if (word === "") throw new UserFacingError("Give a word or phrase to block.");
+				if (word === "")
+					throw new UserFacingError(
+						botCopy("Give a word or phrase to block.", "أدخل الكلمة أو العبارة التي تريد حظرها."),
+					);
 
 				const rule = await createAutomodRule(
 					guild,
@@ -116,7 +120,10 @@ export default defineCommand({
 				const ruleId = interaction.options.getString("rule-id", true).trim();
 
 				const rule = await guild.autoModerationRules.fetch(ruleId).catch(() => null);
-				if (!rule) throw new UserFacingError("No AutoMod rule with that id exists here.");
+				if (!rule)
+					throw new UserFacingError(
+						botCopy("No AutoMod rule with that id exists here.", "لا توجد قاعدة إشراف آلي بهذا المعرّف في الخادم."),
+					);
 
 				const change = await changeRule(() => rule.delete(`Removed by ${interaction.user.username}`));
 				if (change.outcome === "refused") {
@@ -128,7 +135,10 @@ export default defineCommand({
 						`Discord would not let me remove **${rule.name}**. Remove it under **Server Settings → AutoMod** instead.`,
 					);
 				}
-				if (change.outcome === "unavailable") throw new UserFacingError("Discord did not answer. Try again shortly.");
+				if (change.outcome === "unavailable")
+					throw new UserFacingError(
+						botCopy("Discord did not answer. Try again shortly.", "لم يستجب ديسكورد. أعد المحاولة بعد قليل."),
+					);
 				await reply(interaction, { embeds: [successEmbed(`Deleted AutoMod rule **${rule.name}**.`)] });
 			},
 		},

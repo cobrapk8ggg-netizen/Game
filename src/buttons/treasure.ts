@@ -1,4 +1,5 @@
 import { ButtonStyle, MessageFlags, PermissionFlagsBits } from "discord.js";
+import { botCopy } from "@config/strings";
 import { defineButton } from "@core/button";
 import { UserFacingError } from "@core/errors";
 import { getTreasureConfig, saveTreasureConfig } from "@database/repositories/treasureRepository";
@@ -67,7 +68,12 @@ export default recordsSettings(
 
 			// The panel is public, so anyone could press it — the permission is the gate.
 			if (interaction.memberPermissions?.has(PermissionFlagsBits.ManageGuild) !== true) {
-				throw new UserFacingError("You need the Manage Server permission to change these settings.");
+				throw new UserFacingError(
+					botCopy(
+						"You need the Manage Server permission to change these settings.",
+						"تحتاج إلى صلاحية إدارة الخادم لتعديل هذه الإعدادات.",
+					),
+				);
 			}
 
 			const current = settingsOf(await getTreasureConfig(guildId));

@@ -1,4 +1,5 @@
 import { setTimeout as wait } from "node:timers/promises";
+import { botCopy } from "@config/strings";
 import { defineCommand } from "@core/command";
 import { UserFacingError } from "@core/errors";
 import { embed, reply } from "@lib/discord";
@@ -16,8 +17,17 @@ export default defineCommand({
 
 	async run(interaction, client) {
 		const target = interaction.options.getUser("user", true);
-		if (target.id === client.user?.id) throw new UserFacingError("Nice try. I already know all my own passwords.");
-		if (target.bot) throw new UserFacingError("Bots have nothing worth hacking. Pick a person.");
+		if (target.id === client.user?.id)
+			throw new UserFacingError(
+				botCopy("Nice try. I already know all my own passwords.", "محاولة حلوة! بس كلمات مروري عندي، ومخبّيها زين. 😄"),
+			);
+		if (target.bot)
+			throw new UserFacingError(
+				botCopy(
+					"Bots have nothing worth hacking. Pick a person.",
+					"حتى لو فتّشت جيب البوت، ما تلگه بيه شي. اختَر لاعبًا بشريًا. 😄",
+				),
+			);
 
 		const self = target.id === interaction.user.id;
 		const name = target.username;

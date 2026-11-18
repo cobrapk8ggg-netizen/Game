@@ -1,4 +1,5 @@
 import { z } from "zod";
+import { botCopy } from "@config/strings";
 import { defineCommand } from "@core/command";
 import { UserFacingError } from "@core/errors";
 import { embed, reply } from "@lib/discord";
@@ -61,7 +62,8 @@ export default defineCommand({
 			.join("")
 			.trim();
 
-		if (translated.length === 0) throw new UserFacingError("I could not translate that.");
+		if (translated.length === 0)
+			throw new UserFacingError(botCopy("I could not translate that.", "تعذّرت ترجمة هذا النص."));
 
 		await reply(interaction, {
 			embeds: [

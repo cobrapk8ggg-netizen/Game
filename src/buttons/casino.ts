@@ -1,4 +1,5 @@
 import { type MessageComponentInteraction } from "discord.js";
+import { botCopy } from "@config/strings";
 import { defineButton } from "@core/button";
 import { checkCasinoPlay, refusalText } from "@core/checks";
 import { type TestifyClient } from "@core/client";
@@ -24,7 +25,12 @@ import {
 import { type CasinoGame, isCasinoGame } from "@testify/shared";
 
 const stale = (): UserFacingError =>
-	new UserFacingError("That button no longer knows what it was for. Start a new game.");
+	new UserFacingError(
+		botCopy(
+			"That button no longer knows what it was for. Start a new game.",
+			"انتهت صلاحية زرّ اللعبة. ابدأ لعبة جديدة.",
+		),
+	);
 
 /** Every new game passes the gates the command does, not only the ones the old message was sent through. */
 async function admit(client: TestifyClient, player: Player, game: CasinoGame): Promise<void> {
@@ -51,7 +57,10 @@ async function playAgain(
 			{ userId: player.userId, name: interaction.user.globalName ?? interaction.user.username, private: false },
 			chip,
 		);
-		if (round === null) throw new UserFacingError("A new round is already starting here.");
+		if (round === null)
+			throw new UserFacingError(
+				botCopy("A new round is already starting here.", "بدأت هنا بالفعل إجراءات الجولة التالية."),
+			);
 		await interaction.update(roundBettingMessage(await tableView(round)));
 		return;
 	}

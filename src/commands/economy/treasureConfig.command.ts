@@ -1,6 +1,7 @@
 import { PermissionFlagsBits } from "discord.js";
 import { settingsOf, treasurePanel } from "@buttons/treasure";
 import { TREASURE_DEFAULTS } from "@config/constants";
+import { botCopy } from "@config/strings";
 import { defineCommand, inGuild } from "@core/command";
 import { UserFacingError } from "@core/errors";
 import { getTreasureConfig, saveTreasureConfig } from "@database/repositories/treasureRepository";
@@ -54,8 +55,19 @@ export default recordsSettings(
 						interaction.options.getInteger("max-amount") ?? existing?.maxAmount ?? TREASURE_DEFAULTS.maxAmount;
 
 					if (minMessages > maxMessages)
-						throw new UserFacingError("The minimum message count cannot exceed the maximum.");
-					if (minAmount > maxAmount) throw new UserFacingError("The minimum amount cannot exceed the maximum.");
+						throw new UserFacingError(
+							botCopy(
+								"The minimum message count cannot exceed the maximum.",
+								"يجب أن يكون الحدّ الأدنى لعدد الرسائل مساويًا للحدّ الأقصى أو أقل منه.",
+							),
+						);
+					if (minAmount > maxAmount)
+						throw new UserFacingError(
+							botCopy(
+								"The minimum amount cannot exceed the maximum.",
+								"يجب أن يكون الحدّ الأدنى للمبلغ مساويًا للحدّ الأقصى أو أقل منه.",
+							),
+						);
 
 					await saveTreasureConfig(guild.id, {
 						isEnabled: interaction.options.getBoolean("enabled", true),

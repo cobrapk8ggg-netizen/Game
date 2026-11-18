@@ -1,4 +1,5 @@
 import { type Guild, PermissionFlagsBits } from "discord.js";
+import { botCopy } from "@config/strings";
 import { defineButton } from "@core/button";
 import { UserFacingError } from "@core/errors";
 import { getAutoRoles, setAutoRoles } from "@database/repositories/autoRoleRepository";
@@ -24,7 +25,12 @@ export default recordsSettings(
 			if (!interaction.isMessageComponent()) return;
 
 			if (interaction.memberPermissions?.has(PermissionFlagsBits.ManageRoles) !== true) {
-				throw new UserFacingError("You need the Manage Roles permission to change the auto-roles.");
+				throw new UserFacingError(
+					botCopy(
+						"You need the Manage Roles permission to change the auto-roles.",
+						"تحتاج إلى صلاحية إدارة الرتب لتعديل الرتب التلقائية.",
+					),
+				);
 			}
 
 			const guild = interaction.guild;

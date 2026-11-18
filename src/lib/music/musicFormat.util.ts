@@ -1,5 +1,12 @@
-import { MAX_VOLUME, MIN_VOLUME, UNITY_VOLUME } from "@lib/music/music.constants";
-import { type RemoteFormat, type StreamShape, type StreamPlan } from "@lib/music/music.types";
+import { botCopy } from "@config/strings";
+import { MAX_VOLUME, MIN_VOLUME, MUSIC_SOURCE_NAMES, UNITY_VOLUME } from "@lib/music/music.constants";
+import {
+	type LoopMode,
+	type MusicSource,
+	type RemoteFormat,
+	type StreamShape,
+	type StreamPlan,
+} from "@lib/music/music.types";
 /** Choosing which of a track's formats to play, and whether that choice needs a transcoder. */
 
 export function clampVolume(volume: number): number {
@@ -78,4 +85,25 @@ export function planStream(formats: RemoteFormat[], options: PlanOptions): Strea
 	const audio = formats.filter(isAudioOnly);
 
 	return planWithin(inOriginalVoice(audio), options) ?? planWithin(audio, options);
+}
+
+const ARABIC_SOURCE_NAMES: Record<MusicSource, string> = {
+	youtube: "يوتيوب",
+	soundcloud: "ساوند كلاود",
+	spotify: "سبوتيفاي",
+	other: "الويب",
+};
+
+export function musicSourceName(source: MusicSource): string {
+	return botCopy(MUSIC_SOURCE_NAMES[source], ARABIC_SOURCE_NAMES[source]);
+}
+
+const ARABIC_LOOP_MODES: Record<LoopMode, string> = {
+	off: "بلا تكرار",
+	track: "المقطع الحالي",
+	queue: "قائمة الانتظار",
+};
+
+export function loopModeName(mode: LoopMode): string {
+	return botCopy(mode, ARABIC_LOOP_MODES[mode]);
 }

@@ -1,4 +1,5 @@
 import { PermissionFlagsBits } from "discord.js";
+import { botCopy } from "@config/strings";
 import { defineCommand, inGuild, textChannelOption } from "@core/command";
 import { UserFacingError } from "@core/errors";
 import { readerLanguage } from "@core/language";
@@ -33,12 +34,17 @@ export default defineCommand({
 
 				const durationMs = parseDuration(interaction.options.getString("duration", true));
 				if (durationMs === null || durationMs <= 0) {
-					throw new UserFacingError("That duration is not valid. Try `1h`, `12h` or `3d`.");
+					throw new UserFacingError(
+						botCopy(
+							"That duration is not valid. Try `1h`, `12h` or `3d`.",
+							"صيغة المدة غير صالحة. جرّب `1h` أو `12h` أو `3d`.",
+						),
+					);
 				}
 
 				const channel = textChannelOption(interaction, "channel") ?? interaction.channel;
 				if (!channel?.isTextBased() || !("guild" in channel)) {
-					throw new UserFacingError("Pick a text channel in this server.");
+					throw new UserFacingError(botCopy("Pick a text channel in this server.", "اختر قناة نصية في هذا الخادم."));
 				}
 				requirePostable(channel, readerLanguage(interaction), [PermissionFlagsBits.EmbedLinks]);
 

@@ -1,6 +1,6 @@
 import { type ColorResolvable, type User } from "discord.js";
 import { ECONOMY, ECONOMY_COOLDOWNS } from "@config/constants";
-import { strings } from "@config/strings";
+import { botCopy, strings } from "@config/strings";
 import { theme } from "@config/theme";
 import { defineCommand, inGuild } from "@core/command";
 import { UserFacingError } from "@core/errors";
@@ -54,7 +54,9 @@ export default defineCommand({
 		const target = interaction.options.getUser("user", true);
 
 		if (!(await getTuning(guild.id)).robbing) {
-			throw new UserFacingError("Robbing is switched off in this server.");
+			throw new UserFacingError(
+				botCopy("Robbing is switched off in this server.", "لعبة السرقة معطّلة في هذا الخادم."),
+			);
 		}
 		if (target.id === interaction.user.id) throw new UserFacingError(strings.economy.selfTarget);
 		if (target.bot) throw new UserFacingError(strings.economy.botTarget);

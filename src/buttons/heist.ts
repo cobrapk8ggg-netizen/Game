@@ -1,4 +1,5 @@
 import { ECONOMY } from "@config/constants";
+import { botCopy } from "@config/strings";
 import { defineButton } from "@core/button";
 import { UserFacingError } from "@core/errors";
 import { findAccount } from "@database/repositories/economyRepository";
@@ -13,16 +14,22 @@ export default defineButton({
 		if (!interaction.isButton()) return;
 
 		const [guildId] = context.args;
-		if (guildId === undefined) throw new UserFacingError("That heist has already finished.");
+		if (guildId === undefined)
+			throw new UserFacingError(botCopy("That heist has already finished.", "انتهت عملية السطو هذه بالفعل."));
 
 		const heists = activeHeists();
 		const state = heists.get(guildId);
-		if (!state) throw new UserFacingError("That heist has already finished.");
+		if (!state) throw new UserFacingError(botCopy("That heist has already finished.", "انتهت عملية السطو هذه بالفعل."));
 
 		if (context.action === "start") {
 			const [, leaderId] = context.args;
 			if (leaderId !== interaction.user.id) {
-				throw new UserFacingError("Only the person who started the heist can begin it early.");
+				throw new UserFacingError(
+					botCopy(
+						"Only the person who started the heist can begin it early.",
+						"لا يستطيع تقديم موعد عملية السطو إلا اللاعب الذي نظّمها.",
+					),
+				);
 			}
 			context.client.timers.stop(`heist:${guildId}`);
 			await interaction.deferUpdate();
@@ -32,10 +39,10 @@ export default defineButton({
 		if (context.action !== "join") return;
 
 		if (state.participants.has(interaction.user.id)) {
-			throw new UserFacingError("You are already part of this crew.");
+			throw new UserFacingError(botCopy("You are already part of this crew.", "أنت عضو في هذا الفريق بالفعل."));
 		}
 		if (state.participants.size >= ECONOMY.heistMaxPlayers) {
-			throw new UserFacingError("This crew is already full.");
+			throw new UserFacingError(botCopy("This crew is already full.", "اكتمل عدد أفراد الفريق."));
 		}
 
 		const account = await findAccount(guildId, interaction.user.id);

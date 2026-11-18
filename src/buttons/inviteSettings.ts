@@ -1,4 +1,5 @@
 import { PermissionFlagsBits } from "discord.js";
+import { botCopy } from "@config/strings";
 import { defineButton } from "@core/button";
 import { UserFacingError } from "@core/errors";
 import { applyInviteSettings, INVITE_SETTINGS_ID, inviteSettingsPanel, readInviteSettings } from "@lib/invites";
@@ -12,7 +13,12 @@ export default defineButton({
 		if (guild === null || !interaction.isMessageComponent()) return;
 
 		if (interaction.memberPermissions?.has(PermissionFlagsBits.ManageGuild) !== true) {
-			throw new UserFacingError("You need the Manage Server permission to change invite tracking.");
+			throw new UserFacingError(
+				botCopy(
+					"You need the Manage Server permission to change invite tracking.",
+					"تحتاج إلى صلاحية إدارة الخادم لتعديل إعدادات تتبّع الدعوات.",
+				),
+			);
 		}
 
 		const ownerId = interaction.user.id;

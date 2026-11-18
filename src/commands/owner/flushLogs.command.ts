@@ -1,3 +1,4 @@
+import { botCopy } from "@config/strings";
 import { defineCommand, inTextChannel } from "@core/command";
 import { UserFacingError } from "@core/errors";
 import { reply, successEmbed } from "@lib/discord";
@@ -22,7 +23,10 @@ export default defineCommand({
 		const fetched = await channel.messages.fetch({ limit: MAX_FLUSH });
 		const mine = [...fetched.values()].filter((message) => message.author.id === client.user?.id).slice(0, limit);
 
-		if (mine.length === 0) throw new UserFacingError("I have no recent messages to remove here.");
+		if (mine.length === 0)
+			throw new UserFacingError(
+				botCopy("I have no recent messages to remove here.", "ليست لديّ رسائل حديثة يمكن حذفها هنا."),
+			);
 
 		const deleted = await channel.bulkDelete(mine, true);
 		await reply(interaction, {

@@ -1,4 +1,5 @@
 import { PermissionFlagsBits } from "discord.js";
+import { botCopy } from "@config/strings";
 import { type CommandInput, defineCommand, inGuild } from "@core/command";
 import { UserFacingError } from "@core/errors";
 import { deleteLevelSettings, getLevelSettings } from "@database/repositories/levelRepository";
@@ -65,7 +66,10 @@ export default recordsSettings(
 				async run(interaction) {
 					const guild = inGuild(interaction);
 					const removed = await deleteLevelSettings(guild.id);
-					if (!removed) throw new UserFacingError("Levelling is not configured here.");
+					if (!removed)
+						throw new UserFacingError(
+							botCopy("Levelling is not configured here.", "لم تُضبط إعدادات نظام المستويات في هذا الخادم."),
+						);
 
 					await reply(interaction, {
 						embeds: [successEmbed("Levelling configuration removed. Everyone keeps the XP they earned.")],

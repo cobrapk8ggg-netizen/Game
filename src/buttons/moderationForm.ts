@@ -1,4 +1,5 @@
 import { MessageFlags } from "discord.js";
+import { botCopy } from "@config/strings";
 import { defineButton } from "@core/button";
 import { checkContextMenu } from "@core/checks";
 import { UserFacingError } from "@core/errors";
@@ -22,7 +23,10 @@ export default defineButton({
 		}
 
 		const target = await client.users.fetch(targetId).catch(() => null);
-		if (target === null) throw new UserFacingError("Discord no longer knows that account.");
+		if (target === null)
+			throw new UserFacingError(
+				botCopy("Discord no longer knows that account.", "لم يعد هذا الحساب متاحًا على ديسكورد."),
+			);
 		const reason = interaction.fields.getTextInputValue("reason").trim();
 
 		const answer =

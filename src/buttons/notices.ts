@@ -1,3 +1,4 @@
+import { botCopy } from "@config/strings";
 import { type ComponentInteraction, defineButton } from "@core/button";
 import { UserFacingError } from "@core/errors";
 import { modalForm, redrawPanel } from "@lib/discord";
@@ -68,7 +69,8 @@ function timeForm(
 }
 
 function typedLength(interaction: ComponentInteraction, id: string, label: string): number | null {
-	if (!interaction.isModalSubmit()) throw new UserFacingError("Open the form again and fill it in.");
+	if (!interaction.isModalSubmit())
+		throw new UserFacingError(botCopy("Open the form again and fill it in.", "أعد فتح النموذج واملأ الحقول المطلوبة."));
 	const value = interaction.fields.getTextInputValue(id).trim();
 	if (value === "") return null;
 
@@ -89,7 +91,8 @@ const endLabel = (waiting: boolean): string => (waiting ? "Keep it up for, once 
 const relative = (iso: string): string => `<t:${String(Math.floor(Date.parse(iso) / 1_000))}:R>`;
 
 function typed(interaction: ComponentInteraction): { title: string; body: string } {
-	if (!interaction.isModalSubmit()) throw new UserFacingError("Open the form again and fill it in.");
+	if (!interaction.isModalSubmit())
+		throw new UserFacingError(botCopy("Open the form again and fill it in.", "أعد فتح النموذج واملأ الحقول المطلوبة."));
 	return { title: interaction.fields.getTextInputValue("title"), body: interaction.fields.getTextInputValue("body") };
 }
 
@@ -104,7 +107,9 @@ export default defineButton({
 	async run(interaction, context) {
 		// The panel is private to whoever ran it, and ownership is read from the env on every press as well.
 		if (!context.client.isOwner(interaction.user.id)) {
-			throw new UserFacingError("Only the bot's owners can change its notifications.");
+			throw new UserFacingError(
+				botCopy("Only the bot's owners can change its notifications.", "لا يمكن تغيير إشعارات البوت إلا لمالكيه."),
+			);
 		}
 
 		const ownerId = interaction.user.id;

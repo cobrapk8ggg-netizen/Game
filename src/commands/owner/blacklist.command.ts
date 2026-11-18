@@ -1,3 +1,4 @@
+import { botCopy } from "@config/strings";
 import { defineCommand } from "@core/command";
 import { UserFacingError } from "@core/errors";
 import { addToBlacklist, listBlacklist, removeFromBlacklist } from "@database/repositories/blacklistRepository";
@@ -36,7 +37,8 @@ export default defineCommand({
 			async run(interaction) {
 				const target = interaction.options.getUser("user", true);
 				const removed = await removeFromBlacklist(target.id);
-				if (!removed) throw new UserFacingError("That user is not blacklisted.");
+				if (!removed)
+					throw new UserFacingError(botCopy("That user is not blacklisted.", "ذلك المستخدم غير مدرج في قائمة الحظر."));
 
 				await reply(interaction, {
 					embeds: [successEmbed(`${target} has been removed from the blacklist.`)],

@@ -1,4 +1,5 @@
 import { PermissionFlagsBits } from "discord.js";
+import { botCopy } from "@config/strings";
 import { defineCommand, inGuild } from "@core/command";
 import { reply } from "@lib/discord";
 import {
@@ -60,7 +61,10 @@ export default defineCommand({
 					interaction.user.id,
 				);
 
-				await reply(interaction, scheduleEditor({ schedule, note: "Scheduled." }, interaction.user.id));
+				await reply(
+					interaction,
+					scheduleEditor({ schedule, note: botCopy("Scheduled.", "جُدولت الرسالة.") }, interaction.user.id),
+				);
 			},
 		},
 		{

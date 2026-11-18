@@ -15,17 +15,15 @@ import { type ContainerMessage, type ContainerPart } from "@lib/discord/discord.
 import { formatClock, formatDuration, truncate } from "@lib/format/format.util";
 import {
 	MAX_VOLUME,
-	loopModeName,
 	MIN_VOLUME,
 	MUSIC_ADD_ID,
 	MUSIC_ID,
 	MUSIC_SOURCE_NAMES,
-	musicSourceName,
 	UNITY_VOLUME,
 	VOLUME_STEP,
 } from "@lib/music/music.constants";
 import { type MusicSource, type QueueState, type Track } from "@lib/music/music.types";
-import { clampVolume } from "@lib/music/musicFormat.util";
+import { clampVolume, loopModeName, musicSourceName } from "@lib/music/musicFormat.util";
 import { currentTrack, totalDurationMs, upcomingPage } from "@lib/music/musicQueue.util";
 
 /** The player as one screen: what is on, what is next, and the controls beside them. */

@@ -1,4 +1,5 @@
 import { MessageFlags, PermissionFlagsBits } from "discord.js";
+import { botCopy } from "@config/strings";
 import { defineCommand, inGuild } from "@core/command";
 import { UserFacingError } from "@core/errors";
 import { clearWarnings, editWarning, getWarnings, removeWarning } from "@database/repositories/moderationRepository";
@@ -42,7 +43,7 @@ export default defineCommand({
 				const target = interaction.options.getUser("user", true);
 				const reason = interaction.options.getString("reason", true);
 
-				if (target.bot) throw new UserFacingError("Bots cannot be warned.");
+				if (target.bot) throw new UserFacingError(botCopy("Bots cannot be warned.", "لا يمكن توجيه إنذار إلى بوت."));
 
 				const member = await guild.members.fetch(target.id).catch(() => null);
 				if (member) assertModeratable(interaction, member);

@@ -1,3 +1,4 @@
+import { botCopy } from "@config/strings";
 import { defineCommand } from "@core/command";
 import { UserFacingError } from "@core/errors";
 import { embed, reply, successEmbed } from "@lib/discord";
@@ -29,7 +30,12 @@ export default defineCommand({
 				],
 			});
 		} catch {
-			throw new UserFacingError("I could not send them a direct message. Their DMs are probably closed.");
+			throw new UserFacingError(
+				botCopy(
+					"I could not send them a direct message. Their DMs are probably closed.",
+					"تعذّر إرسال رسالة خاصة إلى المستخدم. قد يكون قد أغلق استقبال الرسائل الخاصة.",
+				),
+			);
 		}
 
 		await reply(interaction, {

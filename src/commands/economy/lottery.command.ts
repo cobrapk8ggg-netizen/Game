@@ -1,5 +1,5 @@
 import { PermissionFlagsBits, MessageFlags } from "discord.js";
-import { strings } from "@config/strings";
+import { botCopy, strings } from "@config/strings";
 import { defineCommand, inGuild, textChannelOption } from "@core/command";
 import { UserFacingError } from "@core/errors";
 import { readerLanguage } from "@core/language";
@@ -32,7 +32,10 @@ export default recordsSettings(
 				async run(interaction) {
 					const guild = inGuild(interaction);
 					const lottery = await getLottery(guild.id);
-					if (!lottery) throw new UserFacingError("No lottery is set up in this server.");
+					if (!lottery)
+						throw new UserFacingError(
+							botCopy("No lottery is set up in this server.", "لم يُضبط نظام السحب على الجوائز في هذا الخادم."),
+						);
 
 					const tickets = lottery.entries.reduce((total, entry) => total + entry.tickets, 0);
 					const mine = lottery.entries.find((entry) => entry.userId === interaction.user.id)?.tickets ?? 0;
@@ -65,9 +68,16 @@ export default recordsSettings(
 				async run(interaction) {
 					const guild = inGuild(interaction);
 					const lottery = await getLottery(guild.id);
-					if (!lottery) throw new UserFacingError("No lottery is set up in this server.");
-					if (!lottery.isActive) throw new UserFacingError("The lottery is not running right now.");
-					if (lottery.isFrozen) throw new UserFacingError("The lottery is frozen and not accepting entries.");
+					if (!lottery)
+						throw new UserFacingError(
+							botCopy("No lottery is set up in this server.", "لم يُضبط نظام السحب على الجوائز في هذا الخادم."),
+						);
+					if (!lottery.isActive)
+						throw new UserFacingError(botCopy("The lottery is not running right now.", "لا توجد جولة سحب جارية الآن."));
+					if (lottery.isFrozen)
+						throw new UserFacingError(
+							botCopy("The lottery is frozen and not accepting entries.", "السحب معلّق حاليًا ولا يقبل مشاركات جديدة."),
+						);
 
 					const tickets = interaction.options.getInteger("tickets") ?? 1;
 					const cost = lottery.entryFee * tickets;
@@ -82,7 +92,12 @@ export default recordsSettings(
 						cost,
 					);
 					if (!updated)
-						throw new UserFacingError("The lottery closed before your entry landed. You have been refunded.");
+						throw new UserFacingError(
+							botCopy(
+								"The lottery closed before your entry landed. You have been refunded.",
+								"أُغلق السحب قبل تسجيل مشاركتك، فأعدتُ المبلغ إلى رصيدك.",
+							),
+						);
 
 					await reply(interaction, {
 						embeds: [
@@ -114,7 +129,9 @@ export default recordsSettings(
 					const guild = inGuild(interaction);
 					const channel = textChannelOption(interaction, "channel");
 					if (!channel?.isTextBased() || !channel.isSendable()) {
-						throw new UserFacingError("Pick a text channel I can post the results in.");
+						throw new UserFacingError(
+							botCopy("Pick a text channel I can post the results in.", "اختر قناة نصية أستطيع نشر النتائج فيها."),
+						);
 					}
 					requirePostable(channel, readerLanguage(interaction), [PermissionFlagsBits.EmbedLinks]);
 
@@ -148,7 +165,10 @@ export default recordsSettings(
 				async run(interaction) {
 					const guild = inGuild(interaction);
 					const lottery = await getLottery(guild.id);
-					if (!lottery) throw new UserFacingError("No lottery is set up in this server.");
+					if (!lottery)
+						throw new UserFacingError(
+							botCopy("No lottery is set up in this server.", "لم يُضبط نظام السحب على الجوائز في هذا الخادم."),
+						);
 
 					const frozen = interaction.options.getBoolean("frozen", true);
 					await saveLottery(guild.id, { isFrozen: frozen, lastModifiedBy: interaction.user.id });
@@ -166,7 +186,10 @@ export default recordsSettings(
 				async run(interaction) {
 					const guild = inGuild(interaction);
 					const removed = await deleteLottery(guild.id);
-					if (!removed) throw new UserFacingError("No lottery is set up in this server.");
+					if (!removed)
+						throw new UserFacingError(
+							botCopy("No lottery is set up in this server.", "لم يُضبط نظام السحب على الجوائز في هذا الخادم."),
+						);
 
 					await reply(interaction, { embeds: [successEmbed("The lottery has been deleted.")] });
 				},

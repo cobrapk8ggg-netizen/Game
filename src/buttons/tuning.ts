@@ -1,4 +1,5 @@
 import { PermissionFlagsBits } from "discord.js";
+import { botCopy } from "@config/strings";
 import { defineButton } from "@core/button";
 import { UserFacingError } from "@core/errors";
 import { getTuning, saveTuning } from "@database/repositories/tuningRepository";
@@ -20,7 +21,12 @@ export default defineButton({
 
 		// Checked on the press and again on the form, since a role can change while the form is open.
 		if (interaction.memberPermissions?.has(PermissionFlagsBits.ManageGuild) !== true) {
-			throw new UserFacingError("You need the Manage Server permission to change the economy and XP rates.");
+			throw new UserFacingError(
+				botCopy(
+					"You need the Manage Server permission to change the economy and XP rates.",
+					"تحتاج إلى صلاحية إدارة الخادم لتعديل معدّلات الاقتصاد ونقاط الخبرة.",
+				),
+			);
 		}
 
 		const ownerId = interaction.user.id;

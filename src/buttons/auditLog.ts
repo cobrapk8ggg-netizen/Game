@@ -1,3 +1,4 @@
+import { botCopy } from "@config/strings";
 import { defineButton } from "@core/button";
 import { UserFacingError } from "@core/errors";
 import { readerLanguage } from "@core/language";
@@ -63,28 +64,32 @@ export default defineButton({
 
 			case "events": {
 				if (!interaction.isStringSelectMenu()) return;
-				if (draft.channelId === null) throw new UserFacingError("Choose a log channel first.");
+				if (draft.channelId === null)
+					throw new UserFacingError(botCopy("Choose a log channel first.", "اختر قناة السجلّ أولًا."));
 
 				await showEditor({ channelId: draft.channelId, events: interaction.values.filter(isAuditEvent) });
 				return;
 			}
 
 			case "all": {
-				if (draft.channelId === null) throw new UserFacingError("Choose a log channel first.");
+				if (draft.channelId === null)
+					throw new UserFacingError(botCopy("Choose a log channel first.", "اختر قناة السجلّ أولًا."));
 
 				await showEditor({ channelId: draft.channelId, events: [...AUDIT_EVENTS] });
 				return;
 			}
 
 			case "none": {
-				if (draft.channelId === null) throw new UserFacingError("Choose a log channel first.");
+				if (draft.channelId === null)
+					throw new UserFacingError(botCopy("Choose a log channel first.", "اختر قناة السجلّ أولًا."));
 
 				await showEditor({ channelId: draft.channelId, events: [] });
 				return;
 			}
 
 			case "save": {
-				if (draft.channelId === null) throw new UserFacingError("Choose a log channel first.");
+				if (draft.channelId === null)
+					throw new UserFacingError(botCopy("Choose a log channel first.", "اختر قناة السجلّ أولًا."));
 				await requireSendable(guild, draft.channelId, readerLanguage(interaction));
 
 				const enabled = collapseEnabled(draft.events);

@@ -1,4 +1,5 @@
 import { PermissionFlagsBits } from "discord.js";
+import { botCopy } from "@config/strings";
 import { defineCommand, inGuild } from "@core/command";
 import {
 	BIRTHDAY_COMMAND,
@@ -46,13 +47,25 @@ export default defineCommand({
 					embeds: [
 						embed({
 							category: "community",
-							title: "🎂 Birthday shared",
+							title: botCopy("🎂 Birthday shared", "🎂 حُفظ تاريخ ميلادك"),
 							description: [
-								`This server will wish you a happy birthday on **${dayMonth(shared.day, shared.month)}**. Only the day and month are kept.`,
+								botCopy(
+									`This server will wish you a happy birthday on **${dayMonth(shared.day, shared.month)}**. Only the day and month are kept.`,
+									`سيهنّئك الخادم بعيد ميلادك في **${dayMonth(shared.day, shared.month)}**. نحفظ اليوم والشهر فقط.`,
+								),
 								settings.enabled
-									? `It is posted in <#${settings.channelId ?? ""}>, in UTC.`
-									: "This server has not turned birthday posts on yet, so nothing is posted until it does.",
-								"Take it back at any time with `/birthday remove`.",
+									? botCopy(
+											`It is posted in <#${settings.channelId ?? ""}>, in UTC.`,
+											`تُنشر التهنئة في <#${settings.channelId ?? ""}> حسب التوقيت العالمي المنسّق.`,
+										)
+									: botCopy(
+											"This server has not turned birthday posts on yet, so nothing is posted until it does.",
+											"منشورات التهنئة معطّلة حاليًا في هذا الخادم.",
+										),
+								botCopy(
+									"Take it back at any time with `/birthday remove`.",
+									"يمكنك حذف تاريخ ميلادك في أي وقت بالأمر `/birthday remove`.",
+								),
 							].join("\n"),
 						}),
 					],
@@ -69,8 +82,11 @@ export default defineCommand({
 					embeds: [
 						embed({
 							category: "community",
-							title: "Birthday removed",
-							description: "This server no longer knows your birthday.",
+							title: botCopy("Birthday removed", "حُذف تاريخ ميلادك"),
+							description: botCopy(
+								"This server no longer knows your birthday.",
+								"أُزيل يوم ميلادك وشهره من سجلّ هذا الخادم.",
+							),
 						}),
 					],
 				});
@@ -91,10 +107,13 @@ export default defineCommand({
 					embeds: [
 						embed({
 							category: "community",
-							title: "🎂 Coming up",
+							title: botCopy("🎂 Coming up", "🎂 أعياد الميلاد المقبلة"),
 							description:
 								lines.length === 0
-									? "Nobody has shared a birthday with this server yet. Share yours with `/birthday set`."
+									? botCopy(
+											"Nobody has shared a birthday with this server yet. Share yours with `/birthday set`.",
+											"لم يضف أحد تاريخ ميلاده إلى هذا الخادم بعد. أضف تاريخ ميلادك بالأمر `/birthday set`.",
+										)
 									: lines.join("\n"),
 						}),
 					],

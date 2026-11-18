@@ -1,4 +1,5 @@
 import { type Guild, PermissionFlagsBits } from "discord.js";
+import { botCopy } from "@config/strings";
 import { type ComponentInteraction, defineButton } from "@core/button";
 import { UserFacingError } from "@core/errors";
 import {
@@ -23,12 +24,25 @@ import {
 import { ROLE_MENU_LIMITS, roleMenuBody } from "@testify/shared";
 
 function wordingFrom(interaction: ComponentInteraction): { title: string; description: string } {
-	if (!interaction.isModalSubmit()) throw new UserFacingError("Open the form again and fill it in.");
+	if (!interaction.isModalSubmit())
+		throw new UserFacingError(botCopy("Open the form again and fill it in.", "أعد فتح النموذج واملأ الحقول المطلوبة."));
 
 	const title = roleMenuBody.shape.title.safeParse(interaction.fields.getTextInputValue("title"));
 	const description = roleMenuBody.shape.description.safeParse(interaction.fields.getTextInputValue("description"));
-	if (!title.success) throw new UserFacingError("A menu needs a title of up to 80 characters, without HTML.");
-	if (!description.success) throw new UserFacingError("Keep the description under 1,000 characters, without HTML.");
+	if (!title.success)
+		throw new UserFacingError(
+			botCopy(
+				"A menu needs a title of up to 80 characters, without HTML.",
+				"أدخل عنوانًا للقائمة، بحدّ أقصى ٨٠ حرفًا، ومن دون وسوم HTML.",
+			),
+		);
+	if (!description.success)
+		throw new UserFacingError(
+			botCopy(
+				"Keep the description under 1,000 characters, without HTML.",
+				"اكتب وصفًا يقلّ عن ألف حرف، من دون وسوم HTML.",
+			),
+		);
 
 	return { title: title.data, description: description.data };
 }
@@ -62,7 +76,7 @@ function wordingForm(action: string, args: string[], menu?: StoredRoleMenu): Ret
 
 async function menuOf(guild: Guild, menuId: string): Promise<StoredRoleMenu> {
 	const menu = await findRoleMenu(guild.id, menuId);
-	if (menu === null) throw new UserFacingError("That role menu has been deleted.");
+	if (menu === null) throw new UserFacingError(botCopy("That role menu has been deleted.", "حُذفت قائمة الرتب هذه."));
 
 	return menu;
 }
@@ -76,7 +90,12 @@ export default defineButton({
 		if (guild === null) return;
 
 		if (interaction.memberPermissions?.has(PermissionFlagsBits.ManageRoles) !== true) {
-			throw new UserFacingError("You need the Manage Roles permission to change role menus.");
+			throw new UserFacingError(
+				botCopy(
+					"You need the Manage Roles permission to change role menus.",
+					"تحتاج إلى صلاحية إدارة الرتب لتعديل قوائم الرتب.",
+				),
+			);
 		}
 
 		const ownerId = interaction.user.id;
@@ -94,7 +113,12 @@ export default defineButton({
 			case "new": {
 				if (!interaction.isButton()) return;
 				if ((await countRoleMenus(guild.id)) >= ROLE_MENU_LIMITS.maxPerGuild) {
-					throw new UserFacingError("That is as many menus as a server can have. Delete one to make another.");
+					throw new UserFacingError(
+						botCopy(
+							"That is as many menus as a server can have. Delete one to make another.",
+							"بلغ الخادم الحدّ الأقصى لقوائم الرتب. احذف إحدى القوائم لإنشاء قائمة جديدة.",
+						),
+					);
 				}
 
 				await interaction.showModal(wordingForm("new-save", [ownerId]));
@@ -104,11 +128,19 @@ export default defineButton({
 			case "new-save": {
 				const wording = wordingFrom(interaction);
 				if ((await countRoleMenus(guild.id)) >= ROLE_MENU_LIMITS.maxPerGuild) {
-					throw new UserFacingError("That is as many menus as a server can have. Delete one to make another.");
+					throw new UserFacingError(
+						botCopy(
+							"That is as many menus as a server can have. Delete one to make another.",
+							"بلغ الخادم الحدّ الأقصى لقوائم الرتب. احذف إحدى القوائم لإنشاء قائمة جديدة.",
+						),
+					);
 				}
 
 				const channelId = interaction.channelId ?? guild.systemChannelId;
-				if (channelId === null) throw new UserFacingError("Open `/role-menu` from a text channel.");
+				if (channelId === null)
+					throw new UserFacingError(
+						botCopy("Open `/role-menu` from a text channel.", "استخدم `/role-menu` داخل قناة نصية."),
+					);
 
 				const menu = await createRoleMenu(guild.id, { ...wording, channelId, roleIds: [], mode: "many" }, ownerId);
 				await redrawPanel(interaction, editor(menu, { note: "Made. Pick the roles to offer, then post it." }));
@@ -146,7 +178,10 @@ export default defineButton({
 				if (!interaction.isRoleSelectMenu()) return;
 
 				const member = await guild.members.fetch(ownerId).catch(() => null);
-				if (member === null) throw new UserFacingError("I could not find you in this server.");
+				if (member === null)
+					throw new UserFacingError(
+						botCopy("I could not find you in this server.", "تعذّر العثور على عضويتك في هذا الخادم."),
+					);
 
 				const { kept, refused } = splitOffer(interaction.values, (roleId) => offerProblem(member, roleId, guild));
 				const result = await changeRoleMenu(guild, await menuOf(guild, menuId), { roleIds: kept }, ownerId);

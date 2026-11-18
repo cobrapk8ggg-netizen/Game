@@ -1,8 +1,8 @@
 import { botCopy } from "@config/strings";
 import { UserFacingError } from "@core/errors";
-import { loopModeName } from "@lib/music/music.constants";
 import { type LoopMode } from "@lib/music/music.types";
 import { requireVolumeControl } from "@lib/music/musicActions.util";
+import { loopModeName } from "@lib/music/musicFormat.util";
 import { currentTrack, shuffleUpcoming } from "@lib/music/musicQueue.util";
 import { type MusicSession } from "@lib/music/musicSession.util";
 

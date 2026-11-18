@@ -1,6 +1,7 @@
 import { randomInt } from "node:crypto";
 import { ButtonStyle } from "discord.js";
 import { ECONOMY, ECONOMY_COOLDOWNS } from "@config/constants";
+import { botCopy } from "@config/strings";
 import { customId } from "@core/button";
 import { defineCommand, inGuild, type CommandInput } from "@core/command";
 import { UserFacingError } from "@core/errors";
@@ -43,7 +44,10 @@ export default defineCommand({
 		}
 
 		const heists = activeHeists();
-		if (heists.has(guild.id)) throw new UserFacingError("A heist is already being organised in this server.");
+		if (heists.has(guild.id))
+			throw new UserFacingError(
+				botCopy("A heist is already being organised in this server.", "يجري بالفعل الإعداد لعملية سطو في هذا الخادم."),
+			);
 
 		const stake = interaction.options.getInteger("stake") ?? 500;
 		if (account.wallet < stake)

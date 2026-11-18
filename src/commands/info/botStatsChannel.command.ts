@@ -1,4 +1,5 @@
 import { PermissionFlagsBits } from "discord.js";
+import { botCopy } from "@config/strings";
 import { defineCommand, inGuild, textChannelOption } from "@core/command";
 import { UserFacingError } from "@core/errors";
 import { readerLanguage } from "@core/language";
@@ -27,7 +28,10 @@ export default defineCommand({
 			],
 			async run(interaction, client) {
 				const channel = textChannelOption(interaction, "channel");
-				if (channel === null) throw new UserFacingError("Pick a text channel I can send messages in.");
+				if (channel === null)
+					throw new UserFacingError(
+						botCopy("Pick a text channel I can send messages in.", "اختر قناة نصية أستطيع إرسال الرسائل إليها."),
+					);
 				requirePostable(channel, readerLanguage(interaction), [PermissionFlagsBits.EmbedLinks]);
 
 				await postBotStats(client, inGuild(interaction), channel.id, interaction.user.id);
@@ -42,7 +46,9 @@ export default defineCommand({
 			description: "Stop posting the statistics message.",
 			async run(interaction, client) {
 				if (!(await removeBotStats(client, inGuild(interaction).id))) {
-					throw new UserFacingError("There is no statistics message configured here.");
+					throw new UserFacingError(
+						botCopy("There is no statistics message configured here.", "لم تُضبط رسالة الإحصاءات في هذا الخادم."),
+					);
 				}
 
 				await reply(interaction, {

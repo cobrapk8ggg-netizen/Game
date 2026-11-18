@@ -11,6 +11,7 @@ import {
 	type User,
 } from "discord.js";
 import { MINUTE_MS } from "@config/constants";
+import { botCopy } from "@config/strings";
 import { checkOpenControl, refusalText } from "@core/checks";
 import { type TestifyClient } from "@core/client";
 import { toError, UserFacingError } from "@core/errors";
@@ -82,20 +83,30 @@ export async function applyModmailSettings(
 	const channelId = patch.channelId === undefined ? current.channelId : patch.channelId;
 
 	if (patch.enabled === true && channelId === null) {
-		throw new UserFacingError("Pick a channel for mod mail before turning it on.");
+		throw new UserFacingError(
+			botCopy("Pick a channel for mod mail before turning it on.", "اختر قناةً لمراسلات الإشراف قبل تفعيلها."),
+		);
 	}
 	if (patch.channelId !== undefined && patch.channelId !== null) {
 		const channel = guild.channels.cache.get(patch.channelId);
-		if (channel?.type !== ChannelType.GuildText) throw new UserFacingError("Pick a text channel for mod mail.");
+		if (channel?.type !== ChannelType.GuildText)
+			throw new UserFacingError(botCopy("Pick a text channel for mod mail.", "اختر قناةً نصية لمراسلات الإشراف."));
 		if (!usableChannel(guild, channel)) {
 			throw new UserFacingError(
-				"I need to send messages, create public threads and manage threads in that channel. Pick another, or let me.",
+				botCopy(
+					"I need to send messages, create public threads and manage threads in that channel. Pick another, or let me.",
+					"أحتاج في تلك القناة إلى صلاحيات إرسال الرسائل وإنشاء المحادثات العامة وإدارتها. امنحني الصلاحيات أو اختر قناةً أخرى.",
+				),
 			);
 		}
 	}
 	if (patch.pingRoleId !== undefined && patch.pingRoleId !== null) {
-		if (patch.pingRoleId === guild.id) throw new UserFacingError("Mod mail will not ping everybody. Pick a role.");
-		if (!guild.roles.cache.has(patch.pingRoleId)) throw new UserFacingError("That role is not in this server.");
+		if (patch.pingRoleId === guild.id)
+			throw new UserFacingError(
+				botCopy("Mod mail will not ping everybody. Pick a role.", "اختر رتبة محدّدة لتلقّي إشعارات مراسلات الإشراف."),
+			);
+		if (!guild.roles.cache.has(patch.pingRoleId))
+			throw new UserFacingError(botCopy("That role is not in this server.", "تلك الرتبة غير موجودة في هذا الخادم."));
 	}
 
 	const changes: Partial<StoredModmailSettings> = {
@@ -125,23 +136,33 @@ export async function startConversation(
 
 	const settings = await getModmailSettings(guild.id);
 	if (settings?.enabled !== true || settings.channelId === null) {
-		throw new UserFacingError(`**${guild.name}** does not take mod mail.`);
+		throw new UserFacingError(
+			botCopy(`**${guild.name}** does not take mod mail.`, `لا يستقبل **${guild.name}** مراسلات الإشراف.`),
+		);
 	}
 	if ((await guild.members.fetch(user.id).catch(() => null)) === null) {
-		throw new UserFacingError(`You are not in **${guild.name}**.`);
+		throw new UserFacingError(botCopy(`You are not in **${guild.name}**.`, `لست عضوًا في **${guild.name}**.`));
 	}
 
 	const channel = guild.channels.cache.get(settings.channelId);
 	if (!usableChannel(guild, channel)) {
-		throw new UserFacingError(`**${guild.name}**'s mod mail cannot take messages right now. Try again later.`);
+		throw new UserFacingError(
+			botCopy(
+				`**${guild.name}**'s mod mail cannot take messages right now. Try again later.`,
+				`يتعذّر استقبال مراسلات الإشراف في **${guild.name}** حاليًا. أعد المحاولة لاحقًا.`,
+			),
+		);
 	}
 
 	const claimed = await claimConversation({ guildId: guild.id, userId: user.id, username: user.username });
 	if (claimed === null) {
 		const open = await openConversationOf(user.id);
-		const where = client.guilds.cache.get(open?.guildId ?? "")?.name ?? "another server";
+		const where = client.guilds.cache.get(open?.guildId ?? "")?.name ?? botCopy("another server", "خادم آخر");
 		throw new UserFacingError(
-			`You already have a conversation open with the staff of **${where}**. Close it first, from the message I sent you.`,
+			botCopy(
+				`You already have a conversation open with the staff of **${where}**. Close it first, from the message I sent you.`,
+				`لديك محادثة مفتوحة مع فريق الإشراف في **${where}**. أغلقها أولًا من الرسالة التي أرسلتها إليك.`,
+			),
 		);
 	}
 
@@ -151,7 +172,7 @@ export async function startConversation(
 			name: threadName(user.username),
 			autoArchiveDuration: ThreadAutoArchiveDuration.OneWeek,
 			type: ChannelType.PublicThread,
-			reason: "Mod mail",
+			reason: botCopy("Mod mail", "مراسلات الإشراف"),
 		});
 		threadId = thread.id;
 		await setConversationThread(guild.id, claimed.id, thread.id);
@@ -165,7 +186,9 @@ export async function startConversation(
 		if (threadId !== null) await guild.channels.delete(threadId).catch(() => undefined);
 		await dropConversation(guild.id, claimed.id);
 		client.logger.warn({ err: toError(error), guildId: guild.id }, "[MODMAIL] Could not open a thread for mod mail.");
-		throw new UserFacingError("I could not open a thread for that. Try again later.");
+		throw new UserFacingError(
+			botCopy("I could not open a thread for that. Try again later.", "تعذّر إنشاء محادثة فرعية. أعد المحاولة لاحقًا."),
+		);
 	}
 
 	const told = await user.send(openedNotice(guild.name, claimed.id, user.id)).then(
@@ -223,7 +246,10 @@ export async function relayFromMember(
 	if (thread?.isThread() !== true || thread.locked === true) {
 		await closeConversation(conversation.guildId, conversation.id, null);
 		await message.reply({
-			content: "📬 That conversation was closed by the server's staff. Write to me again to start a new one.",
+			content: botCopy(
+				"📬 That conversation was closed by the server's staff. Write to me again to start a new one.",
+				"📬 أغلق فريق الإشراف هذه المحادثة. أرسل إليّ رسالة لبدء محادثة جديدة.",
+			),
 			...SILENT,
 		});
 		return;
@@ -236,7 +262,13 @@ export async function relayFromMember(
 			{ err: toError(error), guildId: conversation.guildId },
 			"[MODMAIL] A message could not be passed to staff. Check the bot can send messages in threads there.",
 		);
-		await message.reply({ content: "⚠️ I could not pass that on. Try again in a moment.", ...SILENT });
+		await message.reply({
+			content: botCopy(
+				"⚠️ I could not pass that on. Try again in a moment.",
+				"⚠️ تعذّر تمرير الرسالة إلى فريق الإشراف. أعد المحاولة بعد قليل.",
+			),
+			...SILENT,
+		});
 		return;
 	}
 	await noteMessage(conversation.id, true);
@@ -268,8 +300,10 @@ export async function relayFromStaff(
 			"[MODMAIL] A reply could not be delivered.",
 		);
 		await message.reply({
-			content:
+			content: botCopy(
 				"⚠️ I could not deliver that: they have closed their direct messages, or no longer share a server with me.",
+				"⚠️ تعذّر تسليم الردّ. قد يكون العضو قد أغلق رسائله الخاصة أو لم يعد يشترك معي في أي خادم.",
+			),
 			...SILENT,
 		});
 	}
@@ -284,7 +318,8 @@ export async function closeModmail(
 	side: "staff" | "member",
 ): Promise<StoredConversation> {
 	const closed = await closeConversation(guildId, conversationId, by.id);
-	if (closed === null) throw new UserFacingError("That conversation is already closed.");
+	if (closed === null)
+		throw new UserFacingError(botCopy("That conversation is already closed.", "أُغلقت هذه المحادثة بالفعل."));
 
 	const guild = client.guilds.cache.get(guildId);
 	const thread =
@@ -292,7 +327,10 @@ export async function closeModmail(
 			? null
 			: await guild.channels.fetch(closed.threadId).catch(() => null);
 	if (thread?.isThread() === true) {
-		const line = side === "member" ? "🔒 They closed the conversation." : `🔒 Closed by ${by.name}.`;
+		const line =
+			side === "member"
+				? botCopy("🔒 They closed the conversation.", "🔒 أغلق العضو المحادثة.")
+				: botCopy(`🔒 Closed by ${by.name}.`, `🔒 أغلق ${by.name} المحادثة.`);
 		await thread.send({ content: line, ...SILENT }).catch(() => undefined);
 		await thread.edit({ locked: true, archived: true }).catch(() => undefined);
 	}
@@ -302,7 +340,10 @@ export async function closeModmail(
 			.fetch(closed.userId)
 			.then((user) =>
 				user.send({
-					content: `📬 Your conversation with the staff of **${guild?.name ?? "that server"}** is closed. Write to me again to start a new one.`,
+					content: botCopy(
+						`📬 Your conversation with the staff of **${guild?.name ?? "that server"}** is closed. Write to me again to start a new one.`,
+						`📬 أُغلقت محادثتك مع فريق الإشراف في **${guild?.name ?? "ذلك الخادم"}**. أرسل إليّ رسالة لبدء محادثة جديدة.`,
+					),
 					...SILENT,
 				}),
 			)

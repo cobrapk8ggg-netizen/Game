@@ -1,5 +1,6 @@
 import { ChannelType, PermissionFlagsBits } from "discord.js";
 import { LIMITS } from "@config/constants";
+import { botCopy } from "@config/strings";
 import { defineCommand, inTextChannel, type CommandOption } from "@core/command";
 import { UserFacingError } from "@core/errors";
 import { COLOUR_CHOICES, embed, reply, resolveColour, successEmbed } from "@lib/discord";
@@ -94,7 +95,10 @@ export default defineCommand({
 			],
 			async run(interaction) {
 				const channel = inTextChannel(interaction);
-				if (!("threads" in channel)) throw new UserFacingError("Threads cannot be created in this channel.");
+				if (!("threads" in channel))
+					throw new UserFacingError(
+						botCopy("Threads cannot be created in this channel.", "لا يمكن إنشاء محادثات فرعية في هذه القناة."),
+					);
 
 				const isPrivate = interaction.options.getBoolean("private") ?? false;
 				const name = interaction.options.getString("name") ?? `Thread by ${interaction.user.username}`;

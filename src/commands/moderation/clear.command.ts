@@ -1,5 +1,6 @@
 import { PermissionFlagsBits } from "discord.js";
 import { LIMITS } from "@config/constants";
+import { botCopy } from "@config/strings";
 import { defineCommand, inTextChannel } from "@core/command";
 import { UserFacingError } from "@core/errors";
 import { reply, successEmbed } from "@lib/discord";
@@ -42,7 +43,8 @@ export default defineCommand({
 			.filter((message) => !message.pinned)
 			.slice(0, amount);
 
-		if (candidates.length === 0) throw new UserFacingError("There was nothing to delete.");
+		if (candidates.length === 0)
+			throw new UserFacingError(botCopy("There was nothing to delete.", "لا يوجد شيء لحذفه."));
 
 		// Discord refuses to bulk-delete anything older than 14 days.
 		const deleted = await channel.bulkDelete(candidates, true);

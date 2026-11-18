@@ -1,5 +1,6 @@
 import { PermissionFlagsBits } from "discord.js";
 import { MINUTE_MS } from "@config/constants";
+import { botCopy } from "@config/strings";
 import { defineButton } from "@core/button";
 import { UserFacingError } from "@core/errors";
 import { modalForm, pickedChannelId } from "@lib/discord";
@@ -23,7 +24,12 @@ export default recordsSettings(
 				permissions?.has(PermissionFlagsBits.ManageGuild) !== true ||
 				!permissions.has(PermissionFlagsBits.ModerateMembers)
 			) {
-				throw new UserFacingError("You need Manage Server and Moderate Members to change raid protection.");
+				throw new UserFacingError(
+					botCopy(
+						"You need Manage Server and Moderate Members to change raid protection.",
+						"تحتاج إلى صلاحيّتَي إدارة الخادم والإشراف على الأعضاء لتعديل الحماية من الغارات.",
+					),
+				);
 			}
 
 			const ownerId = interaction.user.id;
@@ -83,7 +89,10 @@ export default recordsSettings(
 				const minAccountAgeMinutes = ageFromText(interaction.fields.getTextInputValue("age"));
 				if (minAccountAgeMinutes === null) {
 					throw new UserFacingError(
-						"Give a length in whole minutes, such as `30m`, `12h` or `7d`, up to `28d`, Discord's longest timeout. `0` holds nobody back.",
+						botCopy(
+							"Give a length in whole minutes, such as `30m`, `12h` or `7d`, up to `28d`, Discord's longest timeout. `0` holds nobody back.",
+							"أدخل مدةً تتألّف من عدد صحيح من الدقائق، مثل `30m` أو `12h` أو `7d`. الحدّ الأقصى في ديسكورد هو `28d`. استخدم `0` لعدم فرض مهلة.",
+						),
 					);
 				}
 				patch = { minAccountAgeMinutes };

@@ -1,4 +1,5 @@
 import { type Guild, type MessageCreateOptions, type User } from "discord.js";
+import { botCopy } from "@config/strings";
 import { type TestifyClient } from "@core/client";
 import { UserFacingError } from "@core/errors";
 import {
@@ -11,7 +12,7 @@ import {
 	type StoredBirthday,
 	type StoredBirthdaySettings,
 } from "@database/repositories/birthdayRepository";
-import { daysUntil } from "@lib/birthdays/birthdays.util";
+import { birthdayMessage, daysUntil } from "@lib/birthdays/birthdays.util";
 import { canPostIn } from "@lib/discord/channels.util";
 import {
 	BIRTHDAY_LIMITS,
@@ -48,10 +49,17 @@ export async function applyBirthdaySettings(
 	const channelId = patch.channelId === undefined ? current.channelId : patch.channelId;
 
 	if (patch.enabled === true && channelId === null) {
-		throw new UserFacingError("Pick a channel for birthdays before turning them on.");
+		throw new UserFacingError(
+			botCopy("Pick a channel for birthdays before turning them on.", "اختر قناة لنشر التهاني قبل تفعيل الميزة."),
+		);
 	}
 	if (patch.channelId !== undefined && patch.channelId !== null && !canPostIn(guild, patch.channelId)) {
-		throw new UserFacingError("I cannot post in that channel. Pick one I can send messages to.");
+		throw new UserFacingError(
+			botCopy(
+				"I cannot post in that channel. Pick one I can send messages to.",
+				"لا أستطيع النشر في تلك القناة. اختر قناة يمكنني إرسال الرسائل إليها.",
+			),
+		);
 	}
 
 	await saveBirthdaySettings(
@@ -68,13 +76,16 @@ export async function applyBirthdaySettings(
 
 /** Sharing in a server is the member's own say-so for that server, and nothing but the day and month is kept. */
 export async function setOwnBirthday(guildId: string, user: User, day: number, month: number): Promise<StoredBirthday> {
-	if (!isBirthday(day, month)) throw new UserFacingError("That is not a day in that month.");
+	if (!isBirthday(day, month))
+		throw new UserFacingError(botCopy("That is not a day in that month.", "لا يوجد هذا اليوم في الشهر الذي اخترته."));
 	return shareBirthday(guildId, user.id, user.username, day, month);
 }
 
 export async function removeOwnBirthday(guildId: string, userId: string): Promise<void> {
 	if (!(await forgetBirthday(guildId, userId))) {
-		throw new UserFacingError("You have not shared your birthday with this server.");
+		throw new UserFacingError(
+			botCopy("You have not shared your birthday with this server.", "لم تسجّل تاريخ ميلادك في هذا الخادم."),
+		);
 	}
 }
 
@@ -119,7 +130,7 @@ export function birthdayPost(
 	settings: Pick<StoredBirthdaySettings, "message">,
 ): MessageCreateOptions {
 	return {
-		content: fillTemplate(settings.message, {
+		content: fillTemplate(birthdayMessage(settings.message), {
 			mention: `<@${member.id}>`,
 			username: member.username,
 			serverName: guild.name,
