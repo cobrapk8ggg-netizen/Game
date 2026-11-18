@@ -2,7 +2,7 @@ import { type TFunction } from "i18next";
 import { useTranslation } from "react-i18next";
 import { Link } from "react-router";
 import { Button, Card } from "@/components/primitives";
-import { ApiError } from "@/lib/api";
+import { ApiError, refusalText } from "@/lib/api";
 
 /** A 404 means the bot is not in the server, which is neither a refusal nor a bug. */
 export function ErrorState({
@@ -53,10 +53,18 @@ export function describe(error: unknown, t: TFunction): { title: string; body: s
 		case "not_granted":
 			return { title: t("guilds.notGrantedTitle"), body: t("guilds.notGranted"), retryable: false };
 		case "rate_limited":
-			return { title: t("error.rateLimitedTitle"), body: error.message, retryable: true };
+			return {
+				title: t("error.rateLimitedTitle"),
+				body: refusalText(error, t("error.rateLimitedBody")),
+				retryable: true,
+			};
 		case "setup_required":
 			return { title: t("error.setupRequiredTitle"), body: t("error.setupRequiredBody"), retryable: false };
 		default:
-			return { title: t("error.unreachableTitle"), body: error.message, retryable: error.status >= 500 };
+			return {
+				title: t("error.unreachableTitle"),
+				body: refusalText(error, t("error.unreachableBody")),
+				retryable: error.status >= 500,
+			};
 	}
 }

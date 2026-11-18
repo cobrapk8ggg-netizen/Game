@@ -1,4 +1,5 @@
 import { MessageFlags } from "discord.js";
+import { botCopy } from "@config/strings";
 import { defineButton } from "@core/button";
 import { UserFacingError } from "@core/errors";
 import { deposit, requireAccount, withdraw } from "@database/repositories/economyRepository";
@@ -22,12 +23,15 @@ async function move(
 	userId: string,
 	amount: number,
 ): Promise<{ wallet: number; bank: number }> {
-	if (amount <= 0) throw new UserFacingError("That works out to nothing.");
+	if (amount <= 0) throw new UserFacingError(botCopy("That works out to nothing.", "المبلغ الناتج يساوي صفرًا."));
 
 	const updated = action === "dep" ? await deposit(guildId, userId, amount) : await withdraw(guildId, userId, amount);
 	if (!updated) {
 		throw new UserFacingError(
-			`You do not have ${formatNumber(amount)} in your ${action === "dep" ? "wallet" : "bank"}.`,
+			botCopy(
+				`You do not have ${formatNumber(amount)} in your ${action === "dep" ? "wallet" : "bank"}.`,
+				`الرصيد في ${action === "dep" ? "محفظتك" : "حسابك المصرفي"} أقل من ${formatNumber(amount)}.`,
+			),
 		);
 	}
 
@@ -52,8 +56,10 @@ export default defineButton({
 				modalForm({
 					id: MONEY_PANEL_ID,
 					action: `${moneyAction(action, origin)}-save`,
-					title: `${moneyTitle(action)} an amount`,
-					fields: [{ id: "amount", label: "How much?", placeholder: "e.g. 250" }],
+					title: botCopy(`${moneyTitle(action)} an amount`, action === "dep" ? "إيداع مبلغ" : "سحب مبلغ"),
+					fields: [
+						{ id: "amount", label: botCopy("How much?", "المبلغ"), placeholder: botCopy("e.g. 250", "مثل 250") },
+					],
 				}),
 			);
 			return;
@@ -68,7 +74,7 @@ export default defineButton({
 
 		const amount = Number(raw);
 		if (!Number.isInteger(amount) || amount <= 0) {
-			throw new UserFacingError("Enter a positive whole number.");
+			throw new UserFacingError(botCopy("Enter a positive whole number.", "أدخل عددًا صحيحًا أكبر من الصفر."));
 		}
 
 		const updated = await move(action, guildId, userId, amount);

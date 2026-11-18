@@ -1,4 +1,5 @@
 import { ButtonStyle } from "discord.js";
+import { botCopy } from "@config/strings";
 import { theme } from "@config/theme";
 import { customId } from "@core/button";
 import { button, row } from "@lib/discord/components.util";
@@ -26,15 +27,28 @@ export function balancePanel(view: BalanceView, ownerId: string): ContainerMessa
 	const total = view.wallet + view.bank;
 
 	const body =
-		`## ${view.username}'s balance\n` +
-		`${theme.emoji.wallet} **Wallet** ${formatNumber(view.wallet)}\n` +
-		`${theme.emoji.bank} **Bank** ${formatNumber(view.bank)}\n` +
-		`${theme.emoji.coin} **Total** ${formatNumber(total)}`;
+		botCopy(`## ${view.username}'s balance\n`, `## رصيد ${view.username}\n`) +
+		botCopy(
+			`${theme.emoji.wallet} **Wallet** ${formatNumber(view.wallet)}\n`,
+			`${theme.emoji.wallet} **المحفظة** ${formatNumber(view.wallet)}\n`,
+		) +
+		botCopy(
+			`${theme.emoji.bank} **Bank** ${formatNumber(view.bank)}\n`,
+			`${theme.emoji.bank} **الحساب المصرفي** ${formatNumber(view.bank)}\n`,
+		) +
+		botCopy(
+			`${theme.emoji.coin} **Total** ${formatNumber(total)}`,
+			`${theme.emoji.coin} **الإجمالي** ${formatNumber(total)}`,
+		);
 
 	const parts: ContainerPart[] = [
 		view.note !== undefined ? text(`✅ ${view.note}`) : undefined,
 		view.note !== undefined ? divider() : undefined,
-		sectionWithThumbnail(body, view.avatarUrl, `${view.username}'s avatar`),
+		sectionWithThumbnail(
+			body,
+			view.avatarUrl,
+			botCopy(`${view.username}'s avatar`, `صورة الملف الشخصي للمستخدم ${view.username}`),
+		),
 	].filter((part) => part !== undefined);
 
 	if (!view.own) return containerMessage(container({ category: "economy", parts }));
@@ -48,27 +62,35 @@ export function balancePanel(view: BalanceView, ownerId: string): ContainerMessa
 				row(
 					button({
 						id: customId(BALANCE_PANEL_ID, "dep", ownerId),
-						label: "Deposit",
+						label: botCopy("Deposit", "إيداع"),
 						emoji: theme.emoji.bank,
 						disabled: view.wallet <= 0,
 					}),
 					button({
 						id: customId(BALANCE_PANEL_ID, "wit", ownerId),
-						label: "Withdraw",
+						label: botCopy("Withdraw", "سحب"),
 						emoji: theme.emoji.wallet,
 						disabled: view.bank <= 0,
 					}),
 					button({
 						id: customId(BALANCE_PANEL_ID, "daily", ownerId),
-						label: "Daily",
+						label: botCopy("Daily", "المكافأة اليومية"),
 						style: ButtonStyle.Success,
 						disabled: view.dailyReady === false,
 					}),
 				),
 				row(
-					button({ id: customId(BALANCE_PANEL_ID, "shop", ownerId), label: "Shop", emoji: "🛒" }),
-					button({ id: customId(BALANCE_PANEL_ID, "inv", ownerId), label: "Inventory", emoji: "🎒" }),
-					button({ id: customId(BALANCE_PANEL_ID, "refresh", ownerId), label: "Refresh", emoji: "🔄" }),
+					button({ id: customId(BALANCE_PANEL_ID, "shop", ownerId), label: botCopy("Shop", "المتجر"), emoji: "🛒" }),
+					button({
+						id: customId(BALANCE_PANEL_ID, "inv", ownerId),
+						label: botCopy("Inventory", "المقتنيات"),
+						emoji: "🎒",
+					}),
+					button({
+						id: customId(BALANCE_PANEL_ID, "refresh", ownerId),
+						label: botCopy("Refresh", "تحديث"),
+						emoji: "🔄",
+					}),
 				),
 			],
 		}),

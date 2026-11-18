@@ -15,6 +15,7 @@ import {
 	STEP_TITLE,
 } from "@/features/guild-overview/setupChecklist.utils";
 import { useRunSetupStep, useSetupChecklist } from "@/features/guild-overview/useSetupChecklist";
+import { refusalText } from "@/lib/api";
 import { cn } from "@/lib/cn";
 
 const LOOK_OF: Record<SetupStep, string> = { levelling: "levelling", welcome: "welcome", "audit-log": "audit-logging" };
@@ -117,7 +118,7 @@ function StepRow({
 						{step.done && <Badge tone="success">{t("checklist.on")}</Badge>}
 					</p>
 					<p className="text-muted-foreground text-sm">{t(describeStep(step), { channel: step.channelName ?? "" })}</p>
-					{error !== null && <Warning>{error.message}</Warning>}
+					{error !== null && <Warning>{refusalText(error, t("common.didNotWork"))}</Warning>}
 				</div>
 
 				<div className="flex shrink-0 flex-wrap items-center gap-3">

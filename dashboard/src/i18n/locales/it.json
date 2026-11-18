@@ -326,6 +326,10 @@
 		"leave": "Esci senza salvare"
 	},
 	"error": {
+		"rateLimitedBody": "Aspetta un momento, poi riprova.",
+		"sessionExpired": "Accedi di nuovo per continuare.",
+		"permissionDenied": "Non hai il permesso di eseguire questa azione.",
+		"discordUnavailable": "Discord non ha risposto. Riprova tra poco.",
 		"unreachableTitle": "Qualcosa è andato storto",
 		"unreachableBody": "La dashboard non è riuscita a contattare il bot.",
 		"botLeftTitle": "{{bot}} non è in quel server",

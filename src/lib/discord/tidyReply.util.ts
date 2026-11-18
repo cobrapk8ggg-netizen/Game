@@ -7,6 +7,7 @@ import {
 	type MessageFlagsResolvable,
 	TextDisplayBuilder,
 } from "discord.js";
+import { botCopy } from "@config/strings";
 import { type TestifyClient } from "@core/client";
 import { TIDY_AFTER_MS } from "@lib/discord/discord.constants";
 
@@ -14,7 +15,10 @@ import { TIDY_AFTER_MS } from "@lib/discord/discord.constants";
 
 export function cleanupFooter(afterMs: number = TIDY_AFTER_MS): string {
 	const seconds = Math.max(1, Math.round(afterMs / 1_000));
-	return `This message disappears in ${seconds} second${seconds === 1 ? "" : "s"}.`;
+	return botCopy(
+		`This message disappears in ${seconds} second${seconds === 1 ? "" : "s"}.`,
+		`ستُحذف هذه الرسالة تلقائيًا. المدة بالثواني: ${seconds}.`,
+	);
 }
 
 /** Replies with the embed, then deletes the reply; a quiet reply does not ping the person it answers. */
@@ -37,7 +41,10 @@ export async function replyTemporarily(
 
 /** Counted down by the reader's own client, so it stays right while the message sits there. */
 export function tidyNote(deadline: number): string {
-	return `-# This message will be deleted <t:${String(Math.ceil(deadline / 1_000))}:R>.`;
+	return botCopy(
+		`-# This message will be deleted <t:${String(Math.ceil(deadline / 1_000))}:R>.`,
+		`-# ستُحذف هذه الرسالة <t:${String(Math.ceil(deadline / 1_000))}:R>.`,
+	);
 }
 
 /** Adds the note where the message can show it: as content, or as the last component of a V2 message. */

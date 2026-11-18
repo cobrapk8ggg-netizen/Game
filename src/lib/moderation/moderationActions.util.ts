@@ -1,6 +1,6 @@
 import { type EmbedBuilder, type Guild, type GuildMember, type User } from "discord.js";
 import { type BotLanguage } from "@config/languages";
-import { strings } from "@config/strings";
+import { botCopy, strings } from "@config/strings";
 import { theme } from "@config/theme";
 import { asMember, type CommandInput } from "@core/command";
 import { UserFacingError } from "@core/errors";
@@ -144,11 +144,14 @@ export function dmEmbed(options: {
 }): EmbedBuilder {
 	return embed({
 		category: "moderation",
-		title: `${options.emoji} You were ${options.action}`,
+		title: botCopy(`${options.emoji} You were ${options.action}`, `${options.emoji} ${options.action}`),
 		fields: [
-			{ name: "Server", value: options.guild.name, inline: true },
-			{ name: "Moderator", value: options.moderator.username, inline: true },
-			{ name: "Reason", value: options.reason },
+			{ name: botCopy("Server", "الخادم"), value: options.guild.name, inline: true },
+			{ name: botCopy("Moderator", "المشرف"), value: options.moderator.username, inline: true },
+			{
+				name: botCopy("Reason", "السبب"),
+				value: options.reason === DEFAULT_REASON ? botCopy(DEFAULT_REASON, "لم يُذكر سبب") : options.reason,
+			},
 			...(options.extra ?? []),
 		],
 		footer: options.guild.name,

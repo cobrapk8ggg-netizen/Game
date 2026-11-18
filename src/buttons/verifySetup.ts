@@ -1,4 +1,5 @@
 import { PermissionFlagsBits } from "discord.js";
+import { botCopy } from "@config/strings";
 import { defineButton } from "@core/button";
 import { UserFacingError } from "@core/errors";
 import { deleteVerifyConfig, getVerifyConfig, saveVerifyConfig } from "@database/repositories/verificationRepository";
@@ -28,7 +29,12 @@ export default recordsSettings(
 			if (interaction.guild === null) return;
 
 			if (interaction.memberPermissions?.has(PermissionFlagsBits.ManageGuild) !== true) {
-				throw new UserFacingError("You need the Manage Server permission to change verification.");
+				throw new UserFacingError(
+					botCopy(
+						"You need the Manage Server permission to change verification.",
+						"تحتاج إلى صلاحية «إدارة الخادم» لتعديل إعدادات التحقق.",
+					),
+				);
 			}
 
 			const guild = interaction.guild;
@@ -74,9 +80,14 @@ export default recordsSettings(
 							id: VERIFY_PANEL_ID,
 							action: "save-message",
 							args: [ownerId],
-							title: "What the panel says",
+							title: botCopy("What the panel says", "نص لوحة التحقق"),
 							fields: [
-								{ id: "message", label: "Shown above the Verify button", paragraph: true, value: config.message },
+								{
+									id: "message",
+									label: botCopy("Shown above the Verify button", "النص الظاهر فوق زر التحقق"),
+									paragraph: true,
+									value: config.message,
+								},
 							],
 						}),
 					);
@@ -87,28 +98,39 @@ export default recordsSettings(
 					if (!interaction.isModalSubmit()) return;
 
 					const message = interaction.fields.getTextInputValue("message").trim();
-					if (message.length === 0) throw new UserFacingError("The panel needs something to say.");
+					if (message.length === 0)
+						throw new UserFacingError(botCopy("The panel needs something to say.", "اكتب نصًا للوحة التحقق."));
 
 					await saveVerifyConfig(guild.id, { message });
 					const next = { ...config, message };
 
 					if (next.messageId !== null && isReady(next)) await publishVerifyPanel(guild, next);
-					await show(next, "Wording updated.");
+					await show(next, botCopy("Wording updated.", "حُدّث نص اللوحة."));
 					return;
 				}
 
 				case "post": {
-					if (!isReady(config)) throw new UserFacingError("Pick a channel and a role first.");
+					if (!isReady(config))
+						throw new UserFacingError(botCopy("Pick a channel and a role first.", "اختر قناة ودورًا أولًا."));
 
 					const messageId = await publishVerifyPanel(guild, config);
 					await saveVerifyConfig(guild.id, { messageId });
-					await show({ ...config, messageId }, "Panel posted. Members can verify now.");
+					await show(
+						{ ...config, messageId },
+						botCopy("Panel posted. Members can verify now.", "نُشرت اللوحة. يمكن للأعضاء التحقق الآن."),
+					);
 					return;
 				}
 
 				case "off": {
 					await deleteVerifyConfig(guild.id);
-					await show(await currentConfig(guild.id), "Verification is off. The posted panel no longer works.");
+					await show(
+						await currentConfig(guild.id),
+						botCopy(
+							"Verification is off. The posted panel no longer works.",
+							"عُطّل التحقق. لم تعد اللوحة المنشورة تعمل.",
+						),
+					);
 					return;
 				}
 

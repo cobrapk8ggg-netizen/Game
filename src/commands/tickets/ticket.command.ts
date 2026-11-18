@@ -1,4 +1,5 @@
 import { ChannelType, PermissionFlagsBits } from "discord.js";
+import { botCopy } from "@config/strings";
 import { channelOption, defineCommand, inGuild, roleOption, textChannelOption } from "@core/command";
 import { UserFacingError } from "@core/errors";
 import { readerLanguage } from "@core/language";
@@ -37,28 +38,39 @@ export default defineCommand({
 				const guild = inGuild(interaction);
 
 				const panelChannel = textChannelOption(interaction, "panel-channel");
-				if (!panelChannel) throw new UserFacingError("Pick a channel I can post the panel in.");
+				if (!panelChannel)
+					throw new UserFacingError(
+						botCopy("Pick a channel I can post the panel in.", "اختر قناة يمكنني نشر لوحة التذاكر فيها."),
+					);
 				const language = readerLanguage(interaction);
 				requirePostable(panelChannel, language, [PermissionFlagsBits.EmbedLinks]);
 
 				const category = channelOption(interaction, "category");
 				if (category?.type !== ChannelType.GuildCategory) {
-					throw new UserFacingError("The category has to be an actual channel category.");
+					throw new UserFacingError(
+						botCopy("The category has to be an actual channel category.", "اختر فئة من فئات القنوات في الخادم."),
+					);
 				}
 
 				const transcripts = textChannelOption(interaction, "transcripts");
-				if (!transcripts) throw new UserFacingError("Pick a channel I can send transcripts to.");
+				if (!transcripts)
+					throw new UserFacingError(
+						botCopy("Pick a channel I can send transcripts to.", "اختر قناة يمكنني إرسال سجلات التذاكر إليها."),
+					);
 				requirePostable(transcripts, language, [PermissionFlagsBits.EmbedLinks, PermissionFlagsBits.AttachFiles]);
 
 				const staffRole = roleOption(interaction, "staff-role", true);
-				if (!staffRole) throw new UserFacingError("Pick the role that should handle tickets.");
+				if (!staffRole)
+					throw new UserFacingError(
+						botCopy("Pick the role that should handle tickets.", "اختر الدور الذي سيتولّى متابعة التذاكر."),
+					);
 
-				const description =
-					interaction.options.getString("message") ?? "Press the button below and we will be with you shortly.";
-				const buttonLabel = interaction.options.getString("button-label") ?? "Create ticket";
+				const defaults = normaliseTicketSetup(null);
+				const description = interaction.options.getString("message") ?? defaults.description;
+				const buttonLabel = interaction.options.getString("button-label") ?? defaults.buttonLabel;
 
 				const messageId = await publishTicketPanel(guild, {
-					...normaliseTicketSetup(null),
+					...defaults,
 					panelChannelId: panelChannel.id,
 					description,
 					buttonLabel,
@@ -77,7 +89,9 @@ export default defineCommand({
 				});
 
 				await reply(interaction, {
-					embeds: [successEmbed(`Ticket panel posted in ${panelChannel}.`)],
+					embeds: [
+						successEmbed(botCopy(`Ticket panel posted in ${panelChannel}.`, `نُشرت لوحة التذاكر في ${panelChannel}.`)),
+					],
 				});
 			},
 		},
@@ -88,18 +102,28 @@ export default defineCommand({
 				const guild = inGuild(interaction);
 				const setup = await getTicketSetup(guild.id);
 
-				if (!setup) throw new UserFacingError("Tickets are not set up yet. Run `/ticket setup` first.");
+				if (!setup)
+					throw new UserFacingError(
+						botCopy(
+							"Tickets are not set up yet. Run `/ticket setup` first.",
+							"لم يُضبط نظام التذاكر بعد. نفّذ `/ticket setup` أولًا.",
+						),
+					);
 
 				await reply(interaction, {
 					embeds: [
 						embed({
 							category: "tickets",
-							title: "Ticket settings",
+							title: botCopy("Ticket settings", "إعدادات التذاكر"),
 							fields: [
-								{ name: "Panel", value: `<#${setup.channelId}>`, inline: true },
-								{ name: "Category", value: `<#${setup.categoryId}>`, inline: true },
-								{ name: "Transcripts", value: `<#${setup.transcriptChannelId}>`, inline: true },
-								{ name: "Staff role", value: `<@&${setup.handlerRoleId}>`, inline: true },
+								{ name: botCopy("Panel", "اللوحة"), value: `<#${setup.channelId}>`, inline: true },
+								{ name: botCopy("Category", "الفئة"), value: `<#${setup.categoryId}>`, inline: true },
+								{
+									name: botCopy("Transcripts", "سجلات التذاكر"),
+									value: `<#${setup.transcriptChannelId}>`,
+									inline: true,
+								},
+								{ name: botCopy("Staff role", "دور المشرفين"), value: `<@&${setup.handlerRoleId}>`, inline: true },
 							],
 						}),
 					],
@@ -113,11 +137,20 @@ export default defineCommand({
 				const guild = inGuild(interaction);
 
 				if (!(await deleteTicketSetup(guild.id))) {
-					throw new UserFacingError("Tickets were not set up in this server.");
+					throw new UserFacingError(
+						botCopy("Tickets were not set up in this server.", "لم يُضبط نظام التذاكر في هذا الخادم."),
+					);
 				}
 
 				await reply(interaction, {
-					embeds: [successEmbed("Tickets are off. The panel message can be deleted by hand.")],
+					embeds: [
+						successEmbed(
+							botCopy(
+								"Tickets are off. The panel message can be deleted by hand.",
+								"عُطّل نظام التذاكر. يمكنك حذف رسالة اللوحة يدويًا.",
+							),
+						),
+					],
 				});
 			},
 		},

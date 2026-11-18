@@ -33,7 +33,9 @@ export default defineMessageHandler({
 		const args = subcommand === undefined ? parsed.args : [subcommand, ...parsed.args];
 
 		if (commandIsOff(client.featuresOff, name.toLowerCase(), args[0]?.toLowerCase())) {
-			const refusal = say(readerLanguage({ guild: message.guild }), "featureOff", { bot: botName() });
+			const refusal = say(readerLanguage({ guild: message.guild }, client.env.BOT_LANGUAGE), "featureOff", {
+				bot: botName(),
+			});
 			await replyTemporarily(client, message, refusalEmbed(refusal));
 			return true;
 		}

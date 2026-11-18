@@ -1,5 +1,6 @@
 import { http, HttpResponse } from "msw";
-import { api } from "@/lib/api";
+import { i18next } from "@/i18n";
+import { api, ApiError, refusalText } from "@/lib/api";
 import { server } from "@/test/setup";
 
 function clearCookies(): void {
@@ -60,4 +61,15 @@ describe("the API client", () => {
 
 		await expect(api.get("/thing")).rejects.toThrow(/status 502/);
 	});
+});
+
+it("uses Arabic dashboard copy for server errors after switching the language", async () => {
+	const refusal = new ApiError(429, { error: { code: "rate_limited", message: "Please try again later." } });
+	await i18next.changeLanguage("ar");
+	try {
+		expect(refusalText(refusal, "")).toBe("انتظر قليلًا ثم حاول مجددًا.");
+	} finally {
+		await i18next.changeLanguage("en");
+	}
+	expect(refusalText(refusal, "")).toBe("Please try again later.");
 });

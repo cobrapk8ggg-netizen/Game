@@ -1,4 +1,5 @@
 import { ButtonStyle } from "discord.js";
+import { botCopy } from "@config/strings";
 import { theme } from "@config/theme";
 import { customId } from "@core/button";
 import { button, quickAmountRow, row } from "@lib/discord/components.util";
@@ -10,10 +11,21 @@ import { formatNumber } from "@lib/format/format.util";
 
 /** Choosing how much to move between wallet and bank, as a V2 panel so it can replace the balance panel in place. */
 
-const LABELS: Record<MoneyAction, { title: string; done: string; source: string; emoji: string }> = {
-	dep: { title: "Deposit", done: "Deposited", source: "wallet", emoji: theme.emoji.bank },
-	wit: { title: "Withdraw", done: "Withdrew", source: "bank", emoji: theme.emoji.wallet },
-};
+function labels(action: MoneyAction) {
+	return action === "dep"
+		? {
+				title: botCopy("Deposit", "إيداع"),
+				done: botCopy("Deposited", "تم إيداع"),
+				source: botCopy("wallet", "المحفظة"),
+				emoji: theme.emoji.bank,
+			}
+		: {
+				title: botCopy("Withdraw", "سحب"),
+				done: botCopy("Withdrew", "تم سحب"),
+				source: botCopy("bank", "الحساب المصرفي"),
+				emoji: theme.emoji.wallet,
+			};
+}
 
 const FROM_BALANCE = "bal";
 
@@ -43,13 +55,13 @@ export function parseMoneyAction(raw: string): MoneyStep | null {
 }
 
 export function moneyTitle(action: MoneyAction): string {
-	return LABELS[action].title;
+	return labels(action).title;
 }
 
 function balancesLine(balances: { wallet: number; bank: number }): string {
 	return (
-		`${theme.emoji.wallet} **Wallet** ${formatNumber(balances.wallet)}  ·  ` +
-		`${theme.emoji.bank} **Bank** ${formatNumber(balances.bank)}`
+		`${theme.emoji.wallet} **${botCopy("Wallet", "المحفظة")}** ${formatNumber(balances.wallet)}  ·  ` +
+		`${theme.emoji.bank} **${botCopy("Bank", "الحساب المصرفي")}** ${formatNumber(balances.bank)}`
 	);
 }
 
@@ -60,15 +72,18 @@ export function amountPanel(
 	ownerId: string,
 	origin: MoneyOrigin = "command",
 ): ContainerMessage {
-	const label = LABELS[action];
+	const label = labels(action);
 	const available = action === "dep" ? balances.wallet : balances.bank;
 
 	const parts: ContainerPart[] = [
 		text(
 			`## ${label.emoji} ${label.title}\n` +
 				(available > 0
-					? `How much would you like to move from your ${label.source}?`
-					: `You have nothing in your ${label.source} to move.`),
+					? botCopy(
+							`How much would you like to move from your ${label.source}?`,
+							`ما المبلغ الذي تريد نقله من ${label.source}؟`,
+						)
+					: botCopy(`You have nothing in your ${label.source} to move.`, `لا يوجد رصيد في ${label.source} يمكن نقله.`)),
 		),
 		text(balancesLine(balances)),
 		divider(),
@@ -80,7 +95,7 @@ export function amountPanel(
 			row(
 				button({
 					id: customId(BALANCE_PANEL_ID, "refresh", ownerId),
-					label: "Back",
+					label: botCopy("Back", "رجوع"),
 					emoji: "⬅️",
 					style: ButtonStyle.Secondary,
 				}),
@@ -100,11 +115,11 @@ export function movedPanel(
 	return containerMessage(
 		container({
 			category: "economy",
-			parts: [text(`## ✅ ${LABELS[action].done} ${formatNumber(amount)}`), text(balancesLine(balances))],
+			parts: [text(`## ✅ ${labels(action).done} ${formatNumber(amount)}`), text(balancesLine(balances))],
 		}),
 	);
 }
 
 export function movedNote(action: MoneyAction, amount: number): string {
-	return `${LABELS[action].done} **${formatNumber(amount)}**.`;
+	return `${labels(action).done} **${formatNumber(amount)}**.`;
 }

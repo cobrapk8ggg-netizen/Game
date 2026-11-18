@@ -314,6 +314,10 @@
 		"leave": "保存せずに移動"
 	},
 	"error": {
+		"rateLimitedBody": "少し待ってから、もう一度お試しください。",
+		"sessionExpired": "続行するには、再度ログインしてください。",
+		"permissionDenied": "この操作を行う権限がありません。",
+		"discordUnavailable": "Discord が応答しませんでした。少し待ってからお試しください。",
 		"unreachableTitle": "問題が発生しました",
 		"unreachableBody": "ダッシュボードがボットに接続できませんでした。",
 		"botLeftTitle": "{{bot}} はそのサーバーにいません",

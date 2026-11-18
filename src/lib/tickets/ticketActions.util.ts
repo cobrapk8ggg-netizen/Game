@@ -1,4 +1,5 @@
 import { ButtonStyle, type Guild } from "discord.js";
+import { botCopy } from "@config/strings";
 import { customId } from "@core/button";
 import { UserFacingError } from "@core/errors";
 import { type TicketSetupRecord } from "@database/models/tickets.schema";
@@ -25,8 +26,9 @@ export function normaliseTicketSetup(setup: StoredTicketSetup | null, openTicket
 		categoryId: chosen(setup?.categoryId),
 		transcriptChannelId: chosen(setup?.transcriptChannelId),
 		staffRoleId: chosen(setup?.handlerRoleId),
-		description: setup?.description ?? DEFAULT_DESCRIPTION,
-		buttonLabel: setup?.buttonLabel ?? DEFAULT_LABEL,
+		description:
+			setup?.description ?? botCopy(DEFAULT_DESCRIPTION, "اضغط الزر أدناه لفتح تذكرة. سيردّ عليك فريق الدعم قريبًا."),
+		buttonLabel: setup?.buttonLabel ?? botCopy(DEFAULT_LABEL, "فتح تذكرة"),
 		posted: (setup?.messageId ?? null) !== null,
 		openTickets,
 	};
@@ -44,15 +46,27 @@ export async function publishTicketPanel(
 	settings: TicketSettings,
 	existingMessageId: string | null = null,
 ): Promise<string> {
-	if (settings.panelChannelId === null) throw new UserFacingError("Choose a channel first.");
+	if (settings.panelChannelId === null)
+		throw new UserFacingError(botCopy("Choose a channel first.", "اختر قناة أولًا."));
 
 	const channel = await guild.channels.fetch(settings.panelChannelId).catch(() => null);
 	if (channel?.isSendable() !== true) {
-		throw new UserFacingError("I cannot post in that channel any more. Pick another one.");
+		throw new UserFacingError(
+			botCopy(
+				"I cannot post in that channel any more. Pick another one.",
+				"لم يعد بإمكاني النشر في تلك القناة. اختر قناة أخرى.",
+			),
+		);
 	}
 
 	const payload = {
-		embeds: [embed({ category: "tickets", title: "Need a hand?", description: settings.description })],
+		embeds: [
+			embed({
+				category: "tickets",
+				title: botCopy("Need a hand?", "هل تحتاج إلى مساعدة؟"),
+				description: settings.description,
+			}),
+		],
 		components: [
 			row(
 				button({

@@ -1,4 +1,5 @@
 import { ButtonStyle } from "discord.js";
+import { botCopy } from "@config/strings";
 import { customId } from "@core/button";
 import { type VerifySettings } from "@database/models/verification.schema";
 import { button, channelSelect, roleSelect, row } from "@lib/discord/components.util";
@@ -12,11 +13,15 @@ import { type VerifyConfig } from "@lib/settings/settings.types";
 
 export const DEFAULT_VERIFY_MESSAGE = "Press the button below to verify yourself and unlock the rest of the server.";
 
+function defaultVerifyMessage(): string {
+	return botCopy(DEFAULT_VERIFY_MESSAGE, "اضغط الزر أدناه للتحقق من حسابك والوصول إلى بقية قنوات الخادم.");
+}
+
 export type StoredVerifySettings = Omit<VerifySettings, "message"> & Partial<Pick<VerifySettings, "message">>;
 
 export function normaliseVerify(settings: StoredVerifySettings | null): VerifyConfig {
 	if (settings === null) {
-		return { channelId: null, roleId: null, messageId: null, message: DEFAULT_VERIFY_MESSAGE, verifiedCount: 0 };
+		return { channelId: null, roleId: null, messageId: null, message: defaultVerifyMessage(), verifiedCount: 0 };
 	}
 
 	return {
@@ -24,7 +29,7 @@ export function normaliseVerify(settings: StoredVerifySettings | null): VerifyCo
 		roleId: settings.roleId,
 		messageId: settings.messageId,
 		// `?? ""` would render an empty panel, so a blank stored value falls back too.
-		message: settings.message === undefined || settings.message === "" ? DEFAULT_VERIFY_MESSAGE : settings.message,
+		message: settings.message === undefined || settings.message === "" ? defaultVerifyMessage() : settings.message,
 		verifiedCount: settings.verifiedIds.length,
 	};
 }
@@ -50,23 +55,38 @@ function summary(state: VerifyPanelState): string {
 
 	if (!isReady(config)) {
 		const missing = [
-			config.channelId === null ? "a channel" : null,
-			config.roleId === null ? "a role to grant" : null,
+			config.channelId === null ? botCopy("a channel", "قناة") : null,
+			config.roleId === null ? botCopy("a role to grant", "دور يُمنح للأعضاء") : null,
 		].filter((part): part is string => part !== null);
 
 		return (
-			"## 🛡️ Verification\n" +
-			`Not set up yet — still needs ${missing.join(" and ")}.\n` +
-			"-# New members press a button, type a short code, and get the role."
+			botCopy("## 🛡️ Verification\n", "## 🛡️ التحقق من الأعضاء\n") +
+			botCopy(
+				`Not set up yet — still needs ${missing.join(" and ")}.\n`,
+				`لم يُضبط التحقق بعد. المطلوب: ${missing.join("، ")}.\n`,
+			) +
+			botCopy(
+				"-# New members press a button, type a short code, and get the role.",
+				"-# يضغط العضو الجديد زر التحقق، ثم يكتب الرمز ليحصل على الدور.",
+			)
 		);
 	}
 
-	const posted = config.messageId === null ? "Not posted yet." : "The panel is posted.";
+	const posted =
+		config.messageId === null
+			? botCopy("Not posted yet.", "لم تُنشر اللوحة بعد.")
+			: botCopy("The panel is posted.", "نُشرت اللوحة.");
 
 	return (
-		"## 🛡️ Verification\n" +
-		`Members verify in <#${config.channelId}> and are given <@&${config.roleId}>.\n` +
-		`-# ${posted} **${formatNumber(config.verifiedCount)}** verified so far.`
+		botCopy("## 🛡️ Verification\n", "## 🛡️ التحقق من الأعضاء\n") +
+		botCopy(
+			`Members verify in <#${config.channelId}> and are given <@&${config.roleId}>.\n`,
+			`يتحقق الأعضاء من حساباتهم في <#${config.channelId}> ويحصلون على الدور <@&${config.roleId}>.\n`,
+		) +
+		botCopy(
+			`-# ${posted} **${formatNumber(config.verifiedCount)}** verified so far.`,
+			`-# ${posted} عدد الأعضاء الذين تم التحقق منهم: **${formatNumber(config.verifiedCount)}**.`,
+		)
 	);
 }
 
@@ -81,45 +101,61 @@ export function verifyPanel(state: VerifyPanelState, ownerId: string): Container
 	if (state.roleTooHigh === true) {
 		parts.push(
 			text(
-				"⚠️ **That role sits above mine**, so I cannot give it to anyone. " +
-					"Move my role higher in Server Settings → Roles, or pick a lower one.",
+				botCopy(
+					"⚠️ **That role sits above mine**, so I cannot give it to anyone. " +
+						"Move my role higher in Server Settings → Roles, or pick a lower one.",
+					"⚠️ هذا الدور أعلى من دوري، لذا لا أستطيع منحه. ارفع دوري من إعدادات الخادم ← الأدوار، أو اختر دورًا أدنى.",
+				),
 			),
 		);
 	}
 
 	parts.push(
 		divider(),
-		text(`**The panel says**\n>>> ${config.message}`),
+		text(botCopy(`**The panel says**\n>>> ${config.message}`, `**نص اللوحة**\n>>> ${config.message}`)),
 		divider(),
 		// Captioned, because two stacked menus look identical once something is chosen.
-		text("**Panel channel**\n-# Where members find the Verify button."),
+		text(
+			botCopy(
+				"**Panel channel**\n-# Where members find the Verify button.",
+				"**قناة اللوحة**\n-# يجد الأعضاء فيها زر التحقق.",
+			),
+		),
 		row(
 			channelSelect({
 				id: control("channel", ownerId),
-				placeholder: "Post the verification panel in…",
+				placeholder: botCopy("Post the verification panel in…", "اختر قناة لوحة التحقق…"),
 				...(config.channelId !== null ? { defaultChannelIds: [config.channelId] } : {}),
 			}),
 		),
 		divider({ spacer: true }),
-		text("**Verified role**\n-# Given the moment someone passes."),
+		text(
+			botCopy(
+				"**Verified role**\n-# Given the moment someone passes.",
+				"**دور الأعضاء المُتحقّق منهم**\n-# يُمنح عند اجتياز التحقق.",
+			),
+		),
 		row(
 			roleSelect({
 				id: control("role", ownerId),
-				placeholder: "Give this role once verified…",
+				placeholder: botCopy("Give this role once verified…", "اختر الدور الذي يُمنح بعد التحقق…"),
 				...(config.roleId !== null ? { defaultRoleIds: [config.roleId] } : {}),
 			}),
 		),
 		row(
-			button({ id: control("edit", ownerId), label: "Edit the wording" }),
+			button({ id: control("edit", ownerId), label: botCopy("Edit the wording", "تعديل النص") }),
 			button({
 				id: control("post", ownerId),
-				label: config.messageId === null ? "Post the panel" : "Update the panel",
+				label:
+					config.messageId === null
+						? botCopy("Post the panel", "نشر اللوحة")
+						: botCopy("Update the panel", "تحديث اللوحة"),
 				style: ButtonStyle.Success,
 				disabled: !ready,
 			}),
 			button({
 				id: control("off", ownerId),
-				label: "Turn off",
+				label: botCopy("Turn off", "تعطيل التحقق"),
 				style: ButtonStyle.Danger,
 				disabled: !ready && config.messageId === null,
 			}),

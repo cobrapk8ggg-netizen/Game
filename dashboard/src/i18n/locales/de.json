@@ -320,6 +320,10 @@
 		"leave": "Ohne Speichern verlassen"
 	},
 	"error": {
+		"rateLimitedBody": "Warte kurz und versuche es erneut.",
+		"sessionExpired": "Melde dich erneut an, um fortzufahren.",
+		"permissionDenied": "Dir fehlt die Berechtigung für diese Aktion.",
+		"discordUnavailable": "Discord hat nicht geantwortet. Versuche es gleich noch einmal.",
 		"unreachableTitle": "Etwas ist schiefgelaufen",
 		"unreachableBody": "Das Dashboard konnte den Bot nicht erreichen.",
 		"botLeftTitle": "{{bot}} ist nicht auf diesem Server",

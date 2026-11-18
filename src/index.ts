@@ -1,6 +1,7 @@
 import { startApi } from "@api/server";
 import { dashboardBuilt } from "@api/static";
 import { envFile, loadEnv } from "@config/env";
+import { setBotCopyLanguage } from "@config/strings";
 import { botName } from "@core/brand";
 import { TestifyClient } from "@core/client";
 import { loadEverything, publishCommands, publishScope } from "@core/loader";
@@ -23,6 +24,7 @@ import { BOT_FEATURE_KEYS, BOT_FEATURES, switchedOff } from "@testify/shared";
 
 async function main(): Promise<void> {
 	const env = loadEnv();
+	setBotCopyLanguage(env.BOT_LANGUAGE);
 	// A development bot always prints readable lines, even through `npm run dev:all`'s pipe.
 	const logger = createLogger(env.LOG_LEVEL, process.stdout.isTTY === true || env.NODE_ENV === "development");
 

@@ -1,4 +1,5 @@
 import { PermissionFlagsBits } from "discord.js";
+import { botCopy } from "@config/strings";
 import { type CommandInput, defineCommand, inGuild } from "@core/command";
 import { UserFacingError } from "@core/errors";
 import { deleteVerifyConfig, getVerifyConfig } from "@database/repositories/verificationRepository";
@@ -56,9 +57,11 @@ export default recordsSettings(
 				async run(interaction) {
 					const guild = inGuild(interaction);
 					const removed = await deleteVerifyConfig(guild.id);
-					if (!removed) throw new UserFacingError("Verification is not set up here.");
+					if (!removed) throw new UserFacingError(botCopy("Verification is not set up here.", "لم يُضبط التحقق هنا."));
 
-					await reply(interaction, { embeds: [successEmbed("Verification has been turned off.")] });
+					await reply(interaction, {
+						embeds: [successEmbed(botCopy("Verification has been turned off.", "عُطّل التحقق."))],
+					});
 				},
 			},
 		],

@@ -320,6 +320,10 @@
 		"leave": "Leave without saving"
 	},
 	"error": {
+		"rateLimitedBody": "Wait a moment, then try again.",
+		"sessionExpired": "Sign in again to continue.",
+		"permissionDenied": "You do not have permission to do that.",
+		"discordUnavailable": "Discord did not respond. Try again shortly.",
 		"unreachableTitle": "Something went wrong",
 		"unreachableBody": "The dashboard could not reach the bot.",
 		"botLeftTitle": "{{bot}} is not in that server",

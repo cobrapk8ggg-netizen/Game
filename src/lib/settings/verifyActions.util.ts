@@ -1,4 +1,5 @@
 import { ButtonStyle, type Guild } from "discord.js";
+import { botCopy } from "@config/strings";
 import { theme } from "@config/theme";
 import { customId } from "@core/button";
 import { UserFacingError } from "@core/errors";
@@ -21,11 +22,16 @@ export function roleTooHigh(guild: Guild, roleId: string | null): boolean {
 
 /** Posts the public panel, or edits the one already there, and answers with the message it left behind. */
 export async function publishVerifyPanel(guild: Guild, config: VerifyConfig): Promise<string> {
-	if (config.channelId === null) throw new UserFacingError("Pick a channel first.");
+	if (config.channelId === null) throw new UserFacingError(botCopy("Pick a channel first.", "اختر قناة أولًا."));
 
 	const channel = await guild.channels.fetch(config.channelId).catch(() => null);
 	if (channel?.isSendable() !== true) {
-		throw new UserFacingError("I cannot post in that channel any more. Pick another one.");
+		throw new UserFacingError(
+			botCopy(
+				"I cannot post in that channel any more. Pick another one.",
+				"لم يعد بإمكاني النشر في تلك القناة. اختر قناة أخرى.",
+			),
+		);
 	}
 
 	const icon = guild.iconURL();
@@ -33,7 +39,7 @@ export async function publishVerifyPanel(guild: Guild, config: VerifyConfig): Pr
 		embeds: [
 			embed({
 				category: "settings",
-				title: `${theme.emoji.verify} Verification`,
+				title: botCopy(`${theme.emoji.verify} Verification`, `${theme.emoji.verify} التحقق من الأعضاء`),
 				description: config.message,
 				...(icon === null ? {} : { thumbnail: icon }),
 			}),
@@ -42,7 +48,7 @@ export async function publishVerifyPanel(guild: Guild, config: VerifyConfig): Pr
 			row(
 				button({
 					id: customId("verify", "start"),
-					label: "Verify",
+					label: botCopy("Verify", "تحقّق من حسابك"),
 					emoji: theme.emoji.verify,
 					style: ButtonStyle.Success,
 				}),

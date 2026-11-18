@@ -1,4 +1,5 @@
 import { type EmbedBuilder, type Guild, type GuildMember, type User } from "discord.js";
+import { botCopy } from "@config/strings";
 import { theme } from "@config/theme";
 import { type WarnEntry, type WarnLadderRecord } from "@database/models/moderation.schema";
 import {
@@ -159,7 +160,7 @@ export function warnedEmbed(target: User, reason: string, { entry, outcome, noti
 		title: `${theme.emoji.warning} Member warned`,
 		fields: [
 			{ name: "User", value: `${target}`, inline: true },
-			{ name: "Warning ID", value: `\`${entry.warnId}\``, inline: true },
+			{ name: botCopy("Warning ID", "معرّف التحذير"), value: `\`${entry.warnId}\``, inline: true },
 			{ name: "Notified", value: notified ? "Yes" : "No", inline: true },
 			{ name: "Reason", value: reason },
 			{ name: `Warning ${String(outcome.count)}`, value: consequenceLine(outcome) },
@@ -196,18 +197,21 @@ export async function issueWarning(options: {
 			: await notifyTarget(
 					user,
 					dmEmbed({
-						action: `warned in ${guild.name}`,
+						action: botCopy(`warned in ${guild.name}`, `تلقيت تحذيرًا في خادم ${guild.name}`),
 						emoji: theme.emoji.warning,
 						guild,
 						moderator: { username: moderator.tag },
 						reason,
 						extra: [
-							{ name: "Warning ID", value: `\`${entry.warnId}\``, inline: true },
+							{ name: botCopy("Warning ID", "معرّف التحذير"), value: `\`${entry.warnId}\``, inline: true },
 							{
 								name:
 									ladder.expireAfterDays === null
-										? "Warnings so far"
-										: `Warnings in the last ${String(ladder.expireAfterDays)} days`,
+										? botCopy("Warnings so far", "التحذيرات حتى الآن")
+										: botCopy(
+												`Warnings in the last ${String(ladder.expireAfterDays)} days`,
+												`التحذيرات خلال آخر ${String(ladder.expireAfterDays)} يومًا`,
+											),
 								value: String(count),
 								inline: true,
 							},

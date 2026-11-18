@@ -1,4 +1,5 @@
 import { type ApiErrorBody } from "@testify/shared";
+import { i18next, type TranslationKey } from "@/i18n";
 
 const BASE = "/api";
 const CSRF_COOKIE = "dash_csrf";
@@ -17,9 +18,26 @@ export class ApiError extends Error {
 	}
 }
 
-/** The server's own words for a refusal, or the fallback when it gave none. */
+const ARABIC_REFUSALS: ReadonlyMap<string, TranslationKey> = new Map([
+	["unauthenticated", "error.sessionExpired"],
+	["rate_limited", "error.rateLimitedBody"],
+	["forbidden", "error.permissionDenied"],
+	["missing_manage_guild", "error.cannotManageBody"],
+	["guild_not_found", "error.botLeftBody"],
+	["not_a_member", "error.notAMemberBody"],
+	["not_granted", "guilds.notGranted"],
+	["setup_required", "error.setupRequiredBody"],
+	["discord_unreachable", "error.discordUnavailable"],
+	["internal", "error.unreachableBody"],
+]);
+
+/** API errors keep their diagnostics for callers. Arabic interface copy comes from the dashboard dictionary. */
 export function refusalText(error: unknown, fallback: string): string {
-	return error instanceof ApiError ? error.message : fallback;
+	if (!(error instanceof ApiError)) return fallback;
+	if (i18next.resolvedLanguage !== "ar") return error.message;
+
+	const key = ARABIC_REFUSALS.get(error.code);
+	return key === undefined ? fallback || i18next.t("common.didNotWork") : i18next.t(key);
 }
 
 export function isRefusal(error: unknown): boolean {

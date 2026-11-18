@@ -326,6 +326,10 @@
 		"leave": "Quitter sans enregistrer"
 	},
 	"error": {
+		"rateLimitedBody": "Patiente un instant, puis réessaie.",
+		"sessionExpired": "Reconnecte-toi pour continuer.",
+		"permissionDenied": "Tu n’as pas la permission d’effectuer cette action.",
+		"discordUnavailable": "Discord n’a pas répondu. Réessaie dans un instant.",
 		"unreachableTitle": "Une erreur est survenue",
 		"unreachableBody": "Le tableau de bord n’a pas pu joindre le bot.",
 		"botLeftTitle": "{{bot}} n’est pas sur ce serveur",

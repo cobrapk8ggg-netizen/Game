@@ -1,4 +1,5 @@
 import { type Guild } from "discord.js";
+import { setBotCopyLanguage } from "@config/strings";
 import { countOpenTickets, getTicketSetup, saveTicketSetup } from "@database/repositories/ticketRepository";
 import { applyTickets, normaliseTicketSetup, publishTicketPanel } from "@lib/tickets/ticketActions.util";
 
@@ -151,4 +152,21 @@ describe("applyTickets", () => {
 
 		expect(saved).toHaveBeenCalledWith(GUILD, expect.objectContaining({ messageId: null }));
 	});
+});
+
+it("posts the configured ticket panel in Arabic and preserves the text supplied by an administrator", async () => {
+	setBotCopyLanguage("ar");
+	try {
+		const settings = normaliseTicketSetup(null);
+		expect(settings.buttonLabel).toBe("فتح تذكرة");
+		expect(settings.description).toContain("لفتح تذكرة");
+		await publishTicketPanel(guildWith(), { ...settings, panelChannelId: PANEL, description: "Support rules" });
+		const payload: unknown = send.mock.calls[0]?.[0];
+		const shown = JSON.stringify(payload);
+		expect(shown).toContain("هل تحتاج إلى مساعدة؟");
+		expect(shown).toContain("فتح تذكرة");
+		expect(shown).toContain("Support rules");
+	} finally {
+		setBotCopyLanguage(undefined);
+	}
 });

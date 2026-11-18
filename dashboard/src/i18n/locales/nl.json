@@ -320,6 +320,10 @@
 		"leave": "Weggaan zonder opslaan"
 	},
 	"error": {
+		"rateLimitedBody": "Wacht even en probeer het opnieuw.",
+		"sessionExpired": "Meld je opnieuw aan om door te gaan.",
+		"permissionDenied": "Je hebt geen toestemming voor deze actie.",
+		"discordUnavailable": "Discord heeft niet gereageerd. Probeer het zo nog eens.",
 		"unreachableTitle": "Er ging iets mis",
 		"unreachableBody": "Het dashboard kon de bot niet bereiken.",
 		"botLeftTitle": "{{bot}} zit niet in die server",

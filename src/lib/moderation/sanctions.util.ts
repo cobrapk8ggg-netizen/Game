@@ -1,9 +1,10 @@
 import { type Guild, type GuildMember, type User } from "discord.js";
 import { DAY_MS } from "@config/constants";
-import { strings } from "@config/strings";
+import { botCopy, strings } from "@config/strings";
 import { theme } from "@config/theme";
 import { type TestifyClient } from "@core/client";
 import { UserFacingError } from "@core/errors";
+import { durationIn } from "@core/language";
 import { deactivateSoftban, getActiveSoftban } from "@database/repositories/moderationRepository";
 import { appealLink } from "@lib/appeals/appealLink.util";
 import { formatDurationLong } from "@lib/format/format.util";
@@ -40,7 +41,7 @@ export async function kickMember(
 	const notified = await notifyTarget(
 		member.user,
 		dmEmbed({
-			action: `kicked from ${guild.name}`,
+			action: botCopy(`kicked from ${guild.name}`, `طُردت من خادم ${guild.name}`),
 			emoji: theme.emoji.moderation,
 			guild,
 			moderator: { username: moderator.name },
@@ -66,7 +67,10 @@ export async function banUser(
 	if (member !== null && !member.bannable) throw new UserFacingError(strings.moderation.notModeratable);
 
 	const existing = await guild.bans.fetch(user.id).catch(() => null);
-	if (existing !== null) throw new UserFacingError(`${user.username} is already banned.`);
+	if (existing !== null)
+		throw new UserFacingError(
+			botCopy(`${user.username} is already banned.`, `سبق حظر ${user.username} في هذا الخادم.`),
+		);
 
 	const appeal = member === null ? null : await appealLink(guild.client as TestifyClient, guild.id);
 	const notified =
@@ -75,14 +79,24 @@ export async function banUser(
 			: await notifyTarget(
 					user,
 					dmEmbed({
-						action: `banned from ${guild.name}`,
+						action: botCopy(`banned from ${guild.name}`, `حُظرت من خادم ${guild.name}`),
 						emoji: theme.emoji.moderation,
 						guild,
 						moderator: { username: moderator.name },
 						reason,
 						...(appeal === null
 							? {}
-							: { extra: [{ name: "Appeal", value: `Sign in at ${appeal} to ask for the ban to be lifted.` }] }),
+							: {
+									extra: [
+										{
+											name: botCopy("Appeal", "طلب رفع الحظر"),
+											value: botCopy(
+												`Sign in at ${appeal} to ask for the ban to be lifted.`,
+												`سجّل الدخول عبر ${appeal} لتقديم طلب رفع الحظر.`,
+											),
+										},
+									],
+								}),
 					}),
 				);
 
@@ -98,7 +112,8 @@ export async function banUser(
 /** The user the ban was on, which a lookup by id is the only way to name once they are gone. */
 export async function unbanUser(guild: Guild, userId: string, moderator: Moderator, reason: string): Promise<User> {
 	const ban = await guild.bans.fetch(userId).catch(() => null);
-	if (ban === null) throw new UserFacingError("That user is not banned in this server.");
+	if (ban === null)
+		throw new UserFacingError(botCopy("That user is not banned in this server.", "هذا المستخدم غير محظور في الخادم."));
 
 	await guild.bans.remove(userId, `${moderator.name}: ${reason}`);
 	await recordCase(guild, { action: "unban", user: ban.user, moderator, reason });
@@ -113,19 +128,37 @@ export async function timeoutMember(
 	durationMs: number,
 	reason: string,
 ): Promise<Sanctioned> {
-	if (durationMs <= 0) throw new UserFacingError("That duration is not valid. Try something like `10m`, `2h` or `3d`.");
-	if (durationMs > MAX_TIMEOUT_MS) throw new UserFacingError("Discord only allows timeouts of up to 28 days.");
+	if (durationMs <= 0)
+		throw new UserFacingError(
+			botCopy(
+				"That duration is not valid. Try something like `10m`, `2h` or `3d`.",
+				"المدة غير صالحة. جرّب صيغة مثل `10m` أو `2h` أو `3d`.",
+			),
+		);
+	if (durationMs > MAX_TIMEOUT_MS)
+		throw new UserFacingError(
+			botCopy(
+				"Discord only allows timeouts of up to 28 days.",
+				"يحدّد Discord مدة التقييد المؤقت بما لا يتجاوز ثمانية وعشرين يومًا.",
+			),
+		);
 	if (!member.moderatable) throw new UserFacingError(strings.moderation.notModeratable);
 
 	const notified = await notifyTarget(
 		member.user,
 		dmEmbed({
-			action: `timed out in ${guild.name}`,
+			action: botCopy(`timed out in ${guild.name}`, `فُرض عليك تقييد مؤقت في خادم ${guild.name}`),
 			emoji: theme.emoji.moderation,
 			guild,
 			moderator: { username: moderator.name },
 			reason,
-			extra: [{ name: "Duration", value: formatDurationLong(durationMs), inline: true }],
+			extra: [
+				{
+					name: botCopy("Duration", "المدة"),
+					value: botCopy(formatDurationLong(durationMs), durationIn("ar", durationMs)),
+					inline: true,
+				},
+			],
 		}),
 	);
 
@@ -142,7 +175,12 @@ export async function removeTimeout(
 	reason: string,
 ): Promise<Sanctioned> {
 	if (member.communicationDisabledUntilTimestamp === null) {
-		throw new UserFacingError(`${member.user.username} is not currently timed out.`);
+		throw new UserFacingError(
+			botCopy(
+				`${member.user.username} is not currently timed out.`,
+				`لا يخضع ${member.user.username} لتقييد مؤقت حاليًا.`,
+			),
+		);
 	}
 	if (!member.moderatable) throw new UserFacingError(strings.moderation.notModeratable);
 
@@ -150,7 +188,7 @@ export async function removeTimeout(
 	const notified = await notifyTarget(
 		member.user,
 		dmEmbed({
-			action: `untimed out in ${guild.name}`,
+			action: botCopy(`untimed out in ${guild.name}`, `رُفع عنك التقييد المؤقت في خادم ${guild.name}`),
 			emoji: theme.emoji.success,
 			guild,
 			moderator: { username: moderator.name },

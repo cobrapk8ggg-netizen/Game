@@ -13,6 +13,7 @@ import {
 	TextInputBuilder,
 	TextInputStyle,
 } from "discord.js";
+import { botCopy } from "@config/strings";
 import { theme } from "@config/theme";
 import { customId } from "@core/button";
 
@@ -136,8 +137,16 @@ export function confirmRow(
 	...args: string[]
 ): ActionRowBuilder<MessageActionRowComponentBuilder> {
 	return row(
-		button({ id: customId(id, `${action}-yes`, ...args, ownerId), label: "Confirm", style: ButtonStyle.Success }),
-		button({ id: customId(id, `${action}-no`, ...args, ownerId), label: "Cancel", style: ButtonStyle.Danger }),
+		button({
+			id: customId(id, `${action}-yes`, ...args, ownerId),
+			label: botCopy("Confirm", "تأكيد"),
+			style: ButtonStyle.Success,
+		}),
+		button({
+			id: customId(id, `${action}-no`, ...args, ownerId),
+			label: botCopy("Cancel", "إلغاء"),
+			style: ButtonStyle.Danger,
+		}),
 	);
 }
 
@@ -196,11 +205,15 @@ export function quickAmountRow(
 		button({ id: amount("half", half), label: `50% — ${format(half)}`, disabled: half <= 0 }),
 		button({
 			id: amount("all", max),
-			label: `All — ${format(max)}`,
+			label: botCopy(`All — ${format(max)}`, `الكل — ${format(max)}`),
 			style: ButtonStyle.Success,
 			disabled: max <= 0,
 		}),
-		button({ id: customId(id, `${action}-custom`, ownerId), label: "Custom…", style: ButtonStyle.Secondary }),
+		button({
+			id: customId(id, `${action}-custom`, ownerId),
+			label: botCopy("Custom…", "مبلغ آخر…"),
+			style: ButtonStyle.Secondary,
+		}),
 	);
 }
 

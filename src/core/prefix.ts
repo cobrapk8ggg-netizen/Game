@@ -14,6 +14,7 @@ import {
 	type TextBasedChannel,
 	type User,
 } from "discord.js";
+import { botCopy } from "@config/strings";
 import { type TestifyClient } from "@core/client";
 import {
 	type Command,
@@ -151,7 +152,8 @@ class PrefixOptions extends OptionReader implements CommandInputOptions {
 
 	getSubcommand(required?: boolean): string {
 		const { subcommand } = this.state;
-		if (subcommand === null && required !== false) throw new UserFacingError("That command needs a subcommand.");
+		if (subcommand === null && required !== false)
+			throw new UserFacingError(botCopy("That command needs a subcommand.", "يتطلّب هذا الأمر تحديد أمر فرعي."));
 		return subcommand ?? "";
 	}
 
@@ -313,7 +315,7 @@ export class PrefixInteraction implements CommandInput {
 	}
 
 	fetchReply(): Promise<Message> {
-		if (this.sent === null) throw new UserFacingError("Nothing has been sent yet.");
+		if (this.sent === null) throw new UserFacingError(botCopy("Nothing has been sent yet.", "لم تُرسل أي رسالة بعد."));
 		return Promise.resolve(this.sent);
 	}
 

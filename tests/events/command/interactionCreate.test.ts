@@ -135,11 +135,12 @@ describe("a right-click action", () => {
 
 /** An old message's button, or the menu Discord cached, can still reach a feature switched off since. */
 describe("a switched-off feature", () => {
-	const client = () =>
+	const client = (language?: "ar") =>
 		({
 			commands: new Collection(),
 			buttons: new Collection(),
 			contextMenus: new Collection(),
+			env: { BOT_LANGUAGE: language },
 			featuresOff: new Set(["music", "economy"]),
 			logger,
 		}) as unknown as TestifyClient;
@@ -179,6 +180,12 @@ describe("a switched-off feature", () => {
 		expect(arrivals.filter((interaction) => !said(interaction)?.includes("switched this part of the bot off"))).toEqual(
 			[],
 		);
+	});
+
+	it("uses the bot language for a switched-off feature even when Discord is in English", async () => {
+		const interaction = arriving("command", "play");
+		await interactionCreate.run(client("ar"), interaction as unknown as Interaction);
+		expect(said(interaction)).toContain("هذه الميزة في جميع الخوادم");
 	});
 
 	it("still says nothing to a button no feature owns", async () => {

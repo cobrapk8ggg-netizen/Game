@@ -1,5 +1,5 @@
 import { ChannelType, type Guild, type GuildMember, type User } from "discord.js";
-import { strings } from "@config/strings";
+import { botCopy, strings } from "@config/strings";
 import { type TestifyClient } from "@core/client";
 import { UserFacingError } from "@core/errors";
 import { getTicketByChannel, getTicketSetup, listOpenTickets } from "@database/repositories/ticketRepository";
@@ -56,15 +56,24 @@ export async function closeTicketFrom(
 	reader: GuildMember | undefined,
 ): Promise<void> {
 	const setup = await getTicketSetup(guild.id);
-	if (setup === null) throw new UserFacingError("The ticket system is not set up here.");
+	if (setup === null)
+		throw new UserFacingError(botCopy("The ticket system is not set up here.", "لم يُضبط نظام التذاكر هنا."));
 	if (!mayClose(reader, setup.handlerRoleId || null)) throw new UserFacingError(strings.ticket.noPermissions);
 
 	const ticket = await getTicketByChannel(channelId);
-	if (ticket?.guildId !== guild.id) throw new UserFacingError("That ticket is not open in this server.");
+	if (ticket?.guildId !== guild.id)
+		throw new UserFacingError(
+			botCopy("That ticket is not open in this server.", "هذه التذكرة غير مفتوحة في هذا الخادم."),
+		);
 
 	const channel = guild.channels.cache.get(channelId);
 	if (channel?.type !== ChannelType.GuildText) {
-		throw new UserFacingError("That ticket's channel is gone, so there is nothing to close.");
+		throw new UserFacingError(
+			botCopy(
+				"That ticket's channel is gone, so there is nothing to close.",
+				"حُذفت قناة التذكرة، لذا لا توجد قناة لإغلاقها.",
+			),
+		);
 	}
 
 	await channel

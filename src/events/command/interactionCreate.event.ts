@@ -9,6 +9,7 @@ import {
 	type ModalSubmitInteraction,
 	RESTJSONErrorCodes,
 } from "discord.js";
+import { botCopy } from "@config/strings";
 import { botName } from "@core/brand";
 import { parseCustomId } from "@core/button";
 import { checkContextMenu, runChecks } from "@core/checks";
@@ -25,9 +26,9 @@ type Answerable =
 	ChatInputCommandInteraction | ContextMenuCommandInteraction | MessageComponentInteraction | ModalSubmitInteraction;
 
 /** A switched-off feature's button, command or action can still arrive from an old message or Discord's cached menu. */
-async function refuseSwitchedOff(interaction: Answerable): Promise<void> {
+async function refuseSwitchedOff(client: TestifyClient, interaction: Answerable): Promise<void> {
 	await interaction.reply({
-		embeds: [refusalEmbed(say(readerLanguage(interaction), "featureOff", { bot: botName() }))],
+		embeds: [refusalEmbed(say(readerLanguage(interaction, client.env.BOT_LANGUAGE), "featureOff", { bot: botName() }))],
 		flags: MessageFlags.Ephemeral,
 	});
 }
@@ -35,7 +36,7 @@ async function refuseSwitchedOff(interaction: Answerable): Promise<void> {
 async function runContextMenu(client: TestifyClient, interaction: ContextMenuCommandInteraction): Promise<void> {
 	const menu = client.contextMenus.get(interaction.commandName);
 	if (!menu) {
-		if (partIsOff(client.featuresOff, "menus", interaction.commandName)) await refuseSwitchedOff(interaction);
+		if (partIsOff(client.featuresOff, "menus", interaction.commandName)) await refuseSwitchedOff(client, interaction);
 		return;
 	}
 	if (!interaction.inCachedGuild()) return;
@@ -85,7 +86,7 @@ export default defineEvent({
 			const command = client.commands.get(interaction.commandName);
 			const subcommand = interaction.options.getSubcommand(false);
 			if (commandIsOff(client.featuresOff, interaction.commandName, subcommand)) {
-				await refuseSwitchedOff(interaction);
+				await refuseSwitchedOff(client, interaction);
 				return;
 			}
 			if (!command) {
@@ -125,13 +126,20 @@ export default defineEvent({
 		const { id, action, args } = parseCustomId(interaction.customId);
 		const button = client.buttons.get(id);
 		if (!button) {
-			if (partIsOff(client.featuresOff, "buttons", id)) await refuseSwitchedOff(interaction);
+			if (partIsOff(client.featuresOff, "buttons", id)) await refuseSwitchedOff(client, interaction);
 			return;
 		}
 
 		if (button.ownerOnly === true && args.at(-1) !== undefined && args.at(-1) !== interaction.user.id) {
 			await interaction.reply({
-				embeds: [errorEmbed("Only the person who ran the command can use these.")],
+				embeds: [
+					errorEmbed(
+						botCopy(
+							"Only the person who ran the command can use these.",
+							"يمكن لمن نفّذ الأمر وحده استخدام هذه الأدوات.",
+						),
+					),
+				],
 				flags: MessageFlags.Ephemeral,
 			});
 			return;

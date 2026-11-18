@@ -1,5 +1,5 @@
 import { MessageFlags, StringSelectMenuOptionBuilder, type TextChannel } from "discord.js";
-import { strings } from "@config/strings";
+import { botCopy, strings } from "@config/strings";
 import { customId, defineButton } from "@core/button";
 import { UserFacingError } from "@core/errors";
 import { getTicketByChannel, getTicketSetup } from "@database/repositories/ticketRepository";
@@ -22,7 +22,10 @@ export default defineButton({
 		if (!guild) throw new UserFacingError(strings.generic.guildOnly);
 
 		const setup = await getTicketSetup(guild.id);
-		if (!setup) throw new UserFacingError("The ticket system is not configured in this server.");
+		if (!setup)
+			throw new UserFacingError(
+				botCopy("The ticket system is not configured in this server.", "لم يُضبط نظام التذاكر في هذا الخادم."),
+			);
 
 		// The panel button is pressed outside any ticket, so it runs before the checks every other action needs.
 		if (context.action === "open") {
@@ -37,7 +40,7 @@ export default defineButton({
 		}
 
 		const ticket = await getTicketByChannel(interaction.channelId ?? "");
-		if (!ticket) throw new UserFacingError("This is not a ticket channel.");
+		if (!ticket) throw new UserFacingError(botCopy("This is not a ticket channel.", "هذه القناة غير مرتبطة بتذكرة."));
 
 		const channel = interaction.channel as TextChannel | null;
 		if (!channel) throw new UserFacingError(strings.ticket.error);

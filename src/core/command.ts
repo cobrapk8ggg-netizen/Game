@@ -31,6 +31,7 @@ import {
 	type User,
 } from "discord.js";
 import { type Category } from "@config/categories";
+import { botCopy } from "@config/strings";
 import { type TestifyClient } from "@core/client";
 import { UserFacingError } from "@core/errors";
 
@@ -73,7 +74,8 @@ export abstract class OptionReader {
 		if (raw === undefined) return null;
 
 		const parsed = Number(raw);
-		if (!valid(parsed)) throw new UserFacingError(`\`${name}\` has to be a number.`);
+		if (!valid(parsed))
+			throw new UserFacingError(botCopy(`\`${name}\` has to be a number.`, `يجب أن تكون قيمة \`${name}\` عددًا.`));
 
 		return this.withinDeclaration(name, parsed);
 	}
@@ -95,27 +97,45 @@ export abstract class OptionReader {
 			);
 			if (choice === undefined) {
 				const listed = option.choices.map((one) => `\`${String(one.value)}\``).join(", ");
-				throw new UserFacingError(`\`${name}\` has to be one of ${listed}.`);
+				throw new UserFacingError(
+					botCopy(`\`${name}\` has to be one of ${listed}.`, `اختر قيمة \`${name}\` من بين: ${listed}.`),
+				);
 			}
 			return choice.value as T;
 		}
 
 		if (typeof value === "number") {
 			if (option.min !== undefined && value < option.min) {
-				throw new UserFacingError(`\`${name}\` has to be at least ${String(option.min)}.`);
+				throw new UserFacingError(
+					botCopy(
+						`\`${name}\` has to be at least ${String(option.min)}.`,
+						`يجب ألّا تقل قيمة \`${name}\` عن ${String(option.min)}.`,
+					),
+				);
 			}
 			if (option.max !== undefined && value > option.max) {
-				throw new UserFacingError(`\`${name}\` has to be ${String(option.max)} or less.`);
+				throw new UserFacingError(
+					botCopy(
+						`\`${name}\` has to be ${String(option.max)} or less.`,
+						`يجب ألّا تتجاوز قيمة \`${name}\` الحد ${String(option.max)}.`,
+					),
+				);
 			}
 		} else if (option.maxLength !== undefined && value.length > option.maxLength) {
-			throw new UserFacingError(`\`${name}\` can be ${String(option.maxLength)} characters at most.`);
+			throw new UserFacingError(
+				botCopy(
+					`\`${name}\` can be ${String(option.maxLength)} characters at most.`,
+					`الحد الأقصى لطول \`${name}\` هو ${String(option.maxLength)} حرفًا.`,
+				),
+			);
 		}
 
 		return value;
 	}
 
 	protected require<T>(name: string, value: T | null, required: boolean | undefined): T {
-		if (value === null && required === true) throw new UserFacingError(`You need to give me \`${name}\`.`);
+		if (value === null && required === true)
+			throw new UserFacingError(botCopy(`You need to give me \`${name}\`.`, `أدخل قيمة \`${name}\`.`));
 		return value as T;
 	}
 }
@@ -505,19 +525,22 @@ function addOption(
 
 /** `guildOnly: true` already stops a command reaching a DM, but TypeScript cannot see that. */
 export function inGuild(interaction: CommandInput): Guild {
-	if (!interaction.guild) throw new UserFacingError("This command only works inside a server.");
+	if (!interaction.guild)
+		throw new UserFacingError(botCopy("This command only works inside a server.", "يعمل هذا الأمر داخل الخوادم فقط."));
 	return interaction.guild;
 }
 
 export function asMember(interaction: CommandInput): GuildMember {
 	const member = interaction.member;
-	if (!member || !("guild" in member)) throw new UserFacingError("This command only works inside a server.");
+	if (!member || !("guild" in member))
+		throw new UserFacingError(botCopy("This command only works inside a server.", "يعمل هذا الأمر داخل الخوادم فقط."));
 	return member;
 }
 
 export function inTextChannel(interaction: CommandInput): GuildTextBasedChannel {
 	const channel = interaction.channel;
-	if (!channel || !("guild" in channel)) throw new UserFacingError("This command only works inside a server.");
+	if (!channel || !("guild" in channel))
+		throw new UserFacingError(botCopy("This command only works inside a server.", "يعمل هذا الأمر داخل الخوادم فقط."));
 	return channel;
 }
 
@@ -527,7 +550,13 @@ export function textChannelOption(interaction: CommandInput, name: string): Guil
 	if (!picked) return null;
 
 	const channel = interaction.guild?.channels.cache.get(picked.id);
-	if (!channel?.isTextBased()) throw new UserFacingError(`${picked.name} is not a channel I can send messages in.`);
+	if (!channel?.isTextBased())
+		throw new UserFacingError(
+			botCopy(
+				`${picked.name} is not a channel I can send messages in.`,
+				`لا يمكنني إرسال رسائل في القناة ${picked.name}.`,
+			),
+		);
 
 	return channel;
 }
@@ -537,7 +566,10 @@ export function channelOption(interaction: CommandInput, name: string): GuildBas
 	if (!picked) return null;
 
 	const channel = interaction.guild?.channels.cache.get(picked.id);
-	if (!channel) throw new UserFacingError("I could not find that channel in this server.");
+	if (!channel)
+		throw new UserFacingError(
+			botCopy("I could not find that channel in this server.", "لم أجد تلك القناة في هذا الخادم."),
+		);
 
 	return channel;
 }
@@ -547,7 +579,8 @@ export function roleOption(interaction: CommandInput, name: string, required = f
 	if (!picked) return null;
 
 	const role = interaction.guild?.roles.cache.get(picked.id);
-	if (!role) throw new UserFacingError("I could not find that role in this server.");
+	if (!role)
+		throw new UserFacingError(botCopy("I could not find that role in this server.", "لم أجد ذلك الدور في هذا الخادم."));
 
 	return role;
 }

@@ -1,7 +1,7 @@
 import { createTranscript } from "discord-html-transcripts";
 import { ButtonStyle, ChannelType, type Guild, PermissionFlagsBits, type TextChannel, type User } from "discord.js";
 import { TICKET } from "@config/constants";
-import { strings } from "@config/strings";
+import { botCopy, strings } from "@config/strings";
 import { customId } from "@core/button";
 import { type TestifyClient } from "@core/client";
 import { UserFacingError } from "@core/errors";
@@ -127,7 +127,8 @@ export async function memberCandidates(guild: Guild, ticket: TicketRecord): Prom
 		.first(25)
 		.map((candidate) => ({ id: candidate.id, name: candidate.displayName }));
 
-	if (people.length === 0) throw new UserFacingError("There is nobody else to add.");
+	if (people.length === 0)
+		throw new UserFacingError(botCopy("There is nobody else to add.", "لا يوجد أعضاء آخرون يمكن إضافتهم."));
 	return people;
 }
 
@@ -165,12 +166,12 @@ async function fileTranscript(
 		embeds: [
 			embed({
 				category: "tickets",
-				title: `Ticket ${ticket.ticketId} closed`,
+				title: botCopy(`Ticket ${ticket.ticketId} closed`, `أُغلقت التذكرة ${ticket.ticketId}`),
 				fields: [
 					{ name: strings.ticket.transcriptMember, value: `<@${ticket.ownerId}>`, inline: true },
 					{
 						name: strings.ticket.transcriptClaimed,
-						value: ticket.claimedById !== null ? `<@${ticket.claimedById}>` : "Nobody",
+						value: ticket.claimedById !== null ? `<@${ticket.claimedById}>` : botCopy("Nobody", "لم يتولّها أحد"),
 						inline: true,
 					},
 					{ name: strings.ticket.transcriptModerator, value: closedBy.toString(), inline: true },

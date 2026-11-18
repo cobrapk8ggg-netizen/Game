@@ -1,5 +1,5 @@
 import { LabelBuilder, MessageFlags, ModalBuilder, TextInputBuilder, TextInputStyle } from "discord.js";
-import { strings } from "@config/strings";
+import { botCopy, strings } from "@config/strings";
 import { customId, defineButton } from "@core/button";
 import { UserFacingError } from "@core/errors";
 import {
@@ -19,7 +19,10 @@ export default defineButton({
 		if (!guild) throw new UserFacingError(strings.generic.guildOnly);
 
 		const config = await getVerifyConfig(guild.id);
-		if (!config) throw new UserFacingError("Verification is not set up in this server.");
+		if (!config)
+			throw new UserFacingError(
+				botCopy("Verification is not set up in this server.", "لم يُضبط التحقق في هذا الخادم."),
+			);
 
 		if (context.action === "start") {
 			if (!interaction.isButton()) return;
@@ -32,10 +35,10 @@ export default defineButton({
 
 			const modal = new ModalBuilder()
 				.setCustomId(customId("verify", "submit"))
-				.setTitle(`Verification code: ${code}`)
+				.setTitle(botCopy(`Verification code: ${code}`, `رمز التحقق: ${code}`))
 				.addLabelComponents(
 					new LabelBuilder()
-						.setLabel("Type the code shown in the title")
+						.setLabel(botCopy("Type the code shown in the title", "اكتب الرمز الظاهر في العنوان."))
 						.setTextInputComponent(
 							new TextInputBuilder()
 								.setCustomId("code")
@@ -58,9 +61,10 @@ export default defineButton({
 		if (pending?.code !== supplied) throw new UserFacingError(strings.verification.wrongCode);
 
 		const member = await guild.members.fetch(interaction.user.id).catch(() => null);
-		if (!member) throw new UserFacingError("I could not find you in this server.");
+		if (!member)
+			throw new UserFacingError(botCopy("I could not find you in this server.", "لم أجد حسابك بين أعضاء هذا الخادم."));
 
-		await member.roles.add(config.roleId, "Verification passed");
+		await member.roles.add(config.roleId, botCopy("Verification passed", "تم التحقق من العضو"));
 		await markVerified(guild.id, interaction.user.id);
 
 		await interaction.reply({
