@@ -311,8 +311,9 @@ export function helpLinks(ar = false) {
 	);
 }
 
-export function resolveCategory(value: string): Category | null {
-	return isCategory(value) ? value : null;
+export function resolveCategory(value: string, ar = false): Category | null {
+	if (isCategory(value)) return value;
+	return ar ? (ALL_CATEGORIES.find((category) => arabicHelp.categories[category] === value) ?? null) : null;
 }
 
 export function resolveSurface(value: string | undefined): Surface {

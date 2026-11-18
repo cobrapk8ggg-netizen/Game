@@ -39,7 +39,7 @@ export default defineCommand({
 				return;
 			}
 
-			const category = resolveCategory(query);
+			const category = resolveCategory(query, ar);
 			// A category whose every command is switched off on this bot is nothing to browse.
 			const pages = category === null ? [] : pagesOf(client, category).filter((page) => page.length > 0);
 			if (category !== null && pages.length > 0) {

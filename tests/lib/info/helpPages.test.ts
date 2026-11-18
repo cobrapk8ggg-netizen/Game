@@ -60,6 +60,7 @@ describe("resolving what the user asked for", () => {
 	it("accepts a real category and rejects anything else", () => {
 		expect(resolveCategory("fun")).toBe("fun");
 		expect(resolveCategory("nonsense")).toBeNull();
+		expect(resolveCategory("الإشراف", true)).toBe("moderation");
 	});
 });
 
