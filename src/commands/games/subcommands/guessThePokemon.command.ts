@@ -1,5 +1,6 @@
 import { randomInt } from "node:crypto";
 import { z } from "zod";
+import { botCopy } from "@config/strings";
 import { defineCommand, inTextChannel } from "@core/command";
 import { embed, reply } from "@lib/discord";
 import { titleCase } from "@lib/format";
@@ -39,8 +40,8 @@ export default defineCommand({
 			embeds: [
 				embed({
 					category: "games",
-					title: "Who's that Pokémon?",
-					description: "You have 30 seconds to guess.",
+					title: botCopy("Who's that Pokémon?", "ما اسم هذا البوكيمون؟"),
+					description: botCopy("You have 30 seconds to guess.", "أمامك ثلاثون ثانية لتخمّن الاسم كما يظهر في اللعبة."),
 					...(artwork !== null ? { image: artwork } : {}),
 				}),
 			],
@@ -60,10 +61,16 @@ export default defineCommand({
 			embeds: [
 				embed({
 					category: "games",
-					title: winner ? "Correct" : "Time is up",
+					title: winner ? botCopy("Correct", "إجابة صحيحة") : botCopy("Time is up", "انتهى الوقت"),
 					description: winner
-						? `${winner.author} guessed it \u2014 it was **${titleCase(species.name)}**.`
-						: `Nobody guessed it. It was **${titleCase(species.name)}**.`,
+						? botCopy(
+								`${winner.author} guessed it \u2014 it was **${titleCase(species.name)}**.`,
+								`أجاب ${winner.author} إجابة صحيحة. اسم البوكيمون **${titleCase(species.name)}**.`,
+							)
+						: botCopy(
+								`Nobody guessed it. It was **${titleCase(species.name)}**.`,
+								`لم يخمّنه أحد. اسم البوكيمون **${titleCase(species.name)}**.`,
+							),
 				}),
 			],
 		});

@@ -3,6 +3,7 @@ import { botName } from "@core/brand";
 import { type TestifyClient } from "@core/client";
 import { toError } from "@core/errors";
 import { type Logger } from "@core/logger";
+import { assetPath } from "@core/paths";
 import { type SupportContext, type SupportEntry, type SupportPicker } from "@lib/support/support.types";
 import { commandEntries, fillPlaceholders, linkEntries, loadArticles } from "@lib/support/supportArticles.util";
 import { findLeak, secretsOf } from "@lib/support/supportGuard.util";
@@ -190,7 +191,7 @@ export class SupportDesk {
 			id: entry.id,
 			title: fillPlaceholders(entry.title, context),
 			topic: entry.topic,
-			body: fillPlaceholders(entry.body, context),
+			body: fillPlaceholders(entry.body, context, entry.arabic),
 		};
 
 		const leak = findLeak(`${article.title}\n${article.body}`, this.#secrets);
@@ -210,9 +211,16 @@ export class SupportDesk {
 }
 
 /** Every entry the desk may answer with, minus any that could leak before a single question is asked. */
-function buildEntries(client: TestifyClient, secrets: readonly string[]): SupportEntry[] {
+function buildEntries(client: TestifyClient, secrets: readonly string[], ar: boolean): SupportEntry[] {
 	const off = client.featuresOff;
-	const articles = loadArticles().flatMap((result) => {
+	const sources = loadArticles();
+	const localised = new Map(
+		(ar ? loadArticles(assetPath("support", "ar")) : []).flatMap((result) =>
+			result.ok ? [[result.article.entry.id, result] as const] : [],
+		),
+	);
+	const articles = sources.flatMap((source) => {
+		const result = source.ok ? (localised.get(source.article.entry.id) ?? source) : source;
 		if (result.ok) return partIsOff(off, "articles", result.article.entry.id) ? [] : [result.article];
 
 		client.logger.warn(
@@ -222,7 +230,7 @@ function buildEntries(client: TestifyClient, secrets: readonly string[]): Suppor
 		return [];
 	});
 
-	const { entries, problems } = linkEntries(articles, commandEntries(client.commands.values()));
+	const { entries, problems } = linkEntries(articles, commandEntries(client.commands.values(), ar));
 	// A link to a switched-off feature's article or command is left out without a warning, because it is meant.
 	const switchedOff = (target: string): boolean =>
 		target.startsWith("command-")
@@ -259,18 +267,19 @@ export function supportContext(prefix: string): SupportContext {
 	return { bot: botName(), prefix, repository: theme.repository };
 }
 
-let desk: SupportDesk | null = null;
+const desks = new Map<boolean, SupportDesk>();
 
 /** Built on first use, after login, so the bot's own name is known; the articles and commands never change at runtime. */
-export function supportDesk(client: TestifyClient): SupportDesk {
-	if (desk !== null) return desk;
+export function supportDesk(client: TestifyClient, ar = false): SupportDesk {
+	const cached = desks.get(ar);
+	if (cached !== undefined) return cached;
 
 	const secrets = secretsOf(client.env);
-	const entries = buildEntries(client, secrets);
+	const entries = buildEntries(client, secrets, ar);
 	const bot = botName();
 	const apiKey = client.env.SUPPORT_AI_API_KEY;
 
-	desk = new SupportDesk({
+	const desk = new SupportDesk({
 		entries,
 		picker:
 			apiKey === undefined ? null : createClaudePicker({ apiKey, model: client.env.SUPPORT_AI_MODEL, entries, bot }),
@@ -279,9 +288,10 @@ export function supportDesk(client: TestifyClient): SupportDesk {
 		ignore: bot.toLowerCase().split(/[^\p{L}\p{N}]+/u),
 	});
 
+	desks.set(ar, desk);
 	return desk;
 }
 
 export function resetSupportDesk(): void {
-	desk = null;
+	desks.clear();
 }

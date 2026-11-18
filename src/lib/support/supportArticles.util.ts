@@ -4,6 +4,8 @@ import { PermissionsBitField, type PermissionResolvable } from "discord.js";
 import { z } from "zod";
 import { HIDDEN_CATEGORIES } from "@config/categories";
 import { type Command, type CommandOption } from "@core/command";
+import { arabicDescription } from "@core/commandLocales";
+import { durationIn, permissionName } from "@core/language";
 import { assetPath } from "@core/paths";
 import { formatDurationLong, humanisePermission } from "@lib/format/format.util";
 import { type SupportContext, type SupportEntry } from "@lib/support/support.types";
@@ -101,12 +103,15 @@ export function loadArticles(directory = assetPath("support")): ArticleResult[] 
 		.map((file) => parseArticle(file, readFileSync(join(directory, file), "utf8")));
 }
 
-function permissionList(permissions: PermissionResolvable[] | undefined): string[] {
+function permissionList(permissions: PermissionResolvable[] | undefined, ar: boolean): string[] {
 	if (permissions === undefined || permissions.length === 0) return [];
-	return new PermissionsBitField(permissions).toArray().map((name) => `**${humanisePermission(name)}**`);
+	return new PermissionsBitField(permissions)
+		.toArray()
+		.map((name) => `**${ar ? permissionName("ar", name) : humanisePermission(name)}**`);
 }
 
-function joinWords(words: string[]): string {
+function joinWords(words: string[], ar: boolean): string {
+	if (ar) return new Intl.ListFormat("ar").format(words);
 	return words.length < 2 ? words.join("") : `${words.slice(0, -1).join(", ")} and ${words.at(-1) ?? ""}`;
 }
 
@@ -115,56 +120,81 @@ function usage(path: string, options: readonly CommandOption[]): string {
 	return `\`${[path, ...parts].join(" ")}\``;
 }
 
-function optionLine(option: CommandOption): string {
+function optionLine(command: string, option: CommandOption, ar: boolean): string {
+	const description = ar ? arabicDescription(option.description, command, undefined, option.name) : option.description;
 	const choices =
 		option.choices === undefined || option.choices.length === 0
 			? ""
-			: ` One of ${joinWords(option.choices.map((choice) => `\`${choice.name}\``))}.`;
+			: ` ${ar ? "اختر من" : "One of"} ${joinWords(
+					option.choices.map((choice) => `\`${choice.name}\``),
+					ar,
+				)}.`;
 
-	return `- **${option.name}**${option.required === true ? " (required)" : ""}: ${option.description}${choices}`;
+	return `- **${option.name}**${option.required === true ? (ar ? " (إلزامي)" : " (required)") : ""}: ${description}${choices}`;
 }
 
 /** A reference page per command, written from the same metadata Discord is given, so it cannot drift from the bot. */
-export function commandReference(command: Command): string {
+export function commandReference(command: Command, ar = false): string {
 	const subcommands = command.subcommands ?? [];
 	const options = command.options ?? [];
-	const lines = [command.description, "", "### How to use it"];
+	const lines = [
+		ar ? arabicDescription(command.description, command.name) : command.description,
+		"",
+		ar ? "### طريقة الاستخدام" : "### How to use it",
+	];
 
 	if (subcommands.length === 0) {
 		lines.push(usage(`/${command.name}`, options));
-		if (options.length > 0) lines.push("", ...options.map(optionLine));
+		if (options.length > 0) lines.push("", ...options.map((option) => optionLine(command.name, option, ar)));
 	} else {
 		lines.push(
 			...subcommands.map((sub) => {
-				const extra = permissionList(sub.permissions);
-				const needs = extra.length === 0 ? "" : ` Needs ${joinWords(extra)}.`;
-				return `- ${usage(`/${command.name} ${sub.name}`, sub.options ?? [])}: ${sub.description}${needs}`;
+				const extra = permissionList(sub.permissions, ar);
+				const needs = extra.length === 0 ? "" : ` ${ar ? "الصلاحيات المطلوبة:" : "Needs"} ${joinWords(extra, ar)}.`;
+				const description = ar ? arabicDescription(sub.description, command.name, sub.name) : sub.description;
+				return `- ${usage(`/${command.name} ${sub.name}`, sub.options ?? [])}: ${description}${needs}`;
 			}),
 		);
 	}
 
 	const aliases = [...(command.aliases ?? []), ...subcommands.flatMap((sub) => sub.aliases ?? [])];
-	const alsoAs = aliases.length === 0 ? "" : `, or ${joinWords(aliases.map((alias) => `\`{prefix}${alias}\``))}`;
-	const notes = [`- Works as a prefix command too: \`{prefix}${command.name}\`${alsoAs}.`];
+	const alsoAs =
+		aliases.length === 0
+			? ""
+			: `${ar ? "، أو " : ", or "}${joinWords(
+					aliases.map((alias) => `\`{prefix}${alias}\``),
+					ar,
+				)}`;
+	const notes = [
+		`- ${ar ? "يمكنك استخدام الأمر مع البادئة أيضًا:" : "Works as a prefix command too:"} \`{prefix}${command.name}\`${alsoAs}.`,
+	];
 
-	const yours = permissionList(command.permissions);
-	if (yours.length > 0) notes.push(`- You need ${joinWords(yours)}.`);
-	const bots = permissionList(command.botPermissions);
-	if (bots.length > 0) notes.push(`- The bot needs ${joinWords(bots)}.`);
-	if (command.guildOnly === true) notes.push("- Only works in a server, not in direct messages.");
-	if (command.cooldown !== undefined) notes.push(`- Wait ${formatDurationLong(command.cooldown)} between uses.`);
+	const yours = permissionList(command.permissions, ar);
+	if (yours.length > 0) notes.push(`- ${ar ? "تحتاج إلى" : "You need"} ${joinWords(yours, ar)}.`);
+	const bots = permissionList(command.botPermissions, ar);
+	if (bots.length > 0) notes.push(`- ${ar ? "يحتاج البوت إلى" : "The bot needs"} ${joinWords(bots, ar)}.`);
+	if (command.guildOnly === true)
+		notes.push(ar ? "- يعمل داخل الخوادم فقط." : "- Only works in a server, not in direct messages.");
+	if (command.cooldown !== undefined)
+		notes.push(
+			ar
+				? `- انتظر ${durationIn("ar", command.cooldown)} قبل استخدامه مجددًا.`
+				: `- Wait ${formatDurationLong(command.cooldown)} between uses.`,
+		);
 
 	lines.push(
 		"",
-		"### Good to know",
+		ar ? "### ملاحظات" : "### Good to know",
 		...notes,
 		"",
-		"> In the usage above, `<>` means required and `[]` means optional.",
+		ar
+			? "> يرمز `<>` إلى الخيار الإلزامي و`[]` إلى الخيار الاختياري."
+			: "> In the usage above, `<>` means required and `[]` means optional.",
 	);
 	return lines.join("\n");
 }
 
-export function commandEntries(commands: Iterable<Command>): SupportEntry[] {
+export function commandEntries(commands: Iterable<Command>, ar = false): SupportEntry[] {
 	return [...commands]
 		.filter((command) => command.ownerOnly !== true && !HIDDEN_CATEGORIES.includes(command.category))
 		.sort((left, right) => left.name.localeCompare(right.name))
@@ -174,7 +204,7 @@ export function commandEntries(commands: Iterable<Command>): SupportEntry[] {
 
 			return {
 				id: `command-${command.name}`,
-				title: `The /${command.name} command`,
+				title: ar ? `الأمر /${command.name}` : `The /${command.name} command`,
 				topic: "commands" as const,
 				keywords: [
 					command.name,
@@ -183,8 +213,13 @@ export function commandEntries(commands: Iterable<Command>): SupportEntry[] {
 					...aliases,
 					...subcommands.map((sub) => sub.name),
 				],
-				questions: [command.description, ...subcommands.map((sub) => sub.description)],
-				body: commandReference(command),
+				questions: ar
+					? [
+							arabicDescription(command.description, command.name),
+							...subcommands.map((sub) => arabicDescription(sub.description, command.name, sub.name)),
+						]
+					: [command.description, ...subcommands.map((sub) => sub.description)],
+				body: commandReference(command, ar),
 				featured: false,
 				kind: "command" as const,
 				links: [],
@@ -225,9 +260,9 @@ export function linkEntries(
 	};
 }
 
-export function fillPlaceholders(text: string, context: SupportContext): string {
+export function fillPlaceholders(text: string, context: SupportContext, ar = false): string {
 	// Functions rather than strings, so a `$&` in a server's prefix is not read as a replacement pattern.
-	return fillFacts(text)
+	return fillFacts(text, ar)
 		.replaceAll("{bot}", () => context.bot)
 		.replaceAll("{prefix}", () => context.prefix)
 		.replaceAll("{repository}", () => context.repository);

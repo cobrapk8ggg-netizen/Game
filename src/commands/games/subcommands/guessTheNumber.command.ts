@@ -1,4 +1,5 @@
 import { randomInt } from "node:crypto";
+import { botCopy } from "@config/strings";
 import { defineCommand, inTextChannel } from "@core/command";
 import { embed, reply } from "@lib/discord";
 
@@ -19,8 +20,11 @@ export default defineCommand({
 			embeds: [
 				embed({
 					category: "games",
-					title: "Guess the number",
-					description: `I am thinking of a number between **1** and **${maximum}**. You have 60 seconds and six guesses.`,
+					title: botCopy("Guess the number", "خمّن العدد"),
+					description: botCopy(
+						`I am thinking of a number between **1** and **${maximum}**. You have 60 seconds and six guesses.`,
+						`اخترت عددًا من **1** إلى **${maximum}**. أمامك ست محاولات خلال ستين ثانية.`,
+					),
 				}),
 			],
 		});
@@ -40,8 +44,11 @@ export default defineCommand({
 						embeds: [
 							embed({
 								category: "games",
-								title: "Correct",
-								description: `${message.author} got it \u2014 the number was **${target}**.`,
+								title: botCopy("Correct", "إجابة صحيحة"),
+								description: botCopy(
+									`${message.author} got it \u2014 the number was **${target}**.`,
+									`عاشت إيدك يا ${message.author}! العدد كان **${target}**. 🎉`,
+								),
 							}),
 						],
 					});
@@ -57,8 +64,11 @@ export default defineCommand({
 						embeds: [
 							embed({
 								category: "games",
-								title: "Game over",
-								description: `Nobody guessed it. The number was **${target}**.`,
+								title: botCopy("Game over", "انتهت اللعبة"),
+								description: botCopy(
+									`Nobody guessed it. The number was **${target}**.`,
+									`ما حد خمّنه! العدد كان **${target}**. نخليها جولة ثانية؟`,
+								),
 							}),
 						],
 					});

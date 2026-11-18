@@ -1,4 +1,5 @@
 import { DEFAULT_PREFIX } from "@config/constants";
+import { botCopy, usesArabicCopy } from "@config/strings";
 import { theme } from "@config/theme";
 import { defineCommand } from "@core/command";
 import { UserFacingError } from "@core/errors";
@@ -38,7 +39,10 @@ export default defineCommand({
 		const parsed = supportQuestion.safeParse({ question: interaction.options.getString("question", true) });
 		if (!parsed.success) {
 			throw new UserFacingError(
-				`Ask in ${String(SUPPORT_LIMITS.questionMin)} to ${String(QUESTION_MAX)} characters of plain text.`,
+				botCopy(
+					`Ask in ${String(SUPPORT_LIMITS.questionMin)} to ${String(QUESTION_MAX)} characters of plain text.`,
+					`اكتب سؤالك بنص عادي. يجب أن يكون طوله بين ${String(SUPPORT_LIMITS.questionMin)} و${String(QUESTION_MAX)} حرفًا.`,
+				),
 			);
 		}
 
@@ -47,7 +51,7 @@ export default defineCommand({
 
 		const prefix = interaction.guild === null ? DEFAULT_PREFIX : await getPrefix(interaction.guild.id);
 		const help = supportContext(prefix);
-		const desk = supportDesk(client);
+		const desk = supportDesk(client, usesArabicCopy());
 		const { question } = parsed.data;
 
 		const answer: SupportReply = question.startsWith(ARTICLE_CHOICE)
@@ -70,12 +74,15 @@ export default defineCommand({
 
 	async autocomplete(interaction, client) {
 		const typed = interaction.options.getFocused().slice(0, QUESTION_MAX);
-		const links = supportDesk(client).suggest(typed, supportContext(DEFAULT_PREFIX), CHOICES_MAX);
+		const links = supportDesk(client, usesArabicCopy()).suggest(typed, supportContext(DEFAULT_PREFIX), CHOICES_MAX);
 		const choices = links.map((link) => ({ name: suggestionName(link), value: `${ARTICLE_CHOICE}${link.id}` }));
 
 		// First, so pressing Enter asks exactly what was typed rather than opening the top suggestion.
 		if (typed.trim().length >= SUPPORT_LIMITS.questionMin) {
-			choices.unshift({ name: choiceName(`🔎 Ask: ${typed.trim()}`), value: typed.trim() });
+			choices.unshift({
+				name: choiceName(botCopy(`🔎 Ask: ${typed.trim()}`, `🔎 اسأل: ${typed.trim()}`)),
+				value: typed.trim(),
+			});
 		}
 
 		await interaction.respond(choices.slice(0, CHOICES_MAX));

@@ -1,4 +1,5 @@
 import QuickChart from "quickchart-js";
+import { botCopy } from "@config/strings";
 import { defineCommand } from "@core/command";
 import { ServiceError, UserFacingError } from "@core/errors";
 import { embed, reply } from "@lib/discord";
@@ -27,7 +28,10 @@ export default defineCommand({
 
 	async run(interaction) {
 		const guild = interaction.guild;
-		if (!guild) throw new UserFacingError("This command only works inside a server.");
+		if (!guild)
+			throw new UserFacingError(
+				botCopy("This command only works inside a server.", "يعمل هذا الأمر داخل الخوادم فقط."),
+			);
 
 		await interaction.deferReply();
 
@@ -38,10 +42,16 @@ export default defineCommand({
 			.setConfig({
 				type: chartType,
 				data: {
-					labels: ["Total", "People", "Bots", "Joined 24h", "Joined 7d"],
+					labels: [
+						botCopy("Total", "الإجمالي"),
+						botCopy("People", "الأعضاء"),
+						botCopy("Bots", "البوتات"),
+						botCopy("Joined 24h", "المنضمون خلال 24 ساعة"),
+						botCopy("Joined 7d", "المنضمون خلال 7 أيام"),
+					],
 					datasets: [
 						{
-							label: "Members",
+							label: botCopy("Members", "عدد الأعضاء"),
 							data: [total, people, bots, joinedDay, joinedWeek],
 							backgroundColor: ["#36a2eb", "#ffce56", "#ff6384", "#cc65fe", "#66ff99"],
 						},
@@ -64,13 +74,19 @@ export default defineCommand({
 			embeds: [
 				embed({
 					category: "info",
-					title: `Member count for ${guild.name}`,
+					title: botCopy(`Member count for ${guild.name}`, `عدد الأعضاء في ${guild.name}`),
 					description: [
-						`**Total** ${formatNumber(total)}`,
-						`**People** ${formatNumber(people)}`,
-						`**Bots** ${formatNumber(bots)}`,
-						`**Joined in the last 24h** ${formatNumber(joinedDay)}`,
-						`**Joined in the last 7 days** ${formatNumber(joinedWeek)}`,
+						botCopy(`**Total** ${formatNumber(total)}`, `**الإجمالي** ${formatNumber(total)}`),
+						botCopy(`**People** ${formatNumber(people)}`, `**الأعضاء** ${formatNumber(people)}`),
+						botCopy(`**Bots** ${formatNumber(bots)}`, `**البوتات** ${formatNumber(bots)}`),
+						botCopy(
+							`**Joined in the last 24h** ${formatNumber(joinedDay)}`,
+							`**المنضمون خلال آخر 24 ساعة** ${formatNumber(joinedDay)}`,
+						),
+						botCopy(
+							`**Joined in the last 7 days** ${formatNumber(joinedWeek)}`,
+							`**المنضمون خلال آخر 7 أيام** ${formatNumber(joinedWeek)}`,
+						),
 					].join("\n"),
 					image: url,
 				}),

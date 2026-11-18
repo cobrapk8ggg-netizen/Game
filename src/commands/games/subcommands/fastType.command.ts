@@ -1,4 +1,5 @@
 import { randomInt } from "node:crypto";
+import { botCopy, usesArabicCopy } from "@config/strings";
 import { defineCommand, inTextChannel } from "@core/command";
 import { embed, reply } from "@lib/discord";
 
@@ -11,9 +12,18 @@ const SENTENCES = [
 	"Reading code carefully is the fastest way to write it correctly",
 ];
 
+const ARABIC_SENTENCES = [
+	"قفز الثعلب البني السريع فوق الكلب الكسول قرب ضفة النهر",
+	"الكتابة بسرعة أسهل بكثير من الكتابة بدقة تحت الضغط",
+	"أمر واحد مكتوب بعناية خير من ألف سطر معقد",
+	"كل خطأ تصلحه اليوم يوفر عليك تذكرة دعم غدا",
+	"اتساق الشيفرة كلها أهم من براعة ملف واحد منها",
+	"قراءة الشيفرة بتأن أسرع سبيل إلى كتابتها كتابة صحيحة",
+];
+
 /** Zero-width spaces stop a copy-paste from matching the prompt exactly. */
 function obfuscate(sentence: string): string {
-	return sentence.split("").join("\u200b");
+	return usesArabicCopy() ? sentence.replaceAll(" ", " \u200b") : sentence.split("").join("\u200b");
 }
 
 export default defineCommand({
@@ -25,14 +35,18 @@ export default defineCommand({
 
 	async run(interaction) {
 		const channel = inTextChannel(interaction);
-		const sentence = SENTENCES[randomInt(SENTENCES.length)]!;
+		const sentences = usesArabicCopy() ? ARABIC_SENTENCES : SENTENCES;
+		const sentence = sentences[randomInt(sentences.length)]!;
 
 		await reply(interaction, {
 			embeds: [
 				embed({
 					category: "games",
-					title: "Fast type",
-					description: `Type this sentence exactly. You have 60 seconds.\n\n> ${obfuscate(sentence)}`,
+					title: botCopy("Fast type", "سباق الكتابة"),
+					description: botCopy(
+						`Type this sentence exactly. You have 60 seconds.\n\n> ${obfuscate(sentence)}`,
+						`اكتب هذه الجملة كما تظهر. أمامك ستون ثانية.\n\n> ${obfuscate(sentence)}`,
+					),
 				}),
 			],
 		});
@@ -50,7 +64,13 @@ export default defineCommand({
 
 		if (!winner) {
 			await interaction.followUp({
-				embeds: [embed({ category: "games", title: "Time is up", description: "Nobody managed it." })],
+				embeds: [
+					embed({
+						category: "games",
+						title: botCopy("Time is up", "انتهى الوقت"),
+						description: botCopy("Nobody managed it.", "لم ينجح أحد في كتابة الجملة."),
+					}),
+				],
 			});
 			return;
 		}
@@ -62,8 +82,11 @@ export default defineCommand({
 			embeds: [
 				embed({
 					category: "games",
-					title: "We have a winner",
-					description: `${winner.author} finished in **${seconds.toFixed(2)}s** \u2014 about **${wpm} WPM**.`,
+					title: botCopy("We have a winner", "لدينا فائز"),
+					description: botCopy(
+						`${winner.author} finished in **${seconds.toFixed(2)}s** \u2014 about **${wpm} WPM**.`,
+						`عاشت إيدك يا ${winner.author}! أكملت الجملة في **${seconds.toFixed(2)} ث**، بسرعة تقارب **${wpm} كلمة في الدقيقة**.`,
+					),
 				}),
 			],
 		});

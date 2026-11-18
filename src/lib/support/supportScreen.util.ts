@@ -1,4 +1,5 @@
 import { ButtonStyle } from "discord.js";
+import { botCopy } from "@config/strings";
 import { customId } from "@core/button";
 import { button, linkButton, row } from "@lib/discord/components.util";
 import { container, containerMessage, divider, sectionWithButton, text } from "@lib/discord/containers.util";
@@ -8,15 +9,15 @@ import { linkTarget, type SupportArticleLink, type SupportReply, type SupportTop
 
 /** The support answer as a Discord message: the article, then a button beside each related one. */
 
-const TOPIC_LABELS: Record<SupportTopic, string> = {
-	"getting-started": "Getting started",
-	dashboard: "Using the dashboard",
-	setup: "Setting up features",
-	moderation: "Moderation",
-	community: "Economy, games and fun",
-	music: "Music",
-	troubleshooting: "Fixing problems",
-	commands: "Command reference",
+const TOPIC_LABELS: Record<SupportTopic, readonly [string, string]> = {
+	"getting-started": ["Getting started", "البدء باستخدام البوت"],
+	dashboard: ["Using the dashboard", "استخدام لوحة التحكم"],
+	setup: ["Setting up features", "إعداد الميزات"],
+	moderation: ["Moderation", "الإشراف"],
+	community: ["Economy, games and fun", "الاقتصاد والألعاب والترفيه"],
+	music: ["Music", "الموسيقى"],
+	troubleshooting: ["Fixing problems", "حلّ المشكلات"],
+	commands: ["Command reference", "مرجع الأوامر"],
 };
 
 const TOPIC_EMOJI: Record<SupportTopic, string> = {
@@ -66,28 +67,31 @@ export function supportScreen(reply: SupportReply, options: SupportScreenOptions
 
 	if (reply.answer === null) {
 		parts.push(
-			text("## No article for that"),
+			text(botCopy("## No article for that", "## لم أجد مقالًا عن هذا السؤال")),
 			text(
-				`I can only help with ${options.bot}: its dashboard, adding it to a server, setting it up and its commands.\n\nTry asking in other words — \`/ask\` suggests articles as you type${reply.related.length > 0 ? ", or open one of these" : ""}.`,
+				botCopy(
+					`I can only help with ${options.bot}: its dashboard, adding it to a server, setting it up and its commands.\n\nTry asking in other words — \`/ask\` suggests articles as you type${reply.related.length > 0 ? ", or open one of these" : ""}.`,
+					`يمكنني مساعدتك في إعداد ${options.bot} وإضافته إلى خادمك واستخدام أوامره ولوحة التحكم.\n\nجرّب صياغة أخرى. يعرض \`/ask\` مقالات مقترحة أثناء الكتابة${reply.related.length > 0 ? "، أو افتح مقالًا من القائمة أدناه" : ""}.`,
+				),
 			),
 		);
 	} else {
 		const { topic, title, body } = reply.answer;
 		parts.push(
-			text(`-# ${TOPIC_EMOJI[topic]} ${TOPIC_LABELS[topic]}\n## ${title}`),
+			text(`-# ${TOPIC_EMOJI[topic]} ${botCopy(...TOPIC_LABELS[topic])}\n## ${title}`),
 			text(discordMarkdown(body, options.dashboard)),
 		);
 	}
 
 	if (reply.related.length > 0) {
-		parts.push(divider(), text("### Related"));
+		parts.push(divider(), text(botCopy("### Related", "### مقالات ذات صلة")));
 		for (const link of reply.related) {
 			parts.push(
 				sectionWithButton(
 					suggestionName(link),
 					button({
 						id: customId(SUPPORT_PANEL_ID, "open", link.id, options.ownerId),
-						label: "Open",
+						label: botCopy("Open", "فتح"),
 						style: ButtonStyle.Secondary,
 					}),
 				),
@@ -98,11 +102,20 @@ export function supportScreen(reply: SupportReply, options: SupportScreenOptions
 	const links = [
 		...(options.dashboard === null
 			? []
-			: [linkButton("Help page", `${options.dashboard.replace(/\/$/, "")}/help`, "📖")]),
-		...(options.supportServer === null ? [] : [linkButton("Support server", options.supportServer, "💬")]),
+			: [linkButton(botCopy("Help page", "صفحة المساعدة"), `${options.dashboard.replace(/\/$/, "")}/help`, "📖")]),
+		...(options.supportServer === null
+			? []
+			: [linkButton(botCopy("Support server", "خادم الدعم"), options.supportServer, "💬")]),
 	];
 	if (links.length > 0) parts.push(divider(), row(...links));
 
-	parts.push(text("-# Every answer is a written help article, so nothing here is made up."));
+	parts.push(
+		text(
+			botCopy(
+				"-# Every answer is a written help article, so nothing here is made up.",
+				"-# تُعرض الإجابات من مقالات المساعدة المكتوبة مسبقًا.",
+			),
+		),
+	);
 	return containerMessage(container({ category: "info", parts }));
 }

@@ -18,7 +18,9 @@ supportQuestions.use("*", requireAuth);
 
 supportArticles.get("/", (context) => {
 	const client = context.get("client");
-	const body: SupportIndex = { articles: supportDesk(client).catalogue(supportContext(DEFAULT_PREFIX)) };
+	const body: SupportIndex = {
+		articles: supportDesk(client, context.req.query("locale") === "ar").catalogue(supportContext(DEFAULT_PREFIX)),
+	};
 
 	return context.json(body);
 });
@@ -26,7 +28,10 @@ supportArticles.get("/", (context) => {
 supportQuestions.post("/ask", async (context) => {
 	const client = context.get("client");
 	const { question } = await parseBody(context, supportQuestion);
-	const body: SupportReply = await supportDesk(client).ask(question, supportContext(DEFAULT_PREFIX));
+	const body: SupportReply = await supportDesk(client, context.req.query("locale") === "ar").ask(
+		question,
+		supportContext(DEFAULT_PREFIX),
+	);
 
 	return context.json(body);
 });
@@ -35,7 +40,7 @@ supportArticles.get("/articles/:articleId", (context) => {
 	const client = context.get("client");
 	const { articleId } = parseParams(context, supportArticleParams);
 	const help = supportContext(DEFAULT_PREFIX);
-	const desk = supportDesk(client);
+	const desk = supportDesk(client, context.req.query("locale") === "ar");
 
 	const answer = desk.article(articleId, help);
 	if (answer === null) throw notFound("unknown_article", "There is no help article with that id.");

@@ -1,5 +1,7 @@
+import { botCopy } from "@config/strings";
 import { defineCommand, roleOption } from "@core/command";
 import { UserFacingError } from "@core/errors";
+import { permissionName } from "@core/language";
 import { embed, reply } from "@lib/discord";
 import { discordTime, formatNumber, humanisePermission, truncate } from "@lib/format";
 
@@ -13,8 +15,12 @@ export default defineCommand({
 
 	async run(interaction) {
 		const role = roleOption(interaction, "role");
-		if (!role) throw new UserFacingError("I could not find that role in this server.");
-		if (role.name === "@everyone") throw new UserFacingError("The `@everyone` role has no useful information.");
+		if (!role)
+			throw new UserFacingError(botCopy("I could not find that role in this server.", "لم أجد الدور في هذا الخادم."));
+		if (role.name === "@everyone")
+			throw new UserFacingError(
+				botCopy("The `@everyone` role has no useful information.", "لا تتوافر معلومات إضافية عن الدور `@everyone`."),
+			);
 
 		const permissions = role.permissions.toArray();
 
@@ -23,21 +29,38 @@ export default defineCommand({
 				embed({
 					colour: role.colors.primaryColor === 0 ? undefined : role.hexColor,
 					category: "info",
-					title: `Role: ${role.name}`,
+					title: botCopy(`Role: ${role.name}`, `الدور: ${role.name}`),
 					fields: [
-						{ name: "Colour", value: role.hexColor, inline: true },
-						{ name: "Position", value: String(role.position), inline: true },
-						{ name: "Members", value: formatNumber(role.members.size), inline: true },
-						{ name: "Mentionable", value: role.mentionable ? "Yes" : "No", inline: true },
-						{ name: "Hoisted", value: role.hoist ? "Yes" : "No", inline: true },
-						{ name: "Managed", value: role.managed ? "Yes" : "No", inline: true },
-						{ name: "Created", value: discordTime(role.createdAt, "R") },
+						{ name: botCopy("Colour", "اللون"), value: role.hexColor, inline: true },
+						{ name: botCopy("Position", "الموضع في ترتيب الأدوار"), value: String(role.position), inline: true },
+						{ name: botCopy("Members", "عدد الأعضاء"), value: formatNumber(role.members.size), inline: true },
 						{
-							name: `Permissions (${permissions.length})`,
-							value: truncate(permissions.map(humanisePermission).join(", ") || "None", 1_000),
+							name: botCopy("Mentionable", "يمكن الإشارة إليه"),
+							value: role.mentionable ? botCopy("Yes", "نعم") : botCopy("No", "لا"),
+							inline: true,
+						},
+						{
+							name: botCopy("Hoisted", "يُعرض أعضاؤه على حدة"),
+							value: role.hoist ? botCopy("Yes", "نعم") : botCopy("No", "لا"),
+							inline: true,
+						},
+						{
+							name: botCopy("Managed", "يديره تكامل"),
+							value: role.managed ? botCopy("Yes", "نعم") : botCopy("No", "لا"),
+							inline: true,
+						},
+						{ name: botCopy("Created", "أُنشئ"), value: discordTime(role.createdAt, "R") },
+						{
+							name: botCopy(`Permissions (${permissions.length})`, `الصلاحيات (${permissions.length})`),
+							value: truncate(
+								permissions
+									.map((flag) => botCopy(humanisePermission(flag), permissionName("ar", flag)))
+									.join(botCopy(", ", "، ")) || botCopy("None", "لا توجد صلاحيات"),
+								1_000,
+							),
 						},
 					],
-					footer: `Role ID: ${role.id}`,
+					footer: botCopy(`Role ID: ${role.id}`, `معرّف الدور: ${role.id}`),
 				}),
 			],
 		});

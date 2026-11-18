@@ -1,4 +1,4 @@
-import { strings } from "@config/strings";
+import { botCopy, strings } from "@config/strings";
 import { defineCommand } from "@core/command";
 import { UserFacingError } from "@core/errors";
 import { embed, reply } from "@lib/discord";
@@ -27,9 +27,9 @@ export default defineCommand({
 			embeds: [
 				embed({
 					category: "fun",
-					title: "🐢 Master Oogway's wisdom",
-					description: `> *"${quote}"*\n> — Master Oogway`,
-					footer: `Requested by ${interaction.user.username}`,
+					title: botCopy("🐢 Master Oogway's wisdom", "🐢 حكمة المعلّم أوغواي"),
+					description: botCopy(`> *"${quote}"*\n> — Master Oogway`, `> *«${quote}»*\n> — المعلّم أوغواي`),
+					footer: botCopy(`Requested by ${interaction.user.username}`, `بطلب من ${interaction.user.username}`),
 					footerIcon: interaction.user.displayAvatarURL(),
 				}),
 			],

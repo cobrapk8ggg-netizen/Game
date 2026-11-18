@@ -1,4 +1,5 @@
 import { ButtonStyle } from "discord.js";
+import { botCopy } from "@config/strings";
 import { customId, defineButton } from "@core/button";
 import { UserFacingError } from "@core/errors";
 import { button, row } from "@lib/discord";
@@ -12,29 +13,30 @@ export default defineButton({
 		if (!interaction.isButton()) return;
 
 		const [targetId, ownerId = interaction.user.id] = context.args;
-		if (targetId === undefined) throw new UserFacingError("That button is no longer valid.");
+		if (targetId === undefined)
+			throw new UserFacingError(botCopy("That button is no longer valid.", "لم يعد هذا الزر صالحًا."));
 
 		const target = await context.client.users.fetch(targetId).catch(() => null);
-		if (!target) throw new UserFacingError("I could not find that user any more.");
+		if (!target) throw new UserFacingError(botCopy("I could not find that user any more.", "لم أجد حساب المستخدم."));
 
 		const member = interaction.guild ? await interaction.guild.members.fetch(targetId).catch(() => null) : null;
 
 		const controls = row(
 			button({
 				id: customId("userinfo", "avatar", targetId, ownerId),
-				label: "Avatar",
+				label: botCopy("Avatar", "الصورة الشخصية"),
 				style: ButtonStyle.Primary,
 				disabled: context.action === "avatar",
 			}),
 			button({
 				id: customId("userinfo", "banner", targetId, ownerId),
-				label: "Banner",
+				label: botCopy("Banner", "صورة الغلاف"),
 				style: ButtonStyle.Secondary,
 				disabled: context.action === "banner",
 			}),
 			button({
 				id: customId("userinfo", "info", targetId, ownerId),
-				label: "User info",
+				label: botCopy("User info", "معلومات المستخدم"),
 				style: ButtonStyle.Secondary,
 				disabled: context.action === "info",
 			}),

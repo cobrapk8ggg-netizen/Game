@@ -10,6 +10,7 @@ import {
 	MINUTE_MS,
 	TICKET,
 } from "@config/constants";
+import { durationIn, permissionName } from "@core/language";
 import { ANSWER_EVERY_MS } from "@lib/autoResponders/autoResponders.util";
 import { CASINO_TIMING } from "@lib/casino/casino.constants";
 import { COINFLIP_RETURN, DICE_RETURNS } from "@lib/casino/chance.util";
@@ -41,6 +42,33 @@ import {
 	WELCOME_LIMITS,
 } from "@testify/shared";
 
+const DURATIONS = {
+	"economy.heistJoin": ECONOMY.heistJoinWindowMs,
+	"cooldown.daily": ECONOMY_COOLDOWNS.daily,
+	"cooldown.work": ECONOMY_COOLDOWNS.work,
+	"cooldown.rob": ECONOMY_COOLDOWNS.rob,
+	"cooldown.heist": ECONOMY_COOLDOWNS.heist,
+	"cooldown.beg": ECONOMY_COOLDOWNS.beg,
+	"casino.handIdle": CASINO_TIMING.handIdleMs,
+	"levelling.xpCooldown": LEVELLING.messageCooldownMs,
+	"giveaway.minDuration": GIVEAWAY_LIMITS.minDurationMs,
+	"giveaway.maxDuration": GIVEAWAY_LIMITS.maxDurationMs,
+	"reminder.min": REMINDER_LIMITS.minMs,
+	"reminder.max": REMINDER_LIMITS.maxMs,
+	"tempVoice.makePause": MAKE_PAUSE_MS,
+	"treasure.cooldown": TREASURE_DEFAULTS.cooldownMs,
+	"ticket.closeDelay": TICKET.closeDelayMs,
+	"poll.defaultDuration": POLL_LIMITS.defaultHours * HOUR_MS,
+	"poll.maxDuration": POLL_LIMITS.maxHours * HOUR_MS,
+	"afk.keep": AFK.keepDays * DAY_MS,
+	"afk.noticeEvery": AFK.noticeEveryMs,
+	"autoResponder.pause": ANSWER_EVERY_MS,
+	"schedule.lateBy": SCHEDULE_TIMING.lateByMs,
+	"schedule.maxAhead": SCHEDULE_LIMITS.maxAheadDays * DAY_MS,
+	"raid.maxAccountAge": RAID_LIMITS.maxAccountAgeMinutes * MINUTE_MS,
+	"raid.alertEvery": RAID_LIMITS.alertEveryMinutes * MINUTE_MS,
+};
+
 /** Every number an article quotes, read from the code, so an article cannot state a limit the bot no longer has. */
 export const FACTS: Readonly<Record<string, string>> = {
 	"prefix.default": DEFAULT_PREFIX,
@@ -63,15 +91,15 @@ export const FACTS: Readonly<Record<string, string>> = {
 	"economy.robMinWallet": formatNumber(ECONOMY.robMinTargetWallet),
 	"economy.heistMin": formatNumber(ECONOMY.heistMinPlayers),
 	"economy.heistMax": formatNumber(ECONOMY.heistMaxPlayers),
-	"economy.heistJoin": formatDurationLong(ECONOMY.heistJoinWindowMs),
+	"economy.heistJoin": formatDurationLong(DURATIONS["economy.heistJoin"]),
 	"economy.inventoryMax": formatNumber(ECONOMY.maxInventorySize),
 	"economy.shopRolesMax": formatNumber(SHOP_ROLE_LIMITS.max),
 
-	"cooldown.daily": formatDurationLong(ECONOMY_COOLDOWNS.daily),
-	"cooldown.work": formatDurationLong(ECONOMY_COOLDOWNS.work),
-	"cooldown.rob": formatDurationLong(ECONOMY_COOLDOWNS.rob),
-	"cooldown.heist": formatDurationLong(ECONOMY_COOLDOWNS.heist),
-	"cooldown.beg": formatDurationLong(ECONOMY_COOLDOWNS.beg),
+	"cooldown.daily": formatDurationLong(DURATIONS["cooldown.daily"]),
+	"cooldown.work": formatDurationLong(DURATIONS["cooldown.work"]),
+	"cooldown.rob": formatDurationLong(DURATIONS["cooldown.rob"]),
+	"cooldown.heist": formatDurationLong(DURATIONS["cooldown.heist"]),
+	"cooldown.beg": formatDurationLong(DURATIONS["cooldown.beg"]),
 
 	"casino.slotsReturn": `${(slotsReturnToPlayer() * 100).toFixed(1)}%`,
 	"casino.slotsTop": `${formatNumber(SLOT_PAYTABLE.diamond)}×`,
@@ -79,11 +107,11 @@ export const FACTS: Readonly<Record<string, string>> = {
 	"casino.diceSeven": `${String(DICE_RETURNS.seven)}×`,
 	"casino.hiloCut": `${String(Math.round((1 - HILO_EDGE) * 100))}%`,
 	"casino.hiloCap": `${formatNumber(HILO_MAX_MULTIPLIER)}×`,
-	"casino.handIdle": formatDurationLong(CASINO_TIMING.handIdleMs),
+	"casino.handIdle": formatDurationLong(DURATIONS["casino.handIdle"]),
 
 	"levelling.xpMin": formatNumber(LEVELLING.xpPerMessageMin),
 	"levelling.xpMax": formatNumber(LEVELLING.xpPerMessageMax),
-	"levelling.xpCooldown": formatDurationLong(LEVELLING.messageCooldownMs),
+	"levelling.xpCooldown": formatDurationLong(DURATIONS["levelling.xpCooldown"]),
 	"levelling.xpForLevel1": formatNumber(LEVELLING.xpForLevel(1)),
 	"levelling.xpForLevel5": formatNumber(LEVELLING.xpForLevel(5)),
 	"levelling.xpForLevel10": formatNumber(LEVELLING.xpForLevel(10)),
@@ -102,13 +130,13 @@ export const FACTS: Readonly<Record<string, string>> = {
 	"sticky.maxPerServer": formatNumber(STICKY_LIMITS.maxPerGuild),
 
 	"giveaway.maxWinners": formatNumber(GIVEAWAY_LIMITS.maxWinners),
-	"giveaway.minDuration": formatDurationLong(GIVEAWAY_LIMITS.minDurationMs),
-	"giveaway.maxDuration": formatDurationLong(GIVEAWAY_LIMITS.maxDurationMs),
+	"giveaway.minDuration": formatDurationLong(DURATIONS["giveaway.minDuration"]),
+	"giveaway.maxDuration": formatDurationLong(DURATIONS["giveaway.maxDuration"]),
 
 	"lottery.maxWinners": formatNumber(LOTTERY_LIMITS.maxWinners),
 
-	"reminder.min": formatDurationLong(REMINDER_LIMITS.minMs),
-	"reminder.max": formatDurationLong(REMINDER_LIMITS.maxMs),
+	"reminder.min": formatDurationLong(DURATIONS["reminder.min"]),
+	"reminder.max": formatDurationLong(DURATIONS["reminder.max"]),
 	"reminder.maxActive": formatNumber(REMINDER_LIMITS.maxActive),
 
 	"roleMenu.maxPerServer": formatNumber(ROLE_MENU_LIMITS.maxPerGuild),
@@ -119,37 +147,37 @@ export const FACTS: Readonly<Record<string, string>> = {
 	"starboard.defaultStars": formatNumber(STARBOARD_LIMITS.defaultThreshold),
 
 	"tempVoice.maxPeople": formatNumber(TEMP_VOICE_LIMITS.maxUserLimit),
-	"tempVoice.makePause": formatDurationLong(MAKE_PAUSE_MS),
+	"tempVoice.makePause": formatDurationLong(DURATIONS["tempVoice.makePause"]),
 
 	"treasure.minMessages": formatNumber(TREASURE_DEFAULTS.minMessages),
 	"treasure.maxMessages": formatNumber(TREASURE_DEFAULTS.maxMessages),
 	"treasure.minAmount": formatNumber(TREASURE_DEFAULTS.minAmount),
 	"treasure.maxAmount": formatNumber(TREASURE_DEFAULTS.maxAmount),
-	"treasure.cooldown": formatDurationLong(TREASURE_DEFAULTS.cooldownMs),
+	"treasure.cooldown": formatDurationLong(DURATIONS["treasure.cooldown"]),
 	"treasure.maxAmountLimit": formatNumber(TREASURE_LIMITS.maxAmount),
 
-	"ticket.closeDelay": formatDurationLong(TICKET.closeDelayMs),
+	"ticket.closeDelay": formatDurationLong(DURATIONS["ticket.closeDelay"]),
 
 	"poll.minAnswers": formatNumber(POLL_LIMITS.minAnswers),
 	"poll.maxAnswers": formatNumber(POLL_LIMITS.maxAnswers),
-	"poll.defaultDuration": formatDurationLong(POLL_LIMITS.defaultHours * HOUR_MS),
-	"poll.maxDuration": formatDurationLong(POLL_LIMITS.maxHours * HOUR_MS),
+	"poll.defaultDuration": formatDurationLong(DURATIONS["poll.defaultDuration"]),
+	"poll.maxDuration": formatDurationLong(DURATIONS["poll.maxDuration"]),
 
 	"afk.maxNote": formatNumber(AFK.maxNote),
-	"afk.keep": formatDurationLong(AFK.keepDays * DAY_MS),
-	"afk.noticeEvery": formatDurationLong(AFK.noticeEveryMs),
+	"afk.keep": formatDurationLong(DURATIONS["afk.keep"]),
+	"afk.noticeEvery": formatDurationLong(DURATIONS["afk.noticeEvery"]),
 
 	"autoResponder.maxPerServer": formatNumber(AUTO_RESPONDER_LIMITS.maxPerGuild),
-	"autoResponder.pause": formatDurationLong(ANSWER_EVERY_MS),
+	"autoResponder.pause": formatDurationLong(DURATIONS["autoResponder.pause"]),
 
 	"schedule.maxPerServer": formatNumber(SCHEDULE_LIMITS.maxPerGuild),
-	"schedule.lateBy": formatDurationLong(SCHEDULE_TIMING.lateByMs),
-	"schedule.maxAhead": formatDurationLong(SCHEDULE_LIMITS.maxAheadDays * DAY_MS),
+	"schedule.lateBy": formatDurationLong(DURATIONS["schedule.lateBy"]),
+	"schedule.maxAhead": formatDurationLong(DURATIONS["schedule.maxAhead"]),
 
 	"birthday.maxMessage": formatNumber(BIRTHDAY_LIMITS.maxMessage),
 
-	"raid.maxAccountAge": formatDurationLong(RAID_LIMITS.maxAccountAgeMinutes * MINUTE_MS),
-	"raid.alertEvery": formatDurationLong(RAID_LIMITS.alertEveryMinutes * MINUTE_MS),
+	"raid.maxAccountAge": formatDurationLong(DURATIONS["raid.maxAccountAge"]),
+	"raid.alertEvery": formatDurationLong(DURATIONS["raid.alertEvery"]),
 
 	"directory.maxBatch": formatNumber(DIRECTORY_LIMITS.maxBatch),
 };
@@ -160,6 +188,19 @@ export function unknownFacts(text: string): string[] {
 	return [...text.matchAll(FACT)].map((match) => match[1] ?? "").filter((key) => FACTS[key] === undefined);
 }
 
-export function fillFacts(text: string): string {
-	return text.replace(FACT, (whole, key: string) => FACTS[key] ?? whole);
+function arabicFact(key: string): string | undefined {
+	const duration = Object.hasOwn(DURATIONS, key) ? DURATIONS[key as keyof typeof DURATIONS] : undefined;
+	if (duration !== undefined) return durationIn("ar", duration);
+	if (key === "invite.permissions") {
+		const names = new PermissionsBitField(BigInt(INVITE_PERMISSIONS))
+			.toArray()
+			.map((name) => permissionName("ar", name));
+		return new Intl.ListFormat("ar").format(names);
+	}
+	if (key === "welcome.maxBackgroundMb") return `${String(WELCOME_LIMITS.maxBackgroundBytes / (1024 * 1024))} ميغابايت`;
+	return FACTS[key];
+}
+
+export function fillFacts(text: string, ar = false): string {
+	return text.replace(FACT, (whole, key: string) => (ar ? arabicFact(key) : FACTS[key]) ?? whole);
 }

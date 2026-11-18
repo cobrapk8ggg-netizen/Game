@@ -1,4 +1,5 @@
 import { randomInt } from "node:crypto";
+import { botCopy } from "@config/strings";
 import { defineCommand } from "@core/command";
 import { embed, reply } from "@lib/discord";
 
@@ -17,12 +18,16 @@ export default defineCommand({
 	cooldown: 10_000,
 
 	async run(interaction) {
+		const code = fakeCode();
 		await reply(interaction, {
 			embeds: [
 				embed({
 					category: "fun",
-					title: "A wild gift appeared",
-					description: `\`\`\`\nhttps://discord.gift/${fakeCode()}\n\`\`\`\nIt is not a real gift — nobody is getting Nitro today.`,
+					title: botCopy("A wild gift appeared", "ظهرت هدية مفاجئة"),
+					description: `\`\`\`\nhttps://discord.gift/${code}\n\`\`\`\n${botCopy(
+						"It is not a real gift — nobody is getting Nitro today.",
+						"هاي للمزح! خلي تمنّيات الـ Nitro لباچر. 😄",
+					)}`,
 				}),
 			],
 		});

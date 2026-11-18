@@ -1,5 +1,5 @@
 import figlet from "figlet";
-import { strings } from "@config/strings";
+import { botCopy, strings } from "@config/strings";
 import { defineCommand } from "@core/command";
 import { UserFacingError } from "@core/errors";
 import { embed, reply } from "@lib/discord";
@@ -28,7 +28,9 @@ export default defineCommand({
 		try {
 			art = figlet.textSync(text);
 		} catch {
-			throw new UserFacingError("That text could not be rendered.");
+			throw new UserFacingError(
+				botCopy("That text could not be rendered.", "تعذّر تحويل هذا النص إلى رسم باستخدام محارف ASCII."),
+			);
 		}
 
 		await reply(interaction, { embeds: [embed({ category: "fun", description: `\`\`\`\n${art}\n\`\`\`` })] });

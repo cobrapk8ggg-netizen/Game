@@ -23,8 +23,9 @@ export const keys = {
 		sessions: () => ["account", "sessions"] as const,
 		profile: () => ["account", "profile"] as const,
 	},
-	support: () => ["support"] as const,
-	supportArticle: (id: string) => ["support", "article", id] as const,
+	support: (locale = "") => (locale === "" ? (["support"] as const) : (["support", locale] as const)),
+	supportArticle: (id: string, locale = "") =>
+		locale === "" ? (["support", "article", id] as const) : (["support", "article", id, locale] as const),
 	commandToggles: (guildId: string | null) => ["command-toggles", guildId ?? "global"] as const,
 	guild: (id: string) => ({
 		all: () => ["guild", id] as const,

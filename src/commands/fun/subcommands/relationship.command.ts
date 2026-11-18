@@ -1,4 +1,5 @@
 import { createHash } from "node:crypto";
+import { botCopy } from "@config/strings";
 import { defineCommand } from "@core/command";
 import { UserFacingError } from "@core/errors";
 import { embed, reply } from "@lib/discord";
@@ -11,11 +12,11 @@ function compatibility(firstId: string, secondId: string): number {
 }
 
 function verdict(score: number): string {
-	if (score >= 90) return "A perfect match. 💞";
-	if (score >= 70) return "There is real potential here. 💖";
-	if (score >= 50) return "Could work with some effort. 💗";
-	if (score >= 30) return "It would be complicated. 💔";
-	return "Best left as friends. 🙃";
+	if (score >= 90) return botCopy("A perfect match. 💞", "توافق تام! حتى البوت صفّگ لكم. 💞");
+	if (score >= 70) return botCopy("There is real potential here. 💖", "بينكما توافق واعد. 💖");
+	if (score >= 50) return botCopy("Could work with some effort. 💗", "قد تنجح العلاقة بشيء من التفاهم. 💗");
+	if (score >= 30) return botCopy("It would be complicated. 💔", "قد يكون التفاهم صعبًا. 💔");
+	return botCopy("Best left as friends. 🙃", "الصداقة خيار جميل أيضًا. 🙃");
 }
 
 export default defineCommand({
@@ -33,7 +34,7 @@ export default defineCommand({
 		const first = interaction.options.getUser("first", true);
 		const second = interaction.options.getUser("second") ?? interaction.user;
 
-		if (first.id === second.id) throw new UserFacingError("Pick two different people.");
+		if (first.id === second.id) throw new UserFacingError(botCopy("Pick two different people.", "اختر شخصين مختلفين."));
 
 		const score = compatibility(first.id, second.id);
 
@@ -41,7 +42,7 @@ export default defineCommand({
 			embeds: [
 				embed({
 					category: "fun",
-					title: "💘 Compatibility check",
+					title: botCopy("💘 Compatibility check", "💘 مقياس التوافق الترفيهي"),
 					description: [
 						`**${first.displayName}** 💞 **${second.displayName}**`,
 						"",

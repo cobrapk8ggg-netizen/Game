@@ -70,3 +70,12 @@ describe("GET /support", () => {
 		expect((await appFor(false).request("/support")).status).toBe(200);
 	});
 });
+
+it("serves the Arabic ticket guide to the dashboard without changing the English copy", async () => {
+	const app = appFor(false);
+	const arabic = await app.request("/support/articles/tickets?locale=ar");
+	const english = await app.request("/support/articles/tickets");
+	expect(arabic.status).toBe(200);
+	expect(await arabic.text()).toContain("إعداد نظام التذاكر");
+	expect(await english.text()).toContain("Setting up tickets");
+});

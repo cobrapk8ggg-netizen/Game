@@ -230,6 +230,10 @@ export function setBotCopyLanguage(language: string | undefined): void {
 }
 
 /** Selects a bot-authored message. Arguments embedded in it keep the text supplied by the caller. */
+export function usesArabicCopy(): boolean {
+	return strings === arabic;
+}
+
 export function botCopy(original: string, translation: string): string {
-	return strings === arabic ? translation : original;
+	return usesArabicCopy() ? translation : original;
 }

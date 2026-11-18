@@ -1,4 +1,5 @@
 import { DEFAULT_PREFIX } from "@config/constants";
+import { usesArabicCopy } from "@config/strings";
 import { theme } from "@config/theme";
 import { defineButton } from "@core/button";
 import { getPrefix } from "@database/repositories/prefixRepository";
@@ -15,7 +16,7 @@ export default defineButton({
 		const [articleId = ""] = context.args;
 		const prefix = interaction.guild === null ? DEFAULT_PREFIX : await getPrefix(interaction.guild.id);
 		const help = supportContext(prefix);
-		const desk = supportDesk(context.client);
+		const desk = supportDesk(context.client, usesArabicCopy());
 
 		await interaction.update(
 			supportScreen(

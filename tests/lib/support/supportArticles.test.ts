@@ -1,5 +1,6 @@
 import { PermissionFlagsBits } from "discord.js";
 import { type Command } from "@core/command";
+import { assetPath } from "@core/paths";
 import { commandReference, fillPlaceholders, loadArticles, parseArticle } from "@lib/support/supportArticles.util";
 
 const ARTICLE = [
@@ -37,6 +38,7 @@ describe("loadArticles", () => {
 	/** A broken article is skipped with a warning at start-up, so this is where its author learns of it. */
 	it("parses every article in assets/support", () => {
 		expect(loadArticles().filter((result) => !result.ok)).toEqual([]);
+		expect(loadArticles(assetPath("support", "ar")).filter((result) => !result.ok)).toEqual([]);
 	});
 });
 
@@ -45,6 +47,13 @@ function command(overrides: Partial<Command>): Command {
 }
 
 describe("commandReference", () => {
+	it("preserves executable command names and translates their descriptions and permissions", () => {
+		const page = commandReference(command({ permissions: [PermissionFlagsBits.BanMembers] }), true);
+		expect(page).toContain("يحظر مستخدمًا من الخادم.");
+		expect(page).toContain("`/ban`");
+		expect(page).toContain("تحتاج إلى **حظر الأعضاء**");
+	});
+
 	it("lists each subcommand with its own usage, and the permission only it needs", () => {
 		const page = commandReference(
 			command({

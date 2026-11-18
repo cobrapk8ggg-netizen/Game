@@ -4,6 +4,7 @@ import { type SearchableEntry, type SupportTopic } from "@testify/shared";
 export interface SupportEntry extends SearchableEntry {
 	topic: SupportTopic;
 	body: string;
+	arabic?: boolean;
 	featured: boolean;
 	/** Ids of the entries that belong beside this one: a guide's command pages, or a command's guides. */
 	links: string[];

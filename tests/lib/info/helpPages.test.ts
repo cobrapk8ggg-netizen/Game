@@ -46,7 +46,7 @@ describe("what the pages say", () => {
 	it("shows Arabic descriptions without changing the command members type", () => {
 		const page = commandPage(ban, "slash", "t?", true).toJSON();
 		expect(page.title).toBe("/ban");
-		expect(page.description).toBe("حظر مستخدم من الخادم.");
+		expect(page.description).toBe("يحظر مستخدمًا من الخادم.");
 		expect(page.fields?.find(({ name }) => name === "الخيارات")?.value).toContain("`user` (إلزامي)");
 		expect(helpHome(clientWith(3), "slash", "!", true).toJSON().title).toContain("مركز مساعدة");
 	});

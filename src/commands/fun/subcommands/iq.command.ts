@@ -1,4 +1,5 @@
 import { randomInt } from "node:crypto";
+import { botCopy } from "@config/strings";
 import { defineCommand } from "@core/command";
 import { embed, reply } from "@lib/discord";
 
@@ -12,16 +13,24 @@ export default defineCommand({
 	async run(interaction) {
 		const target = interaction.options.getUser("user") ?? interaction.user;
 		const iq = randomInt(2, 201);
-		const verdict = iq >= 120 ? "A genius. 🧠" : iq <= 50 ? "Keep learning and growing. 📚" : "Comfortably average.";
+		const verdict =
+			iq >= 120
+				? botCopy("A genius. 🧠", "هذا الرقم يحتاج كرسيًّا خاصًّا في المختبر! 🧠")
+				: iq <= 50
+					? botCopy("Keep learning and growing. 📚", "تعلّم شيئًا جديدًا كل يوم. 📚")
+					: botCopy("Comfortably average.", "نتيجة متوسطة على هذا المقياس الترفيهي.");
 
 		await reply(interaction, {
 			embeds: [
 				embed({
 					category: "fun",
-					title: "IQ test",
-					description: `${target}'s IQ is **${iq}**.\n${verdict}`,
+					title: botCopy("IQ test", "اختبار الذكاء الترفيهي"),
+					description: botCopy(
+						`${target}'s IQ is **${iq}**.\n${verdict}`,
+						`النتيجة العشوائية لـ ${target}: **${iq}**.\n${verdict}`,
+					),
 					thumbnail: target.displayAvatarURL(),
-					footer: `Requested by ${interaction.user.username}`,
+					footer: botCopy(`Requested by ${interaction.user.username}`, `بطلب من ${interaction.user.username}`),
 				}),
 			],
 		});
