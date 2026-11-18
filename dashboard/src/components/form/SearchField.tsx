@@ -23,7 +23,7 @@ export function SearchField({
 			<Search
 				size={16}
 				aria-hidden="true"
-				className="text-muted-foreground pointer-events-none absolute top-1/2 left-3 -translate-y-1/2"
+				className="text-muted-foreground pointer-events-none absolute top-1/2 start-3 -translate-y-1/2"
 			/>
 			<input
 				type="search"
@@ -33,7 +33,7 @@ export function SearchField({
 				onChange={(event) => {
 					onChange(event.target.value);
 				}}
-				className={cn(FIELD, "pl-9")}
+				className={cn(FIELD, "ps-9")}
 			/>
 		</label>
 	);

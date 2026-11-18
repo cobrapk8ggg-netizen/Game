@@ -1,4 +1,5 @@
 import { existsSync, readFileSync } from "node:fs";
+import arabic from "../../assets/locales/commands/ar.json";
 import { DISCORD_LOCALES, type TranslatedLanguage } from "@config/languages";
 import { type Command, type CommandOption, stringKey, subcommandsOf } from "@core/command";
 import { type ContextMenu, menuKey } from "@core/contextMenu";
@@ -29,6 +30,13 @@ export function commandStrings(command: Command): CommandString[] {
 
 export function menuStrings(menu: ContextMenu): CommandString[] {
 	return [{ key: menuKey(menu), text: menu.name }];
+}
+
+const arabicDescriptions: Readonly<Record<string, string>> = arabic;
+
+/** Arabic descriptions for the web catalogue and in-chat help, where Discord's locale restrictions do not apply. */
+export function arabicDescription(original: string, command: string, subcommand?: string, option?: string): string {
+	return arabicDescriptions[stringKey(command, subcommand, option)] ?? original;
 }
 
 export type CommandTranslations = Partial<Record<TranslatedLanguage, Readonly<Record<string, string>>>>;

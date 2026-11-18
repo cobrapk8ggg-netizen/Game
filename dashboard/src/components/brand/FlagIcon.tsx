@@ -1,10 +1,11 @@
+import { Languages } from "lucide-react";
 import { type Locale } from "@/i18n";
 
 /** Flags drawn inline, because Windows renders no emoji flags. */
 
 const RATIO = { width: 21, height: 15 } as const;
 
-const FLAGS: Record<Locale, React.JSX.Element> = {
+const FLAGS: Record<Exclude<Locale, "ar">, React.JSX.Element> = {
 	en: (
 		<>
 			<rect width="21" height="15" fill="#012169" />
@@ -64,6 +65,9 @@ const FLAGS: Record<Locale, React.JSX.Element> = {
 };
 
 export function FlagIcon({ locale, className }: { locale: Locale; className?: string }): React.JSX.Element {
+	if (locale === "ar") {
+		return <Languages {...RATIO} aria-hidden="true" className={`shrink-0 ${className ?? ""}`} />;
+	}
 	return (
 		<svg
 			{...RATIO}

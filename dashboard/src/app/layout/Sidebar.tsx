@@ -224,7 +224,7 @@ function SearchRow({
 				)}
 			>
 				<Search size={18} aria-hidden="true" className="shrink-0" />
-				<span className={label("flex-1 truncate text-left")}>{t("search.open")}</span>
+				<span className={label("flex-1 truncate text-start")}>{t("search.open")}</span>
 				{/* A phone has no keyboard to press it on, so the drawer leaves it out. */}
 				<kbd
 					aria-hidden="true"
@@ -244,6 +244,6 @@ function SearchRow({
 function cnSidebar(expanded: boolean): string {
 	const base = "border-border flex shrink-0 flex-col p-3";
 	return expanded
-		? `${base} bg-sidebar h-full w-64 overflow-y-auto overscroll-contain border-r`
-		: `${base} bg-sidebar scrollbar-none sticky top-0 hidden h-dvh w-16 overflow-y-auto border-r md:flex lg:w-60`;
+		? `${base} bg-sidebar h-full w-64 overflow-y-auto overscroll-contain border-e`
+		: `${base} bg-sidebar scrollbar-none sticky top-0 hidden h-dvh w-16 overflow-y-auto border-e md:flex lg:w-60`;
 }

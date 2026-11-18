@@ -98,6 +98,7 @@ function world(options: { member?: boolean; threadFails?: boolean; thread?: "gon
 		},
 	};
 	const client = {
+		env: {},
 		paused: false,
 		isOwner: () => false,
 		guilds: { cache: new Map([[GUILD, guild]]) },

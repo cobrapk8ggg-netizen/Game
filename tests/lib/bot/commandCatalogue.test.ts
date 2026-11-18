@@ -15,6 +15,12 @@ function aCommand(overrides: Partial<Command> = {}): Command {
 }
 
 describe("summariseCommand", () => {
+	it("localises Arabic descriptions without changing the identifiers", () => {
+		const summary = summariseCommand(aCommand(), true);
+		expect(summary.name).toBe("ping");
+		expect(summary.description).toBe("يقيس زمن استجابة البوت.");
+	});
+
 	/** Discord's flag names, so each surface can word a permission in its own language. */
 	it("resolves permission bits to their flag names", () => {
 		const summary = summariseCommand(aCommand({ permissions: [PermissionFlagsBits.BanMembers] }));

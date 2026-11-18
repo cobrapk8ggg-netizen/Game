@@ -1,9 +1,11 @@
 import { DEFAULT_PREFIX } from "@config/constants";
 import { defineCommand } from "@core/command";
 import { UserFacingError } from "@core/errors";
+import { readerLanguage } from "@core/language";
 import { getPrefix } from "@database/repositories/prefixRepository";
 import { reply } from "@lib/discord";
 import {
+	arabicHelp,
 	categoryControls,
 	categoryMenu,
 	categoryPage,
@@ -23,6 +25,7 @@ export default defineCommand({
 	options: [{ name: "query", description: "A command or category name.", type: "string", autocomplete: true }],
 
 	async run(interaction, client) {
+		const ar = readerLanguage(interaction, client.env.BOT_LANGUAGE) === "ar";
 		const prefix = interaction.guild ? await getPrefix(interaction.guild.id) : DEFAULT_PREFIX;
 		const query = interaction.options.getString("query")?.toLowerCase().trim();
 		const surface = "slash";
@@ -32,7 +35,7 @@ export default defineCommand({
 			const command = client.commands.get(query) ?? client.commands.get(alias ?? "");
 
 			if (command) {
-				await reply(interaction, { embeds: [commandPage(command, surface, prefix)] });
+				await reply(interaction, { embeds: [commandPage(command, surface, prefix, ar)] });
 				return;
 			}
 
@@ -41,21 +44,23 @@ export default defineCommand({
 			const pages = category === null ? [] : pagesOf(client, category).filter((page) => page.length > 0);
 			if (category !== null && pages.length > 0) {
 				await reply(interaction, {
-					embeds: [categoryPage(client, category, 0, surface, prefix)],
+					embeds: [categoryPage(client, category, 0, surface, prefix, ar)],
 					components: [
-						categoryMenu(client, surface, category, interaction.user.id),
-						categoryControls(category, 0, pages.length, surface, interaction.user.id),
+						categoryMenu(client, surface, category, interaction.user.id, ar),
+						categoryControls(category, 0, pages.length, surface, interaction.user.id, ar),
 					],
 				});
 				return;
 			}
 
-			throw new UserFacingError(`Nothing matches \`${query}\`. Run \`/help\` on its own to browse everything.`);
+			throw new UserFacingError(
+				ar ? arabicHelp.noMatch(query) : `Nothing matches \`${query}\`. Run \`/help\` on its own to browse everything.`,
+			);
 		}
 
 		await reply(interaction, {
-			embeds: [helpHome(client, surface, prefix)],
-			components: [categoryMenu(client, surface, null, interaction.user.id), helpLinks()],
+			embeds: [helpHome(client, surface, prefix, ar)],
+			components: [categoryMenu(client, surface, null, interaction.user.id, ar), helpLinks(ar)],
 		});
 	},
 

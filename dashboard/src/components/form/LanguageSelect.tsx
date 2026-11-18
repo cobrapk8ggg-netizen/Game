@@ -11,13 +11,13 @@ export function LanguageSelect({ className }: { className?: string }): React.JSX
 	return (
 		<label className={cn("relative inline-flex items-center", className)}>
 			<span className="sr-only">{t("appearance.language")}</span>
-			<Languages size={15} aria-hidden="true" className="text-muted-foreground pointer-events-none absolute left-3" />
+			<Languages size={15} aria-hidden="true" className="text-muted-foreground pointer-events-none absolute start-3" />
 			<select
 				value={active}
 				onChange={(event) => {
 					if (isLocale(event.target.value)) void i18n.changeLanguage(event.target.value);
 				}}
-				className={cn(SELECT, "min-h-10 w-auto pl-9")}
+				className={cn(SELECT, "min-h-10 w-auto ps-9")}
 			>
 				{LOCALES.map((locale) => (
 					<option key={locale} value={locale} lang={locale}>

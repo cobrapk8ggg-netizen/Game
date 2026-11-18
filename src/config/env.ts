@@ -2,6 +2,7 @@ import { existsSync } from "node:fs";
 import { resolve } from "node:path";
 import { config as loadDotenv } from "dotenv";
 import { z } from "zod";
+import { BOT_LANGUAGES } from "@config/languages";
 import { BOT_FEATURE_KEYS, isBotFeature } from "@testify/shared";
 
 const id = z.string().regex(/^\d{17,20}$/, "should be a Discord ID (17-20 digits)");
@@ -27,6 +28,7 @@ const fields = z.object({
 	// Optional.
 	NODE_ENV: z.enum(["development", "production", "test"]).default("production"),
 	LOG_LEVEL: z.enum(["trace", "debug", "info", "warn", "error", "fatal"]).default("info"),
+	BOT_LANGUAGE: z.enum(BOT_LANGUAGES).optional(),
 	DISCORD_DEV_GUILD_ID: id.optional(),
 	CHANNEL_ERROR_LOG: id.optional(),
 	CHANNEL_GUILD_LOG: id.optional(),

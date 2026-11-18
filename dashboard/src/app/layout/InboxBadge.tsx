@@ -15,7 +15,7 @@ export function InboxBadge({ guildId, expanded }: { guildId: string; expanded: b
 			<span
 				aria-hidden="true"
 				className={cn(
-					"bg-accent-wash text-accent ml-auto rounded-full px-1.5 text-xs font-medium tabular-nums",
+					"bg-accent-wash text-accent ms-auto rounded-full px-1.5 text-xs font-medium tabular-nums",
 					!expanded && "hidden lg:inline",
 				)}
 			>

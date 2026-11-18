@@ -44,7 +44,7 @@ export function SidebarSection({
 				<span aria-hidden="true" className={ICON_SLOT}>
 					<Icon size={18} />
 				</span>
-				<span className="flex-1 truncate text-left">{t(section.labelKey)}</span>
+				<span className="flex-1 truncate text-start">{t(section.labelKey)}</span>
 				<ChevronDown
 					size={14}
 					aria-hidden="true"
@@ -57,8 +57,8 @@ export function SidebarSection({
 				className={cn(
 					"flex flex-col gap-1",
 					expanded
-						? "ml-[9px] border-l border-border pl-[9px]"
-						: "lg:ml-[9px] lg:border-l lg:border-border lg:pl-[9px]",
+						? "ms-[9px] border-s border-border ps-[9px]"
+						: "lg:ms-[9px] lg:border-s lg:border-border lg:ps-[9px]",
 					open ? "" : collapsible === true ? "hidden" : "lg:hidden",
 				)}
 			>

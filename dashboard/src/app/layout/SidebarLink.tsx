@@ -30,7 +30,7 @@ export function SidebarLink({ item, expanded = false }: { item: NavItem; expande
 						<span
 							aria-hidden="true"
 							className={cn(
-								"bg-accent absolute top-1/2 left-0 w-0.5 -translate-y-1/2 rounded-full duration-200 ease-out",
+								"bg-accent absolute top-1/2 start-0 w-0.5 -translate-y-1/2 rounded-full duration-200 ease-out",
 								"transition-[height,opacity]",
 								isActive ? "h-5 opacity-100" : "h-0 opacity-0",
 							)}

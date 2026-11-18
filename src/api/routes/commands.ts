@@ -12,6 +12,7 @@ export const commands = new Hono<ApiBindings>().use("*", requireAuth).get("/", (
 	return context.json(
 		buildCatalogue(client.commands.values(), {
 			prefix: DEFAULT_PREFIX,
+			ar: context.req.query("locale") === "ar",
 			includeOwnerOnly: session !== undefined && client.isOwner(session.userId),
 		}),
 	);

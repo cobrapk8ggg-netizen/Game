@@ -79,7 +79,7 @@ export function MobileNav({
 				<button
 					type="button"
 					onClick={onSearch}
-					className="text-muted-foreground hover:text-foreground hover:bg-card/60 rounded-card ml-auto p-2 transition-colors duration-150"
+					className="text-muted-foreground hover:text-foreground hover:bg-card/60 rounded-card ms-auto p-2 transition-colors duration-150"
 				>
 					<Search size={20} aria-hidden="true" />
 					<span className="sr-only">{t("search.open")}</span>
@@ -96,7 +96,7 @@ export function MobileNav({
 				<div className="fixed inset-0 z-40 md:hidden">
 					{/* Not a control: Escape and the close button already cover the keyboard, and a second one is only noise in the tab order. */}
 					<div aria-hidden="true" onClick={close} className="bg-background/70 motion-fade absolute inset-0" />
-					<div id="mobile-nav" ref={panelRef} className="motion-fade absolute inset-y-0 left-0 overscroll-contain">
+					<div id="mobile-nav" ref={panelRef} className="motion-fade absolute inset-y-0 start-0 overscroll-contain">
 						<Sidebar
 							user={user}
 							bot={bot}
@@ -112,7 +112,7 @@ export function MobileNav({
 					<button
 						type="button"
 						onClick={close}
-						className="text-muted-foreground hover:text-foreground absolute top-4 right-4 p-2"
+						className="text-muted-foreground hover:text-foreground absolute top-4 end-4 p-2"
 					>
 						<X size={20} aria-hidden="true" />
 						<span className="sr-only">{t("nav.closeMenu")}</span>

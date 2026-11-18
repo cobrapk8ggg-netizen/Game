@@ -1,6 +1,6 @@
 /** The languages the bot speaks besides English, and the Discord locales each one answers. */
 
-export const BOT_LANGUAGES = ["en", "de", "es", "fr", "it", "ru", "nl", "ja"] as const;
+export const BOT_LANGUAGES = ["en", "de", "es", "fr", "it", "ru", "nl", "ja", "ar"] as const;
 
 export type BotLanguage = (typeof BOT_LANGUAGES)[number];
 
@@ -15,4 +15,6 @@ export const DISCORD_LOCALES = {
 	ru: ["ru"],
 	nl: ["nl"],
 	ja: ["ja"],
+	// Discord does not accept Arabic in application command localisation maps.
+	ar: [],
 } as const satisfies Record<TranslatedLanguage, readonly string[]>;

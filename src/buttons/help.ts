@@ -1,5 +1,6 @@
 import { DEFAULT_PREFIX } from "@config/constants";
 import { defineButton } from "@core/button";
+import { readerLanguage } from "@core/language";
 import { getPrefix } from "@database/repositories/prefixRepository";
 import {
 	categoryControls,
@@ -19,6 +20,7 @@ export default defineButton({
 
 	async run(interaction, context) {
 		const { client, action, args } = context;
+		const ar = readerLanguage(interaction, client.env.BOT_LANGUAGE) === "ar";
 		const prefix = interaction.guildId === null ? DEFAULT_PREFIX : await getPrefix(interaction.guildId);
 		const ownerId = args.at(-1) ?? interaction.user.id;
 
@@ -30,8 +32,8 @@ export default defineButton({
 
 			if (chosen === HELP_HOME) {
 				await interaction.update({
-					embeds: [helpHome(client, surface, prefix)],
-					components: [categoryMenu(client, surface, null, ownerId), helpLinks()],
+					embeds: [helpHome(client, surface, prefix, ar)],
+					components: [categoryMenu(client, surface, null, ownerId, ar), helpLinks(ar)],
 				});
 				return;
 			}
@@ -40,10 +42,10 @@ export default defineButton({
 			if (!category) return;
 
 			await interaction.update({
-				embeds: [categoryPage(client, category, 0, surface, prefix)],
+				embeds: [categoryPage(client, category, 0, surface, prefix, ar)],
 				components: [
-					categoryMenu(client, surface, category, ownerId),
-					categoryControls(category, 0, pagesOf(client, category).length, surface, ownerId),
+					categoryMenu(client, surface, category, ownerId, ar),
+					categoryControls(category, 0, pagesOf(client, category).length, surface, ownerId, ar),
 				],
 			});
 			return;
@@ -58,10 +60,10 @@ export default defineButton({
 			const page = Math.min(Math.max(0, Number.parseInt(args[2] ?? "0", 10) || 0), pages.length - 1);
 
 			await interaction.update({
-				embeds: [categoryPage(client, category, page, surface, prefix)],
+				embeds: [categoryPage(client, category, page, surface, prefix, ar)],
 				components: [
-					categoryMenu(client, surface, category, ownerId),
-					categoryControls(category, page, pages.length, surface, ownerId),
+					categoryMenu(client, surface, category, ownerId, ar),
+					categoryControls(category, page, pages.length, surface, ownerId, ar),
 				],
 			});
 		}

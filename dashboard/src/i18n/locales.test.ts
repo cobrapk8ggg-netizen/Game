@@ -1,6 +1,7 @@
 import { readdirSync, readFileSync } from "node:fs";
 import { join, resolve } from "node:path";
 import { LOCALE_NAMES, LOCALES } from "@/i18n";
+import ar from "@/i18n/locales/ar.json";
 import de from "@/i18n/locales/de.json";
 import en from "@/i18n/locales/en.json";
 import es from "@/i18n/locales/es.json";
@@ -17,7 +18,7 @@ interface Json {
 	[key: string]: string | Json;
 }
 
-const DICTIONARIES: Record<string, Json> = { de, es, fr, it: italian, ja, nl, ru: russian };
+const DICTIONARIES: Record<string, Json> = { ar, de, es, fr, it: italian, ja, nl, ru: russian };
 
 /** Plural suffixes are per-language by design: German has no `_many` and Spanish does. */
 const PLURAL_SUFFIX = /_(?:zero|one|two|few|many|other)$/;
@@ -36,7 +37,7 @@ function messages(node: Json): Set<string> {
 
 const english = messages(en);
 
-describe.each(Object.entries(DICTIONARIES))("the %s dictionary", (_name, dictionary) => {
+describe.each(Object.entries(DICTIONARIES))("the %s dictionary", (name, dictionary) => {
 	const translated = messages(dictionary);
 
 	it("translates every message English defines", () => {
@@ -54,11 +55,14 @@ describe.each(Object.entries(DICTIONARIES))("the %s dictionary", (_name, diction
 
 	it("leaves every interpolation name intact", () => {
 		for (const key of paths(dictionary)) {
-			const source = lookup(en, key.replace(PLURAL_SUFFIX, "_other")) ?? lookup(en, key);
+			const source = lookup(en, `${key.replace(PLURAL_SUFFIX, "")}_other`) ?? lookup(en, key);
 			const target = lookup(dictionary, key);
 			if (source === undefined || target === undefined) continue;
 
-			expect(new Set(placeholders(target))).toEqual(new Set(placeholders(source)));
+			const expected = new Set(placeholders(source));
+			// Arabic expresses zero, one or two directly in words when spelling a plural.
+			if (name === "ar" && /_(zero|one|two)$/.test(key)) expected.delete("count");
+			expect(new Set(placeholders(target))).toEqual(expected);
 		}
 	});
 });

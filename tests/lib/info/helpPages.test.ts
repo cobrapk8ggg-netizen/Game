@@ -1,4 +1,5 @@
 import { Collection } from "discord.js";
+import ban from "@commands/moderation/ban.command";
 import { parseCustomId } from "@core/button";
 import { type TestifyClient } from "@core/client";
 import { defineCommand } from "@core/command";
@@ -42,6 +43,14 @@ describe("the page controls", () => {
 });
 
 describe("what the pages say", () => {
+	it("shows Arabic descriptions without changing the command members type", () => {
+		const page = commandPage(ban, "slash", "t?", true).toJSON();
+		expect(page.title).toBe("/ban");
+		expect(page.description).toBe("حظر مستخدم من الخادم.");
+		expect(page.fields?.find(({ name }) => name === "الخيارات")?.value).toContain("`user` (إلزامي)");
+		expect(helpHome(clientWith(3), "slash", "!", true).toJSON().title).toContain("مركز مساعدة");
+	});
+
 	it("shows the prefix on the front page", () => {
 		expect(JSON.stringify(helpHome(clientWith(3), "slash", "!"))).toContain("!");
 	});

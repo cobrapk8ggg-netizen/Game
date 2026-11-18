@@ -2,6 +2,7 @@ import { PermissionFlagsBits } from "discord.js";
 import { theme } from "@config/theme";
 import { defineCommand, inGuild } from "@core/command";
 import { UserFacingError } from "@core/errors";
+import { readerLanguage } from "@core/language";
 import { reply } from "@lib/discord";
 import { actionEmbed, DEFAULT_REASON, moderatorOf, unbanUser } from "@lib/moderation";
 
@@ -19,19 +20,23 @@ export default defineCommand({
 		{ name: "reason", description: "Why they are being unbanned.", type: "string" },
 	],
 
-	async run(interaction) {
+	async run(interaction, client) {
+		const language = readerLanguage(interaction, client.env.BOT_LANGUAGE);
+		const ar = language === "ar";
 		const guild = inGuild(interaction);
 		const userId = interaction.options.getString("user-id", true).replace(/\D/g, "");
 		const reason = interaction.options.getString("reason") ?? DEFAULT_REASON;
 
-		if (!SNOWFLAKE.test(userId)) throw new UserFacingError("That is not a valid user ID.");
+		if (!SNOWFLAKE.test(userId))
+			throw new UserFacingError(ar ? "معرّف المستخدم غير صالح." : "That is not a valid user ID.");
 
 		const unbanned = await unbanUser(guild, userId, moderatorOf(interaction.user), reason);
 
 		await reply(interaction, {
 			embeds: [
 				actionEmbed({
-					action: "User unbanned",
+					action: ar ? "تم إلغاء حظر المستخدم" : "User unbanned",
+					language,
 					emoji: theme.emoji.success,
 					guild,
 					target: unbanned,

@@ -1,10 +1,18 @@
 import { PermissionFlagsBits } from "discord.js";
-import { strings } from "@config/strings";
 import { theme } from "@config/theme";
 import { defineCommand, inGuild } from "@core/command";
 import { UserFacingError } from "@core/errors";
+import { readerLanguage } from "@core/language";
 import { reply } from "@lib/discord";
-import { actionEmbed, assertModeratable, banUser, DEFAULT_REASON, moderatorOf } from "@lib/moderation";
+import {
+	actionEmbed,
+	assertModeratable,
+	banUser,
+	blockText,
+	DEFAULT_REASON,
+	moderatorOf,
+	notificationField,
+} from "@lib/moderation";
 
 export default defineCommand({
 	name: "ban",
@@ -26,16 +34,18 @@ export default defineCommand({
 	],
 
 	async run(interaction, client) {
+		const language = readerLanguage(interaction, client.env.BOT_LANGUAGE);
+		const ar = language === "ar";
 		const guild = inGuild(interaction);
 		const target = interaction.options.getUser("user", true);
 		const reason = interaction.options.getString("reason") ?? DEFAULT_REASON;
 		const deleteDays = interaction.options.getInteger("delete-days") ?? 0;
 
-		if (target.id === client.user?.id) throw new UserFacingError(strings.moderation.botTarget);
-		if (target.id === interaction.user.id) throw new UserFacingError(strings.moderation.selfTarget);
+		if (target.id === client.user?.id) throw new UserFacingError(blockText("bot", language));
+		if (target.id === interaction.user.id) throw new UserFacingError(blockText("you", language));
 
 		const member = await guild.members.fetch(target.id).catch(() => null);
-		if (member) assertModeratable(interaction, member);
+		if (member) assertModeratable(interaction, member, language);
 
 		const { notified: delivered } = await banUser(
 			guild,
@@ -49,15 +59,20 @@ export default defineCommand({
 		await reply(interaction, {
 			embeds: [
 				actionEmbed({
-					action: "User banned",
+					action: ar ? "تم حظر المستخدم" : "User banned",
+					language,
 					emoji: theme.emoji.moderation,
 					guild,
 					target,
 					moderator: interaction.user,
 					reason,
 					extra: [
-						{ name: "Messages deleted", value: `${deleteDays} day(s)`, inline: true },
-						{ name: "Notified", value: delivered ? "Yes" : "No", inline: true },
+						{
+							name: ar ? "أيام الرسائل المحذوفة" : "Messages deleted",
+							value: ar ? String(deleteDays) : `${deleteDays} day(s)`,
+							inline: true,
+						},
+						notificationField(delivered, language),
 					],
 				}),
 			],

@@ -8,7 +8,7 @@ import { formatNumber } from "@/lib/intl";
 
 export type TranslationKey = ParseKeys<"translation">;
 
-export const LOCALES = ["en", "de", "es", "fr", "it", "ja", "nl", "ru"] as const;
+export const LOCALES = ["en", "de", "es", "fr", "it", "ja", "nl", "ru", "ar"] as const;
 export type Locale = (typeof LOCALES)[number];
 
 export const LOCALE_NAMES: Record<Locale, string> = {
@@ -20,6 +20,7 @@ export const LOCALE_NAMES: Record<Locale, string> = {
 	ja: "日本語",
 	nl: "Nederlands",
 	ru: "Русский",
+	ar: "العربية",
 };
 
 const LOCALE_STORAGE_KEY = "testify:locale";
@@ -91,10 +92,13 @@ i18next.services.formatter?.add("number", (value: unknown) =>
 
 /** i18next does not set `lang`, and a screen reader needs it to read each language in its own voice. */
 function markDocumentLanguage(): void {
-	document.documentElement.lang = isLocale(i18next.resolvedLanguage) ? i18next.resolvedLanguage : "en";
+	if (typeof document === "undefined") return;
+	const locale = isLocale(i18next.resolvedLanguage) ? i18next.resolvedLanguage : "en";
+	document.documentElement.lang = locale;
+	document.documentElement.dir = i18next.dir(locale);
 }
 
 i18next.on("languageChanged", markDocumentLanguage);
-if (typeof document !== "undefined") markDocumentLanguage();
+markDocumentLanguage();
 
 export { i18next };

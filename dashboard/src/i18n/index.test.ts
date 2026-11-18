@@ -4,6 +4,16 @@ afterEach(async () => {
 	await i18next.changeLanguage("en");
 });
 
+it("marks Arabic as right-to-left and restores left-to-right when switching languages", async () => {
+	await i18next.changeLanguage("ar");
+	expect(document.documentElement.lang).toBe("ar");
+	expect(document.documentElement.dir).toBe("rtl");
+	expect(i18next.t("common.memberCount", { count: 2 })).toContain("عضوان");
+
+	await i18next.changeLanguage("en");
+	expect(document.documentElement.dir).toBe("ltr");
+});
+
 /** Chromium on a POSIX host reports `en-US@posix`, and an `Intl` formatter built from that throws. */
 describe("a language tag the browser cannot format in", () => {
 	it("is read as the tag it means", () => {

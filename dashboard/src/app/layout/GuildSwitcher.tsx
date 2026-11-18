@@ -55,7 +55,7 @@ export function GuildSwitcher({
 					onClick={() => {
 						setOpen((was) => !was);
 					}}
-					className={cn(ROW, "hover:bg-card/60 w-full text-left transition-colors duration-150")}
+					className={cn(ROW, "hover:bg-card/60 w-full text-start transition-colors duration-150")}
 				>
 					<span aria-hidden="true" className={ICON_SLOT}>
 						<Avatar name={guild.name} url={iconUrl} size={20} seed={guild.id} />

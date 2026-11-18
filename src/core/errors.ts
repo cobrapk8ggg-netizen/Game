@@ -108,7 +108,12 @@ async function reportFailure(
 
 	if (error instanceof ServiceError) {
 		client.logger.error({ err: error, command: label }, "[COMMAND_ERROR] A command failed.");
-		await tell(interaction, failureEmbed(say(readerLanguage(interaction), "serviceDown", { service: error.service })));
+		await tell(
+			interaction,
+			failureEmbed(
+				say(readerLanguage(interaction, client.env.BOT_LANGUAGE), "serviceDown", { service: error.service }),
+			),
+		);
 		return null;
 	}
 
@@ -118,7 +123,7 @@ async function reportFailure(
 		"[COMMAND_ERROR] A command failed.",
 	);
 	await postToErrorChannel(client, { label, reference, interaction, error: toError(error), command });
-	const language = readerLanguage(interaction);
+	const language = readerLanguage(interaction, client.env.BOT_LANGUAGE);
 	const doing = what === null ? say(language, "failureDoing") : say(language, "failureRunning", { command: what });
 	await tell(
 		interaction,

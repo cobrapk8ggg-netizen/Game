@@ -61,7 +61,7 @@ export function AppShell(): React.JSX.Element {
 
 				<a
 					href="#content"
-					className="bg-primary text-primary-foreground sr-only rounded-chip px-3 py-2 focus:not-sr-only focus:absolute focus:top-2 focus:left-2 focus:z-50"
+					className="bg-primary text-primary-foreground sr-only rounded-chip px-3 py-2 focus:not-sr-only focus:absolute focus:top-2 focus:start-2 focus:z-50"
 				>
 					{t("nav.skipToContent")}
 				</a>

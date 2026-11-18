@@ -1,10 +1,10 @@
 import { type ReactNode } from "react";
 import { Card } from "@/components/primitives/Card";
 
-export const TH = "px-3 py-3 text-left font-medium sm:px-6";
-export const TH_NUM = "w-24 px-3 py-3 text-right font-medium sm:w-32 sm:px-6";
+export const TH = "px-3 py-3 text-start font-medium sm:px-6";
+export const TH_NUM = "w-24 px-3 py-3 text-end font-medium sm:w-32 sm:px-6";
 export const CELL = "px-3 py-3 sm:px-6";
-export const CELL_NUM = "px-3 py-3 text-right tabular-nums sm:px-6";
+export const CELL_NUM = "px-3 py-3 text-end tabular-nums sm:px-6";
 
 export const WIDE_ONLY = "hidden sm:table-cell";
 

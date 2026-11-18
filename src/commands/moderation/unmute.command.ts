@@ -3,8 +3,9 @@ import { strings } from "@config/strings";
 import { theme } from "@config/theme";
 import { defineCommand, inGuild } from "@core/command";
 import { UserFacingError } from "@core/errors";
+import { readerLanguage } from "@core/language";
 import { reply } from "@lib/discord";
-import { actionEmbed, DEFAULT_REASON, moderatorOf, removeTimeout } from "@lib/moderation";
+import { actionEmbed, DEFAULT_REASON, moderatorOf, notificationField, removeTimeout } from "@lib/moderation";
 
 export default defineCommand({
 	name: "unmute",
@@ -18,25 +19,28 @@ export default defineCommand({
 		{ name: "reason", description: "Why the timeout is being lifted.", type: "string" },
 	],
 
-	async run(interaction) {
+	async run(interaction, client) {
+		const language = readerLanguage(interaction, client.env.BOT_LANGUAGE);
+		const ar = language === "ar";
 		const guild = inGuild(interaction);
 		const target = interaction.options.getUser("user", true);
 		const reason = interaction.options.getString("reason") ?? DEFAULT_REASON;
 
 		const member = await guild.members.fetch(target.id).catch(() => null);
-		if (!member) throw new UserFacingError(strings.moderation.memberNotFound);
+		if (!member) throw new UserFacingError(ar ? "هذا العضو غير موجود في الخادم." : strings.moderation.memberNotFound);
 		const { notified: delivered } = await removeTimeout(guild, member, moderatorOf(interaction.user), reason);
 
 		await reply(interaction, {
 			embeds: [
 				actionEmbed({
-					action: "Timeout removed",
+					action: ar ? "تم رفع التقييد المؤقت" : "Timeout removed",
+					language,
 					emoji: theme.emoji.success,
 					guild,
 					target,
 					moderator: interaction.user,
 					reason,
-					extra: [{ name: "Notified", value: delivered ? "Yes" : "No", inline: true }],
+					extra: [notificationField(delivered, language)],
 				}),
 			],
 		});

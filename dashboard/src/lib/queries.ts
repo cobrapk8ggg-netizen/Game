@@ -12,7 +12,7 @@ export const keys = {
 		tree: () => ["source", "tree"] as const,
 		file: (path: string) => ["source", "file", path] as const,
 	},
-	commands: () => ["commands"] as const,
+	commands: (ar = false) => (ar ? (["commands", "ar"] as const) : (["commands"] as const)),
 	status: () => ["status"] as const,
 	notices: () => ["notices"] as const,
 	ownAppeals: () => ["own-appeals"] as const,

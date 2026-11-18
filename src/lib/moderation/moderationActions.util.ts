@@ -1,10 +1,13 @@
 import { type EmbedBuilder, type Guild, type GuildMember, type User } from "discord.js";
+import { type BotLanguage } from "@config/languages";
 import { strings } from "@config/strings";
 import { theme } from "@config/theme";
 import { asMember, type CommandInput } from "@core/command";
 import { UserFacingError } from "@core/errors";
+import { durationIn, readerLanguage } from "@core/language";
 import { embed } from "@lib/discord/embeds.util";
 import { formatDurationLong } from "@lib/format/format.util";
+import { DEFAULT_REASON } from "@lib/moderation/moderation.constants";
 import { type MemberBlock } from "@testify/shared";
 
 /** Why this moderator may not act on this target, as a code, or null; every surface asks here. */
@@ -35,8 +38,17 @@ const BLOCK_TEXT: Record<MemberBlock, string> = {
 	notMember: "Only somebody in this server can moderate its members.",
 };
 
-export function blockText(block: MemberBlock): string {
-	return BLOCK_TEXT[block];
+const ARABIC_BLOCK_TEXT: Record<MemberBlock, string> = {
+	you: "لا يمكنك استخدام هذا الأمر على نفسك.",
+	bot: "لا يمكنك استخدام هذا الأمر على البوت.",
+	owner: "لا يمكنك اتخاذ هذا الإجراء بحق مالك الخادم.",
+	outranked: "يجب أن يكون أعلى أدوارك أعلى من أعلى أدوار العضو.",
+	botOutranked: "يجب أن يكون أعلى أدوار البوت أعلى من أعلى أدوار العضو.",
+	notMember: "يجب أن تكون عضوًا في الخادم لتتمكن من الإشراف على أعضائه.",
+};
+
+export function blockText(block: MemberBlock, language?: BotLanguage): string {
+	return (language === "ar" ? ARABIC_BLOCK_TEXT : BLOCK_TEXT)[block];
 }
 
 export function moderationProblem(moderator: GuildMember, target: GuildMember, botId?: string): string | null {
@@ -44,9 +56,9 @@ export function moderationProblem(moderator: GuildMember, target: GuildMember, b
 	return block === null ? null : BLOCK_TEXT[block];
 }
 
-export function assertModeratable(ctx: CommandInput, target: GuildMember): void {
-	const problem = moderationProblem(asMember(ctx), target, ctx.client.user?.id);
-	if (problem !== null) throw new UserFacingError(problem);
+export function assertModeratable(ctx: CommandInput, target: GuildMember, override?: BotLanguage): void {
+	const block = moderationBlock(asMember(ctx), target, ctx.client.user?.id);
+	if (block !== null) throw new UserFacingError(blockText(block, readerLanguage(ctx, override)));
 }
 
 /** Best-effort DM to the target. */
@@ -67,19 +79,29 @@ export function actionEmbed(options: {
 	moderator: User;
 	reason: string;
 	extra?: { name: string; value: string; inline?: boolean }[];
+	language?: BotLanguage;
 }): EmbedBuilder {
+	const ar = options.language === "ar";
 	return embed({
 		category: "moderation",
 		title: `${options.emoji} ${options.action}`,
 		fields: [
-			{ name: "User", value: `${options.target} (\`${options.target.id}\`)`, inline: true },
-			{ name: "Moderator", value: `${options.moderator}`, inline: true },
-			{ name: "Reason", value: options.reason },
+			{ name: ar ? "المستخدم" : "User", value: `${options.target} (\`${options.target.id}\`)`, inline: true },
+			{ name: ar ? "المشرف" : "Moderator", value: `${options.moderator}`, inline: true },
+			{
+				name: ar ? "السبب" : "Reason",
+				value: ar && options.reason === DEFAULT_REASON ? "لم يُذكر سبب" : options.reason,
+			},
 			...(options.extra ?? []),
 		],
 		thumbnail: options.target.displayAvatarURL(),
 		footer: options.guild.name,
 	});
+}
+
+export function notificationField(notified: boolean, language?: BotLanguage) {
+	if (language === "ar") return { name: "أُرسل إشعار", value: notified ? "نعم" : "لا", inline: true };
+	return { name: "Notified", value: notified ? "Yes" : "No", inline: true };
 }
 
 /** What `/mute` and the Time out action answer with. */
@@ -90,17 +112,24 @@ export function timedOutEmbed(options: {
 	reason: string;
 	durationMs: number;
 	notified: boolean;
+	language?: BotLanguage;
 }): EmbedBuilder {
+	const ar = options.language === "ar";
 	return actionEmbed({
-		action: "Member timed out",
+		action: ar ? "تم تقييد العضو مؤقتًا" : "Member timed out",
+		...(options.language === undefined ? {} : { language: options.language }),
 		emoji: theme.emoji.moderation,
 		guild: options.guild,
 		target: options.target,
 		moderator: options.moderator,
 		reason: options.reason,
 		extra: [
-			{ name: "Duration", value: formatDurationLong(options.durationMs), inline: true },
-			{ name: "Notified", value: options.notified ? "Yes" : "No", inline: true },
+			{
+				name: ar ? "المدة" : "Duration",
+				value: ar ? durationIn("ar", options.durationMs) : formatDurationLong(options.durationMs),
+				inline: true,
+			},
+			notificationField(options.notified, options.language),
 		],
 	});
 }

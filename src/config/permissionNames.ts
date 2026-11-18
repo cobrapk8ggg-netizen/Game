@@ -3,6 +3,31 @@ import { type TranslatedLanguage } from "@config/languages";
 
 /** What each language calls the permissions a refusal can name, in the words its Discord client uses where known. */
 export const PERMISSION_NAMES: Record<TranslatedLanguage, Partial<Record<PermissionsString, string>>> = {
+	ar: {
+		Administrator: "مسؤول",
+		ManageGuild: "إدارة الخادم",
+		ManageRoles: "إدارة الأدوار",
+		ManageChannels: "إدارة القنوات",
+		ManageMessages: "إدارة الرسائل",
+		ModerateMembers: "تقييد الأعضاء مؤقتًا",
+		BanMembers: "حظر الأعضاء",
+		KickMembers: "طرد الأعضاء",
+		SendMessages: "إرسال الرسائل",
+		SendMessagesInThreads: "إرسال الرسائل في سلاسل المحادثات",
+		EmbedLinks: "تضمين الروابط",
+		AttachFiles: "إرفاق الملفات",
+		ManageWebhooks: "إدارة خطافات الويب",
+		ManageNicknames: "إدارة الألقاب",
+		ManageGuildExpressions: "إدارة تعبيرات الخادم",
+		Speak: "التحدث",
+		Connect: "الاتصال بالقنوات الصوتية",
+		SendPolls: "إنشاء استطلاعات",
+		ViewChannel: "عرض القنوات",
+		ReadMessageHistory: "قراءة سجل الرسائل",
+		AddReactions: "إضافة تفاعلات",
+		ViewAuditLog: "عرض سجل التدقيق",
+		MentionEveryone: "الإشارة إلى @everyone و@here وجميع الأدوار",
+	},
 	de: {
 		Administrator: "Administrator",
 		ManageGuild: "Server verwalten",

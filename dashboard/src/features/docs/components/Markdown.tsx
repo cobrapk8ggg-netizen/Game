@@ -87,7 +87,7 @@ export function Markdown({
 	const anchors = new Set(doc.headings.map((heading) => heading.id));
 
 	return (
-		<div className="flex min-w-0 flex-col gap-4">
+		<div lang="en" dir="ltr" className="flex min-w-0 flex-col gap-4">
 			{doc.blocks.map((block) => (
 				<Blocks
 					key={block.file}

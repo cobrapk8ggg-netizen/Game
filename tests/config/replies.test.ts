@@ -47,6 +47,8 @@ describe("which language a reader gets", () => {
 		expect(readerLanguage({ locale: "fr", guild: { preferredLocale: "de" } })).toBe("fr");
 		expect(readerLanguage({ guild: { preferredLocale: "de" } })).toBe("de");
 		expect(readerLanguage({ guild: null })).toBe("en");
+		expect(readerLanguage({ locale: "en-US" }, "ar")).toBe("ar");
+		expect(languageOf("ar-SA")).toBe("ar");
 	});
 
 	it("joins a list with the language's own word for or", () => {

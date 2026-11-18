@@ -12,11 +12,11 @@ export function languageOf(locale: string | null | undefined): BotLanguage {
 }
 
 /** A slash command, a button or a form carries the reader's own locale; a prefix command only its server's. */
-export function readerLanguage(input: {
-	locale?: string | null;
-	guild?: { preferredLocale?: string } | null;
-}): BotLanguage {
-	return languageOf(input.locale ?? input.guild?.preferredLocale);
+export function readerLanguage(
+	input: { locale?: string | null; guild?: { preferredLocale?: string } | null },
+	override?: BotLanguage,
+): BotLanguage {
+	return override ?? languageOf(input.locale ?? input.guild?.preferredLocale);
 }
 
 export function say(language: BotLanguage, key: ReplyKey, values: Readonly<Record<string, string>> = {}): string {

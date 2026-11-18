@@ -46,7 +46,7 @@ export async function runChecks(
 	command: Command,
 	client: TestifyClient,
 ): Promise<CheckFailure> {
-	const language = readerLanguage(interaction);
+	const language = readerLanguage(interaction, client.env.BOT_LANGUAGE);
 
 	// First, so an attempt is recorded and refused whatever else would have stopped it.
 	if (command.ownerOnly === true && !client.isOwner(interaction.user.id)) {
@@ -163,7 +163,7 @@ export async function checkOpenControl(
 	who: { userId: string; guildId: string; locale?: string | null },
 	command: string,
 ): Promise<CheckFailure> {
-	const language = readerLanguage(who);
+	const language = readerLanguage(who, client.env.BOT_LANGUAGE);
 	if (client.paused) return pausedRefusal(language);
 
 	const blacklisted = await findBlacklistEntry(who.userId);
@@ -188,7 +188,7 @@ export async function checkContextMenu(
 	const refused = await checkOpenControl(client, who, menu.switchedBy);
 	if (refused !== null) return refused;
 
-	const language = readerLanguage(who);
+	const language = readerLanguage(who, client.env.BOT_LANGUAGE);
 	const missing = interaction.memberPermissions.missing(new PermissionsBitField(menu.permissions ?? []));
 	if (missing.length > 0) return lacking(language, "youNeed", missing);
 

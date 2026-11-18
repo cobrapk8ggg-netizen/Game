@@ -1,3 +1,4 @@
+export * from "./arabicHelp.util";
 export * from "./activity.util";
 export * from "./botStatsActions.util";
 export * from "./helpPages.util";
